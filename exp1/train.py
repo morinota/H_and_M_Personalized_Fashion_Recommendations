@@ -1,5 +1,7 @@
 import os
 import pandas as pd
+import implicit 
+
 
 def read_data():
     INPUT_DIR = r'input'
@@ -16,7 +18,8 @@ def read_data():
     dfi = pd.read_csv(csv_items, dtype={'article_id': str}) # 各商品の情報(メタデータ)
 
 def main():
-    pass
+    print(implicit.__version__)
+    
 
 if __name__ == '__main__':
     main()
