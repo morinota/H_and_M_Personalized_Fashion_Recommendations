@@ -17,6 +17,8 @@ def read_data():
     dfu = pd.read_csv(csv_users) # 各顧客の情報(メタデータ)
     dfi = pd.read_csv(csv_items, dtype={'article_id': str}) # 各商品の情報(メタデータ)
 
+def preproccessing():
+    
 def main():
     print(implicit.__version__)
     
