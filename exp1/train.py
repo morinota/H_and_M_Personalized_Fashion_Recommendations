@@ -21,7 +21,6 @@ def preproccessing():
     
 def main():
     print(implicit.__version__)
-    
 
 if __name__ == '__main__':
     main()
