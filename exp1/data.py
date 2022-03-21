@@ -1,7 +1,7 @@
-from kaggle import KaggleApi 
-
+from kaggle import KaggleApi
 import shutil
 import os
+
 
 def load_data():
     '''
@@ -13,7 +13,8 @@ def load_data():
     api.authenticate()
 
     # コンペ一覧
-    print(api.competitions_list(group=None, category=None, sort_by=None, page=1, search=None))
+    print(api.competitions_list(group=None, category=None,
+          sort_by=None, page=1, search=None))
 
     # 特定のコンペのデータを取得
     compe_name = "h-and-m-personalized-fashion-recommendations"
@@ -29,15 +30,16 @@ def load_data():
     INPUT_DIR = r'input'
     for file in file_list_csv:
         # 各データを読み込み(.zip形式になる)
-        api.competition_download_file(competition=compe_name, file_name=file, 
-        path=INPUT_DIR)
+        api.competition_download_file(competition=compe_name, file_name=file,
+                                      path=INPUT_DIR)
         # zipファイルをunpacking
-        shutil.unpack_archive(filename=os.path.join(INPUT_DIR, f'{file}.zip'), 
-        extract_dir=INPUT_DIR)
+        shutil.unpack_archive(filename=os.path.join(INPUT_DIR, f'{file}.zip'),
+                              extract_dir=INPUT_DIR)
+
 
 def main():
     load_data()
 
+
 if __name__ == '__main__':
     main()
-

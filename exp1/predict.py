@@ -1,8 +1,11 @@
-from kaggle import KaggleApi 
+from kaggle import KaggleApi
 
 # predict process
-def predict()
-def submit(csv_filepath:str, message:str):
+def predict():
+    pass
+
+
+def submit(csv_filepath: str, message: str):
     '''
     Kaggle competitionに結果をSubmitする関数
     '''
@@ -12,7 +15,9 @@ def submit(csv_filepath:str, message:str):
     api.authenticate()
 
     compe_name = "h-and-m-personalized-fashion-recommendations"
-    api.competition_submit(file_name=csv_filepath, message=message, competition=compe_name)
+    api.competition_submit(file_name=csv_filepath,
+                           message=message, competition=compe_name)
+
 
 def main():
     # predict something on test dataset
@@ -20,6 +25,7 @@ def main():
     # submit
     filepath = r'input\sample_submission.csv'
     submit(csv_filepath=filepath, message='submission sample')
+
 
 if __name__ == '__main__':
     main()

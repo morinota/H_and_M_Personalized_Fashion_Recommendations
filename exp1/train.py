@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-import implicit 
+import implicit
 
 
 def read_data():
@@ -12,10 +12,12 @@ def read_data():
     csv_items = os.path.join(INPUT_DIR, 'articles.csv')
 
     # データをDataFrame型で読み込み
-    df = pd.read_csv(csv_train, dtype={'article_id': str}, parse_dates=['t_dat']) # 実際の購買記録の情報
-    df_sub = pd.read_csv(csv_sub) # 提出用のサンプル
-    dfu = pd.read_csv(csv_users) # 各顧客の情報(メタデータ)
-    dfi = pd.read_csv(csv_items, dtype={'article_id': str}) # 各商品の情報(メタデータ)
+    df = pd.read_csv(csv_train, dtype={'article_id': str}, parse_dates=[
+                     't_dat'])  # 実際の購買記録の情報
+    df_sub = pd.read_csv(csv_sub)  # 提出用のサンプル
+    dfu = pd.read_csv(csv_users)  # 各顧客の情報(メタデータ)
+    dfi = pd.read_csv(csv_items, dtype={'article_id': str})  # 各商品の情報(メタデータ)
+
 
 def preproccessing():
     pass
@@ -23,6 +25,7 @@ def preproccessing():
 
 def main():
     print(implicit.__version__)
+
 
 if __name__ == '__main__':
     main()
