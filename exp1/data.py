@@ -26,8 +26,8 @@ def load_data():
     file_list_csv = [file.name for file in file_list if '.csv' in file.name]
     print(file_list_csv)
 
-    # 対象データを読み込み
-    INPUT_DIR = r'input'
+    # 対象データを読み込み(Onedrive上だったらOKか！)
+    INPUT_DIR = r"C:\Users\Masat\OneDrive - 国立大学法人東海国立大学機構\input"
     for file in file_list_csv:
         # 各データを読み込み(.zip形式になる)
         api.competition_download_file(competition=compe_name, file_name=file,
