@@ -1,10 +1,16 @@
 from kaggle import KaggleApi
 from preprocessing import DataSet
+from implicit.gpu.als import AlternatingLeastSquares
 
+
+class Prediction:
+    def __init__(self, train_model:AlternatingLeastSquares) -> None:
+        self.train_model = train_model
 # predict process
 def predict(dataset:DataSet):
     
     pass
+
 
 
 def submit(csv_filepath: str, message: str):

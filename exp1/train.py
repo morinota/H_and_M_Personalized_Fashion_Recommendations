@@ -12,7 +12,7 @@ class TrainModel:
         self.model = implicit.als.AlternatingLeastSquares(
             factors=self.hypyr_params['factors'],
             iterations=self.hypyr_params['iterations'],
-            regularization=self.hypyr_params['regularization']
+            regularization=self.hypyr_params['regularization'],
             random_state=42
         )
         self.model.fit(self.rating_matrix, show_progress=True)
