@@ -1,7 +1,8 @@
 from kaggle import KaggleApi
 import shutil
 import os
-
+os.environ['KAGGLE_USERNAME'] = "masatomasamasa"
+os.environ['KAGGLE_KEY'] = "5530a94bd76bac1415034d9f14cea01f"
 
 def load_data():
     '''

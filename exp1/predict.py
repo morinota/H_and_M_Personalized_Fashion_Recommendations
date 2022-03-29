@@ -1,7 +1,9 @@
 from kaggle import KaggleApi
+from preprocessing import DataSet
 
 # predict process
-def predict():
+def predict(dataset:DataSet):
+    
     pass
 
 
