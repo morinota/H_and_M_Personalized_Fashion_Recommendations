@@ -4,7 +4,7 @@ import implicit
 
 
 def read_data():
-    INPUT_DIR = r"C:\Users\Masat\OneDrive - 国立大学法人東海国立大学機構\input"
+    INPUT_DIR = r"input"
 
     # ファイルパスを用意
     csv_train = os.path.join(INPUT_DIR, 'transactions_train.csv')
