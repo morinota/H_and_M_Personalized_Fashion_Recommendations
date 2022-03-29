@@ -31,7 +31,6 @@ class DataSet:
         self.dfi = pd.read_csv(
             csv_items, dtype={'article_id': str})  # 各商品の情報(メタデータ)
 
-
     def _extract_byDay(self):
         mask = self.df['t_dat'] > '2020-08-21'
         self.df = self.df[mask]
@@ -62,7 +61,6 @@ class DataSet:
         # article_id : アイテムと一意に定まる文字列, item_id：0～ユニークアイテム数のindex
         self.df['item_id'] = self.df['article_id'].map(item_map)
 
-
     def _get_rating_matrix(self):
         '''
         トランザクションデータから評価行列を作成する関数
@@ -76,16 +74,14 @@ class DataSet:
         # 元の疎行列を生成.COO = [値、(行インデックス、列インデックス)]
         self.coo_train = scipy.sparse.coo_matrix((data, (row, col)), shape=(
             len(self.ALL_USERS), len(self.ALL_ITEMS)))
-            # coo_matrixは同じ座標を指定すると、要素が加算される性質がある。
-            #=>各要素が購買回数の、implictな評価行列の完成！
+        # coo_matrixは同じ座標を指定すると、要素が加算される性質がある。
+        # =>各要素が購買回数の、implictな評価行列の完成！
 
-    
     def preprocessing(self):
         self._extract_byDay()
         self._count_all_unique_user_and_item()
         self._add_originalId_item_and_user()
         self._get_rating_matrix()
-
 
 
 def main():
