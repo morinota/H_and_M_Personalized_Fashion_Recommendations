@@ -63,11 +63,11 @@ def matrix_factorization(X: np.ndarray, len_of_latest_variable, steps=5000, alph
 
     parameters
     -----------
-    X:観測された評価行列.
+    X:実際に観測された評価行列.
     len_of_latest_variable:潜在変数の数.
-    alpha:学習率
+    alpha:勾配降下法の学習率
     beta:L2正則化における罰則項のハイパーパラメータlambda
-    threshold:学習を終了するかどうかの閾値.
+    threshold:学習を終了するかどうかを判定する、誤差関数の値の閾値.
 
     Return
     -----------
