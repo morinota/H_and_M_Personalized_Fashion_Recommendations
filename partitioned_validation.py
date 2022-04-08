@@ -1,16 +1,20 @@
-
+import os
+from logging import lastResort
 from calculate_MAP12 import calculate_mapk, calculate_apk
 from collections import defaultdict
 import seaborn as sns
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Tuple
 import numpy as np
 import pandas as pd
 import datetime
 import matplotlib.pyplot as plt
 plt.style.use('ggplot')
 
+INPUT_DIR = 'input'
+DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 
-def _iter_to_str(iterable: List[str]) -> str:
+
+def _iter_to_str(iterable: List[int]) -> str:
     '''
     article_idの先頭に0を追加し、各article_idを半角スペースで区切られた文字列を返す関数
     (submitのcsvファイル様式にあわせる為に必要)
@@ -24,110 +28,13 @@ def _iter_to_str(iterable: List[str]) -> str:
     iterable_str(str)：イテラブルオブジェクトの各要素を" "で繋いで文字列型にしたもの。
     '''
     # Listの各要素の先頭に"0"を追加する
-    iterable = map(lambda x: str(0) + str(x), iterable)
+    iterable_add_0 = map(lambda x: str(0) + str(x), iterable)
     # リストの要素を半角スペースで繋いで、文字列に。
-    iterable_str = " ".join(iterable)
+    iterable_str = " ".join(iterable_add_0)
     return iterable_str
 
 
-def _blend(reccomends: pd.Series, weights: List = [], k: int = 12) -> str:
-    """_summary_
-     各レコメンド手法のレコメンド結果を良い感じにブレンドする関数。apply()メソッド用
-    Parameters
-    ----------
-    reccomends : pd.Series
-        indexが各レコメンド手法。要素はある一ユーザへのレコメンド商品のid達が連結したstr.
-        pd.DataFrame.apply(axis=1)で、各レコードに対して処理が適用される。
-    weights : list, optional
-        各レコメンド手法の重み付けのリスト。重みが大きい方が重要度が高い, by default []
-    k : int, optional
-        レコメンドアイテムの数, by default 12
-
-    Returns
-    -------
-    str
-        各レコメンド手法のレコメンド結果を、重み付けを元に良い感じにブレンドした結果の文字列。
-    """
-
-    # もし重み付けが設定されていなければ、
-    if len(weights) == 0:
-        # 重み一律でweightsをInitialize
-        weights = [1] * len(reccomends)
-
-    # 全レコメンド結果を格納するListをInitialize
-    preds: List[str] = []
-
-    # 各レコメンド手法毎に処理
-    for i in range(len(weights)):
-        # レコメンドアイテムのListを1つの文字列に変換してPredsに格納
-        preds.append(reccomends[i].split())
-
-    # 返値用のDictをInitialize
-    res: Dict[str, float] = {}
-
-    # 全レコメンドアイテムに対して、重み付けを考慮して合体させる。
-    # 各レコメンド手法毎に処理
-    for i in range(len(preds)):
-        # もし重みが0より小さければ、そもそもレコメンド対象にいれず、次のレコメンド手法へ。
-        if weights[i] < 0:
-            continue
-        # 各レコメンド手法のレコメンドアイテム達を個々に処理。
-        for j, article_id in enumerate(preds[i]):
-
-            # もし結果格納用のDictのkeyに、すでにアイテムが含まれていれば、
-            if article_id in res:
-                # 重み付けの分をスコアに加える。
-                res[article_id] += (weights[i] / (j + 1))
-            # 初見のアイテムの場合は、S
-            else:
-                # 結果格納用のDictに新規追加。
-                res[article_id] = (weights[i] / (j + 1))
-
-    # スコアが大きい順にarticle_idをソート！＝＞Listに。
-    res_list: List[str]
-    res_list = list(
-        dict(sorted(res.items(), key=lambda item: -item[1])).keys())
-
-    # スコアが大きいk個のarticle_idを切り出し、" "で繋いだ文字列にしてReturn
-    return ' '.join(res_list[:k])
-
-
-def _prune(pred: str, ok_set:Set[int], k:int=12)->str:
-    """_summary_
-    各レコメンド手法のレコメンド結果を良い感じにブレンドした後、良い感じに切り落とす関数。apply()メソッド用
-
-    Parameters
-    ----------
-    pred : str
-        各ユーザへのレコメンドアイテム達。
-    ok_set : Set[int]
-        学習対象期間内(基本的には今シーズン)に一回でも誰かに購入されたアイテムのリスト
-    k : int, optional
-        レコメンドアイテムの数, by default 12
-
-    Returns
-    -------
-    str
-        各ユーザの最終的なレコメンドアイテム達。
-    """
-    # 処理しやすくする為に、一旦str=>Listに
-    pred_list: List[str] = pred.split(" ")
-
-    # 結果格納用のListをInitialize
-    post: List[str] = []
-
-    # 各レコメンドアイテムに対して繰り返し処理
-    for article_id in pred_list:
-        # もしarticle_idがok_setの中に含まれており、且つpostにまだ入って無ければ。
-        if int(article_id) in ok_set and not article_id in post:
-            # 追加
-            post.append(article_id)
-
-    # 再びList＝＞Strに戻してReturn
-    return " ".join(post[:k])
-
-
-def partitioned_validation(actual, predicted: List[List], grouping: pd.Series, score:pd.DataFrame=0, index:str=-1, ignore:bool=False, figsize=(12, 6)):
+def partitioned_validation(actual, predicted: List[List], grouping: pd.Series, score: pd.DataFrame = 0, index: str = -1, ignore: bool = False, figsize=(12, 6)):
     """_summary_
 
     Parameters
@@ -212,12 +119,112 @@ def partitioned_validation(actual, predicted: List[List], grouping: pd.Series, s
     return score
 
 
-def oneweek_holdout_validation():
-    pass
+def get_valid_oneweek_holdout_validation(transaction_df: pd.DataFrame, val_week_id: int = 104) -> pd.DataFrame:
+    """トランザクションデータと検証用weekのidを受け取って、oneweek_holdout_validationの為の検証用データ(レコメンドの答え側)を作成する関数
+
+    Parameters
+    ----------
+    transaction_df : pd.DataFrame
+        transaction_train.csvから読み込まれたトランザクションデータ。
+    val_week_id : int, optional
+        2年分のトランザクションデータのうち、検証用weekに設定したいweekカラムの値, by default 104(2年の最終週)
+
+    Returns
+    -------
+    pd.DataFrame
+        oneweek_holdout_validationの為の検証用データ(レコメンドの答え側)。
+        レコード：各ユーザ、カラム：customer_id, 1週間の購入アイテム達のstr　(submission.csvと同じ形式)のDataFrame
+    """
+
+    # 元々のtransaction_dfから、検証用weekのtransactionデータのみを抽出
+    val_mask = transaction_df['week'] = val_week_id
+    transaction_df_val = transaction_df[val_mask]
+
+    # 検証用weekのtransactionデータから、検証用データ(レコメンドの答え側)を作成する。
+    val_df: pd.DataFrame
+    val_df = transaction_df_val.groupby(
+        'customer_id')['article_id'].apply(_iter_to_str).reset_index()
+    # ->レコード：各ユーザ、カラム：customer_id, 1週間の購入アイテム達のstr　(submission.csvと同じ形式)　
+
+    # 上記のval_dfは、検証用weekでtransactionを発生させたユーザのみ。それ以外のユーザのレコードを付け足す。
+    # sample_submission.csvのDataFrameを活用して、残りのユーザのレコードを付け足す。
+    sub_df = pd.read_csv(os.path.join(INPUT_DIR, 'sample_submission.csv'))
+    alluser_series = pd.DataFrame(sub_df["customer_id"].apply(
+        lambda s: int(s[-16:], 16))).astype(str)
+    # val_dfに検証用weekでtransactionを発生させていないユーザのレコードを付け足す。
+    val_df = pd.merge(val_df, alluser_series, how="right", on='customer_id')
+
+    return val_df
+
+
+def get_train_oneweek_holdout_validation(transaction_df: pd.DataFrame, val_week_id: int = 104, training_days: int = 31, how: str = "from_init_date_to_last_date") -> pd.DataFrame:
+
+    # 学習用データを作成する
+    transaction_df_train = pd.DataFrame()
+    # 学習データ戦略1
+    if how == "from_init_date_to_last_date":
+        # "検証用の一週間"の前日の日付を取得
+        last_date: datetime.datetime = transaction_df[transaction_df["week"]
+                                                      < val_week_id]["t_dat"].max()
+        # 学習用データのスタートの日付を取得
+        init_date: datetime.datetime = last_date - \
+            datetime.timedelta(days=training_days)
+        # 学習用データを作成
+        train_mask = (
+            transaction_df["t_dat"] >= init_date) & transaction_df["t_dat"] <= last_date
+        transaction_df_train: pd.DataFrame = transaction_df[train_mask]
+
+    # 学習データ戦略2(昨年の同じシーズンのトランザクションを使う)
+    if how == "use_same_season_in_past":
+        pass
+
+    return transaction_df_train
 
 
 def all_process_partitioned_validation():
     pass
+
+
+def make_user_grouping(transaction_df, customer_df: pd.DataFrame, grouping_column: str = "sales_channel_id") -> pd.Series:
+    """_summary_
+
+    Parameters
+    ----------
+    transaction_df : pd.DataFrame
+        _description_
+    customer_df : pd.DataFrame
+        _description_
+    grouping_column : str, optional
+        _description_, by default "sales_channel_id"
+
+    Returns
+    -------
+    pd.Series
+        _description_
+    """
+
+    transaction_columns = ["sales_channel_id"]
+    customer_columns = []
+    article_columns = []
+
+    # 補完用にsample_
+    sub_df = pd.read_csv(os.path.join(INPUT_DIR, 'sample_submission.csv'))
+    alluser_series = pd.DataFrame(sub_df["customer_id"].apply(
+        lambda s: int(s[-16:], 16))).astype(str)
+
+    grouping = pd.Series()
+
+    if grouping_column in transaction_columns:
+        # defaultでは、各ユーザが「オンライン販売かオフライン販売」のどちらで多く購入する週間があるかでグルーピングしてる。
+        group = transaction_df.groupby('customer_id')[
+            grouping_column].mean().round().reset_index()
+        # submission用のデータとグルーピングをマージする
+        group = pd.merge(group, alluser_series, on='customer_id', how='right').rename(
+            columns={grouping_column: 'group'})
+        # 欠損値は1で埋める。１と２の違いって何？オンライン販売かオフライン販売？
+        grouping: pd.Series = group["group"].fillna(1.0)
+
+    return grouping
 
 
 def main():

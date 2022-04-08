@@ -1,6 +1,9 @@
 from data import load_data
 from preprocessing import DataSet
 from train import TrainModel
+
+DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
+
 def main():
     # kaggle APIからデータ読み込み
     load_data()
