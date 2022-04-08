@@ -1,5 +1,5 @@
 from data import load_data
-from preprocessing import DataSet
+from dataset import DataSet
 from train import TrainModel
 def main():
     # kaggle APIからデータ読み込み

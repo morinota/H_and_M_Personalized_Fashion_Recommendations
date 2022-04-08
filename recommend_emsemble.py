@@ -10,7 +10,9 @@ import matplotlib.pyplot as plt
 
 def _blend(reccomends: pd.Series, weights: List = [], k: int = 12) -> str:
     """_summary_
-     各レコメンド手法のレコメンド結果を良い感じにブレンドする関数。apply()メソッド用
+     各レコメンド手法のレコメンド結果を良い感じにブレンドする関数。apply()メソッド用。
+     具体的には、各レコメンド手法への重み付け＋レコメンドの重複を元に、スコアを算出。
+     スコアが高い12個のレコメンド商品をアンサンブル結果とする。
     Parameters
     ----------
     reccomends : pd.Series
@@ -73,7 +75,7 @@ def _blend(reccomends: pd.Series, weights: List = [], k: int = 12) -> str:
 def _prune(pred: str, ok_set: Set[int], k: int = 12) -> str:
     """_summary_
     各レコメンド手法のレコメンド結果を良い感じにブレンドした後、良い感じに切り落とす関数。apply()メソッド用
-
+    具体的には、ある任意の期間に誰にも全く購入されていないアイテムは除外する。
     Parameters
     ----------
     pred : str

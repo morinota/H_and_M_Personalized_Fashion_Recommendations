@@ -9,44 +9,28 @@ import pandas as pd
 import datetime
 import matplotlib.pyplot as plt
 plt.style.use('ggplot')
+from useful_func import iter_to_str
 
 INPUT_DIR = 'input'
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 
 
-def _iter_to_str(iterable: List[int]) -> str:
-    '''
-    article_idの先頭に0を追加し、各article_idを半角スペースで区切られた文字列を返す関数
-    (submitのcsvファイル様式にあわせる為に必要)
-
-    parameters
-    ===========
-    iterable(ex. List)：イテラブルオブジェクト。ex. 各ユーザへのレコメンド商品のリスト。
-
-    return
-    ===========
-    iterable_str(str)：イテラブルオブジェクトの各要素を" "で繋いで文字列型にしたもの。
-    '''
-    # Listの各要素の先頭に"0"を追加する
-    iterable_add_0 = map(lambda x: str(0) + str(x), iterable)
-    # リストの要素を半角スペースで繋いで、文字列に。
-    iterable_str = " ".join(iterable_add_0)
-    return iterable_str
 
 
-def partitioned_validation(actual, predicted: List[List], grouping: pd.Series, score: pd.DataFrame = 0, index: str = -1, ignore: bool = False, figsize=(12, 6)):
+def partitioned_validation(actual:List[List], predicted: List[List], grouping: pd.Series, score: pd.DataFrame = 0, index: str = -1, ignore: bool = False, figsize=(12, 6)):
     """_summary_
-
+    全ユーザのレコメンド結果を受け取り、グルーピング毎に予測精度を評価する関数。
     Parameters
     ----------
-    actual : _type_
-        _description_
+    actual : List[List]
+        レコメンドにおける実測値。(各ユーザの指定された一週間に購入したarticle_id達)
     predicted : List[List]
-        _description_
+        レコメンドにおける予測値。
     grouping : pd.Series
-        _description_
+        各ユーザ毎のグルーピングを示すカテゴリ変数が格納されたpd.Series。
     score : pd.DataFrame, optional
-        _description_, by default 0
+        オフライン予測精度のスコアを格納していくDataFrame。 
+        一度関数を実行する毎に、結果をレコードに追加していく。カラムはグルーピング。by default 0
     index : str, optional
         _description_, by default -1
     ignore : bool, optional
@@ -143,7 +127,7 @@ def get_valid_oneweek_holdout_validation(transaction_df: pd.DataFrame, val_week_
     # 検証用weekのtransactionデータから、検証用データ(レコメンドの答え側)を作成する。
     val_df: pd.DataFrame
     val_df = transaction_df_val.groupby(
-        'customer_id')['article_id'].apply(_iter_to_str).reset_index()
+        'customer_id')['article_id'].apply(iter_to_str).reset_index()
     # ->レコード：各ユーザ、カラム：customer_id, 1週間の購入アイテム達のstr　(submission.csvと同じ形式)　
 
     # 上記のval_dfは、検証用weekでtransactionを発生させたユーザのみ。それ以外のユーザのレコードを付け足す。
@@ -229,8 +213,7 @@ def make_user_grouping(transaction_df, customer_df: pd.DataFrame, grouping_colum
 
 def main():
     sample1_list = list(range(5))
-    print(_iter_to_str(iterable=sample1_list))
-
+    print(iter_to_str(iterable=sample1_list))
 
 if __name__ == '__main__':
     main()

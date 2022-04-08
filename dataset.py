@@ -25,16 +25,23 @@ class DataSet:
         csv_items = os.path.join(DataSet.INPUT_DIR, 'articles.csv')
 
         # データをDataFrame型で読み込み
+
         # self.df = pd.read_csv(csv_train, dtype={'article_id': str},
         #                       parse_dates=['t_dat'] # datetime型で読み込み
         #                       )  # 実際の購買記録の情報
-        self.df = pd.read_parquet(os.path.join(DataSet.DRIVE_DIR, 'transactions_train.parquet'))
+        self.df = pd.read_parquet(os.path.join(
+            DataSet.DRIVE_DIR, 'transactions_train.parquet'))
         self.df_sub = pd.read_csv(csv_sub)  # 提出用のサンプル
         # self.dfu = pd.read_csv(csv_users)  # 各顧客の情報(メタデータ)
-        self.dfu = pd.read_parquet(os.path.join(DataSet.DRIVE_DIR, 'customers.parquet'))  # 各顧客の情報(メタデータ)
+        self.dfu = pd.read_parquet(os.path.join(
+            DataSet.DRIVE_DIR, 'customers.parquet'))  # 各顧客の情報(メタデータ)
 
         # self.dfi = pd.read_csv(csv_items, dtype={'article_id': str})  # 各商品の情報(メタデータ)
-        self.dfi = pd.read_parquet(os.path.join(DataSet.DRIVE_DIR, 'articles.parquet'))  # 各商品の情報(メタデータ)
+        self.dfi = pd.read_parquet(os.path.join(
+            DataSet.DRIVE_DIR, 'articles.parquet'))  # 各商品の情報(メタデータ)
+
+        # customer_idカラムのみのpd.DataFrameを作っておく(たぶん色々便利なので)
+        self.cid = pd.DataFrame(self..df_sub["customer_id"].apply(lambda s: int(s[-16:], 16))) .astype("uint64")
 
     def _extract_byDay(self):
         mask = self.df['t_dat'] > '2020-08-21'
