@@ -50,7 +50,7 @@ def main():
                            predicted=predicted,
                            grouping=group_series,
                            )
-    print(score)
+    print(score.head())
 
 if __name__ == '__main__':
     main()
