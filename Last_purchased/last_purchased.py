@@ -25,7 +25,7 @@ def last_purchased_items(train_transaction: pd.DataFrame, dataset: DataSet) -> T
     train_transaction['dif_date'] = train_transaction['dif_date'].dt.days
 
     # 「最終購入日との差が2週間以内のもののみを抽出 & 購入日の昇順に並び変え.
-    train_transaction = train_transaction.loc[train_transaction["dif_dat"] < 14]\
+    train_transaction = train_transaction.loc[train_transaction["dif_date"] < 14]\
         .sort_values(['t_dat'], ascending=False)
     # アイテム×ユーザの重複を取り除く(drop_duplicatesは、指定したカラムの全てが重複した行を削除)
     train_transaction = train_transaction.drop_duplicates(
