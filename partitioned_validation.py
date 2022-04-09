@@ -122,7 +122,7 @@ def get_valid_oneweek_holdout_validation(transaction_df: pd.DataFrame, val_week_
     """
 
     # 元々のtransaction_dfから、検証用weekのtransactionデータのみを抽出
-    val_mask = transaction_df['week'] = val_week_id
+    val_mask = (transaction_df['week'] == val_week_id)
     transaction_df_val = transaction_df[val_mask]
 
     # 検証用weekのtransactionデータから、検証用データ(レコメンドの答え側)を作成する。
