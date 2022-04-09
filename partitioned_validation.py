@@ -34,7 +34,7 @@ def partitioned_validation(actual:List[List], predicted: List[List], grouping: p
         オフライン予測精度のスコアを格納していくDataFrame。 
         一度関数を実行する毎に、結果をレコードに追加していく。カラムはグルーピング。by default 0
     index : str, optional
-        _description_, by default -1
+        scoreのindex名, by default -1
     ignore : bool, optional
         _description_, by default False
     figsize : tuple, optional
@@ -52,7 +52,7 @@ def partitioned_validation(actual:List[List], predicted: List[List], grouping: p
     # # actual, predicted : list of lists
     # # grouping : submission.csvと同じ長さの、pd.Series。要素は各ユーザが、定義したどのグループに属しているかのカテゴリ変数?
     # # score : pandas DataFrame
-    # index(str)：scoreのindex名
+    # index(str)：
     # '''
     k = 12
     # もしignore==Trueだったら、この関数は終了。
@@ -72,8 +72,7 @@ def partitioned_validation(actual:List[List], predicted: List[List], grouping: p
     if isinstance(score, int):
         # 本来はscoreに各Validation結果を格納していく？
         # scoreがDataFrameじゃなかったら、結果格納用のDataFrameをInitialize
-        score = pd.DataFrame({g: []
-                             for g in sorted(grouping.unique().tolist())})
+        score = pd.DataFrame({g: [] for g in sorted(grouping.unique().tolist())})
 
     # もしindex引数が－１だったら...何の処理?
     if index == -1:

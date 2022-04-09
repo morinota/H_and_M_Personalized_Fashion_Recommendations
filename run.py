@@ -34,7 +34,7 @@ def main():
 
     # 全ユーザをグルーピング
     group_series = user_grouping_online_and_offline(dataset=dataset)
-
+    print(type(group_series))
     print("2")
 
     # レコメンド結果を作成し、RecommendResults結果に保存していく。
