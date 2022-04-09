@@ -1,3 +1,4 @@
+from multiprocessing.spawn import import_main_path
 import os
 from logging import lastResort
 from calculate_MAP12 import calculate_mapk, calculate_apk
@@ -9,7 +10,7 @@ import pandas as pd
 import datetime
 import matplotlib.pyplot as plt
 plt.style.use('ggplot')
-from useful_func import iter_to_str
+from dataset import DataSet 
 
 INPUT_DIR = 'input'
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
@@ -168,8 +169,26 @@ def get_train_oneweek_holdout_validation(transaction_df: pd.DataFrame, val_week_
 def all_process_partitioned_validation():
     pass
 
+def user_grouping_online_and_offline(dataset:DataSet):
+    grouping_column: str = "sales_channel_id"
 
-def make_user_grouping(transaction_df, customer_df: pd.DataFrame, grouping_column: str = "sales_channel_id") -> pd.Series:
+    # ユーザレコードの補完用にcustomer_id_dfを使う.
+    alluser_df = dataset.cid
+
+    # defaultでは、各ユーザが「オンライン販売かオフライン販売」のどちらで多く購入する週間があるかでグルーピングしてる。
+    group:pd.DataFrame = dataset.df.groupby('customer_id')[
+        grouping_column].mean().round().reset_index()
+    # alluser_dfとグルーピングをマージする
+    group = pd.merge(group, alluser_df, on='customer_id', how='right').rename(
+        columns={grouping_column: f'group_{grouping_column}'})
+    # 欠損値は1で埋める。１と２の違いって何？オンライン販売かオフライン販売？
+    group["group"].fillna(1.0, inplace=True)
+
+    return group
+
+
+
+def make_user_grouping(transaction_df, customer_df: pd.DataFrame, grouping_column: str = "sales_channel_id") -> pd.DataFrame:
     """_summary_
 
     Parameters
