@@ -101,7 +101,7 @@ def partitioned_validation(actual:List[List], predicted: List[List], grouping: p
     vc = pd.Series(predicted).apply(len).value_counts()
     score.loc[index, "Fill"] = round(
         1 - sum(vc[k] * (12 - k) / 12 for k in (set(range(12)) & set(vc.index))) / len(actual), 3) * 100
-    display(score)
+    
     return score
 
 
@@ -139,7 +139,7 @@ def get_valid_oneweek_holdout_validation(dataset:DataSet, val_week_id: int = 104
     val_df = pd.merge(val_df, alluser_df, how="right", on='customer_id')
 
     # List[List]でも返値を作成しておく。
-    actual = val_df['artcle_id'].apply(lambda s: [] if pd.isna(s) else s.split())
+    actual = val_df['article_id'].apply(lambda s: [] if pd.isna(s) else s.split())
 
     return val_df, actual
 
