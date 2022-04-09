@@ -138,7 +138,10 @@ def get_valid_oneweek_holdout_validation(dataset:DataSet, val_week_id: int = 104
     # val_dfに検証用weekでtransactionを発生させていないユーザのレコードを付け足す。
     val_df = pd.merge(val_df, alluser_df, how="right", on='customer_id')
 
-    return val_df
+    # List[List]でも返値を作成しておく。
+    actual = val_df['artcle_id'].apply(lambda s: [] if pd.isna(s) else s.split())
+
+    return val_df, actual
 
 
 def get_train_oneweek_holdout_validation(dataset:DataSet, val_week_id: int = 104, training_days: int = 31, how: str = "from_init_date_to_last_date") -> pd.DataFrame:
@@ -181,9 +184,9 @@ def user_grouping_online_and_offline(dataset:DataSet):
     group = pd.merge(group, alluser_df, on='customer_id', how='right').rename(
         columns={grouping_column: f'group_{grouping_column}'})
     # 欠損値は1で埋める。１と２の違いって何？オンライン販売かオフライン販売？
-    group[f'group_{grouping_column}'].fillna(1.0, inplace=True)
+    grouping = group[f'group_{grouping_column}'].fillna(1.0, inplace=True)
 
-    return group
+    return grouping
 
 
 
