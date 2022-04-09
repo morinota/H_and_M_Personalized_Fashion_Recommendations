@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from numpy import float64
 from tqdm.auto import tqdm
 from typing import List, Dict
 
@@ -45,7 +46,7 @@ def calculate_apk(actual_items, predicted_items: List, k: int = 10)->float:
 
     return ap_at_k
 
-def calculate_mapk(actual, predicted:List[List], k:int=10)->float:
+def calculate_mapk(actual, predicted:List[List], k:int=10)->float64:
     """
     Computes the mean average precision at k.
     This function computes the mean average prescision at k between two lists
@@ -77,6 +78,10 @@ def calculate_mapk(actual, predicted:List[List], k:int=10)->float:
 
     # 上記の処理をリスト内包表記で書くと、
     # map_k = np.mean([calculate_apk(a, p, k) for a, p in zip(actual, predicted)])
+
+    return map_k
+
+    
 def main():
     pass
 
