@@ -170,7 +170,7 @@ def get_train_oneweek_holdout_validation(dataset:DataSet, val_week_id: int = 104
 def all_process_partitioned_validation():
     pass
 
-def user_grouping_online_and_offline(dataset:DataSet):
+def user_grouping_online_and_offline(dataset:DataSet)->pd.Series:
     grouping_column: str = "sales_channel_id"
 
     # ユーザレコードの補完用にcustomer_id_dfを使う.
@@ -183,7 +183,7 @@ def user_grouping_online_and_offline(dataset:DataSet):
     group = pd.merge(group, alluser_df, on='customer_id', how='right').rename(
         columns={grouping_column: f'group_{grouping_column}'})
     # 欠損値は1で埋める。１と２の違いって何？オンライン販売かオフライン販売？
-    grouping = group[f'group_{grouping_column}'].fillna(1.0, inplace=True)
+    grouping = group[f'group_{grouping_column}'].fillna(1.0)
 
     return grouping
 
