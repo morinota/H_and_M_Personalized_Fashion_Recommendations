@@ -90,7 +90,10 @@ def partitioned_validation(actual:List[List], predicted: List[List], grouping: p
     # グルーピング毎のValidation結果を作成
     for g in grouping.unique():
         map12 = round(calculate_mapk(actual[grouping == g], predicted[grouping == g], k=12), 6)
+        # score:DataFrameに結果を格納
+        print(map12)
         score.loc[index, g] = map12
+        
 
     # グルーピング毎にMAP@Kを描画
     plt.subplot(1, 2, 2)

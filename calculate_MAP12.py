@@ -5,7 +5,7 @@ from tqdm.auto import tqdm
 from typing import List, Dict
 
 
-def calculate_apk(actual_items, predicted_items: List, k: int = 10)->float:
+def calculate_apk(actual_items, predicted_items: List, k: int = 10) -> float:
     '''
     AP@Kを計算する関数。
     Computes the average precision at k.
@@ -39,14 +39,15 @@ def calculate_apk(actual_items, predicted_items: List, k: int = 10)->float:
             num_hits += 1.0
             score += num_hits / (i+1.0)
     # AP@Kの算出
-    ## もし実測値がなければ、AP@Kは0.0
+    # もし実測値がなければ、AP@Kは0.0
     if len(actual_items) == 0:
         return 0.0
     ap_at_k = score / min(len(actual_items), k)
 
     return ap_at_k
 
-def calculate_mapk(actual, predicted:List[List], k:int=10)->float64:
+
+def calculate_mapk(actual, predicted: List[List], k: int = 10) -> float64:
     """
     Computes the mean average precision at k.
     This function computes the mean average prescision at k between two lists
@@ -70,7 +71,7 @@ def calculate_mapk(actual, predicted:List[List], k:int=10)->float64:
     list_ap_k = []
 
     for a, p in zip(actual, predicted):
-        
+
         ap_k = calculate_apk(a, p, k)
         list_ap_k.append(ap_k)
     # MAP@kを算出
@@ -81,7 +82,7 @@ def calculate_mapk(actual, predicted:List[List], k:int=10)->float64:
 
     return map_k
 
-    
+
 def main():
     pass
 
