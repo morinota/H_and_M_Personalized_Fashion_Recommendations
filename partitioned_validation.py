@@ -11,6 +11,7 @@ import datetime
 import matplotlib.pyplot as plt
 plt.style.use('ggplot')
 from dataset import DataSet 
+from useful_func import iter_to_str
 
 INPUT_DIR = 'input'
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
