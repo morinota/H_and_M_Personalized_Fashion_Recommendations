@@ -105,13 +105,13 @@ def partitioned_validation(actual:List[List], predicted: List[List], grouping: p
     return score
 
 
-def get_valid_oneweek_holdout_validation(transaction_df: pd.DataFrame, dataset:DataSet, val_week_id: int = 104) -> pd.DataFrame:
+def get_valid_oneweek_holdout_validation(dataset:DataSet, val_week_id: int = 104) -> pd.DataFrame:
     """トランザクションデータと検証用weekのidを受け取って、oneweek_holdout_validationの為の検証用データ(レコメンドの答え側)を作成する関数
 
     Parameters
     ----------
-    transaction_df : pd.DataFrame
-        transaction_train.csvから読み込まれたトランザクションデータ。
+    dataset:Dataset
+
     val_week_id : int, optional
         2年分のトランザクションデータのうち、検証用weekに設定したいweekカラムの値, by default 104(2年の最終週)
 
@@ -123,8 +123,8 @@ def get_valid_oneweek_holdout_validation(transaction_df: pd.DataFrame, dataset:D
     """
 
     # 元々のtransaction_dfから、検証用weekのtransactionデータのみを抽出
-    val_mask = (transaction_df['week'] == val_week_id)
-    transaction_df_val = transaction_df[val_mask]
+    val_mask = (dataset.df['week'] == val_week_id)
+    transaction_df_val = dataset.df[val_mask]
 
     # 検証用weekのtransactionデータから、検証用データ(レコメンドの答え側)を作成する。
     val_df: pd.DataFrame
@@ -141,22 +141,22 @@ def get_valid_oneweek_holdout_validation(transaction_df: pd.DataFrame, dataset:D
     return val_df
 
 
-def get_train_oneweek_holdout_validation(transaction_df: pd.DataFrame, val_week_id: int = 104, training_days: int = 31, how: str = "from_init_date_to_last_date") -> pd.DataFrame:
+def get_train_oneweek_holdout_validation(dataset:DataSet, val_week_id: int = 104, training_days: int = 31, how: str = "from_init_date_to_last_date") -> pd.DataFrame:
 
     # 学習用データを作成する
     transaction_df_train = pd.DataFrame()
+
     # 学習データ戦略1
     if how == "from_init_date_to_last_date":
         # "検証用の一週間"の前日の日付を取得
-        last_date: datetime.datetime = transaction_df[transaction_df["week"]
-                                                      < val_week_id]["t_dat"].max()
+        mask = dataset.df["week"]< val_week_id
+        last_date: datetime.datetime = dataset.df[mask]["t_dat"].max()
         # 学習用データのスタートの日付を取得
         init_date: datetime.datetime = last_date - \
             datetime.timedelta(days=training_days)
         # 学習用データを作成
-        train_mask = (
-            transaction_df["t_dat"] >= init_date) & transaction_df["t_dat"] <= last_date
-        transaction_df_train: pd.DataFrame = transaction_df[train_mask]
+        train_mask = (dataset.df["t_dat"] >= init_date) & (dataset.df["t_dat"] <= last_date)
+        transaction_df_train: pd.DataFrame = dataset.df[train_mask]
 
     # 学習データ戦略2(昨年の同じシーズンのトランザクションを使う)
     if how == "use_same_season_in_past":
