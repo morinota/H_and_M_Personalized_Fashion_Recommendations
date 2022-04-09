@@ -30,8 +30,3 @@ class RecommendResults:
         self.results_dict["exponential_Decay"] = pd.read_csv(os.path.join(results_dir, "submission_exponentialDecay.csv"))
         self.results_dict["time_friend"] = pd.read_csv(os.path.join(results_dir, "submission_timefriend.csv"))
         self.results_dict["last_purchased"] = pd.read_csv(os.path.join(results_dir, "submission_timefriend.csv"))
-
-        self.res
-
-
-    s
