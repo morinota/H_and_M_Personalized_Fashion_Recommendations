@@ -1,6 +1,6 @@
 from kaggle_api import load_data
 from dataset import DataSet
-from last_purchased.last_purchased import last_purchased_items
+from Last_purchased.last_purchased import last_purchased_items
 from partitioned_validation import get_train_oneweek_holdout_validation, get_valid_oneweek_holdout_validation, user_grouping_online_and_offline
 from recommend_results import RecommendResults
 
@@ -37,6 +37,6 @@ def main():
     dataset, predicted = last_purchased_items(train_transaction=train_df,
                                               dataset=dataset)
 
-    
+
 if __name__ == '__main__':
     main()
