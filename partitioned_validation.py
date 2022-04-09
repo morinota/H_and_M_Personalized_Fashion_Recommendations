@@ -105,7 +105,7 @@ def partitioned_validation(actual:List[List], predicted: List[List], grouping: p
     return score
 
 
-def get_valid_oneweek_holdout_validation(transaction_df: pd.DataFrame, val_week_id: int = 104) -> pd.DataFrame:
+def get_valid_oneweek_holdout_validation(transaction_df: pd.DataFrame, dataset:DataSet, val_week_id: int = 104) -> pd.DataFrame:
     """トランザクションデータと検証用weekのidを受け取って、oneweek_holdout_validationの為の検証用データ(レコメンドの答え側)を作成する関数
 
     Parameters
@@ -133,12 +133,10 @@ def get_valid_oneweek_holdout_validation(transaction_df: pd.DataFrame, val_week_
     # ->レコード：各ユーザ、カラム：customer_id, 1週間の購入アイテム達のstr　(submission.csvと同じ形式)　
 
     # 上記のval_dfは、検証用weekでtransactionを発生させたユーザのみ。それ以外のユーザのレコードを付け足す。
-    # sample_submission.csvのDataFrameを活用して、残りのユーザのレコードを付け足す。
-    sub_df = pd.read_csv(os.path.join(INPUT_DIR, 'sample_submission.csv'))
-    alluser_series = pd.DataFrame(sub_df["customer_id"].apply(
-        lambda s: int(s[-16:], 16))).astype(str)
+    alluser_df = dataset.cid
+
     # val_dfに検証用weekでtransactionを発生させていないユーザのレコードを付け足す。
-    val_df = pd.merge(val_df, alluser_series, how="right", on='customer_id')
+    val_df = pd.merge(val_df, alluser_df, how="right", on='customer_id')
 
     return val_df
 

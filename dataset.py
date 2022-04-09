@@ -41,7 +41,7 @@ class DataSet:
             DataSet.DRIVE_DIR, 'articles.parquet'))  # 各商品の情報(メタデータ)
 
         # customer_idカラムのみのpd.DataFrameを作っておく(たぶん色々便利なので)
-        self.cid = pd.DataFrame(self.df_sub["customer_id"].apply(lambda s: int(s[-16:], 16))) .astype("uint64")
+        self.cid = pd.DataFrame(self.df_sub["customer_id"].apply(lambda s: int(s[-16:], 16))).astype("uint64")
 
     def _extract_byDay(self):
         mask = self.df['t_dat'] > '2020-08-21'
