@@ -14,6 +14,7 @@ def main():
     dataset = DataSet()
     # DataFrameとしてデータ読み込み
     dataset.read_data()
+    print("1")
 
     # One-week hold-out validation
     val_week_id = 104
@@ -28,6 +29,8 @@ def main():
         how="from_init_date_to_last_date"
     )
 
+    print("2")
+
     # 全ユーザをグルーピング
     group_df = user_grouping_online_and_offline(dataset=dataset)
 
@@ -37,6 +40,6 @@ def main():
     dataset, predicted = last_purchased_items(train_transaction=train_df,
                                               dataset=dataset)
 
-
+    print("3")
 if __name__ == '__main__':
     main()
