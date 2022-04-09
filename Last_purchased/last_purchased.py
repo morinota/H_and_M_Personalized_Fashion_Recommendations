@@ -141,5 +141,3 @@ def popular_items_for_each_group(train_transaction: pd.DataFrame, dataset: DataS
     # 返値は2つにしておく?
     return (dataset, predicted)
 
-
-def 
