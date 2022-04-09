@@ -18,7 +18,7 @@ def main():
     # One-week hold-out validation
     val_week_id = 104
     val_df = get_valid_oneweek_holdout_validation(
-        dataset=dataset  # type: ignore
+        dataset=dataset, # type: ignore
         val_week_id=val_week_id
     )
     train_df = get_train_oneweek_holdout_validation(
