@@ -8,6 +8,7 @@ from collections import defaultdict
 
 def last_purchased_items(train_transaction: pd.DataFrame, dataset: DataSet) -> Tuple[DataSet, List[List]]:
 
+    display(train_transaction.head())
     # 各ユーザの、学習期間内における、最終購入日を取得？
     last_purchase = train_transaction.groupby('customer_id')["t_dat"].max(
     ).reset_index().rename(columns={'t_dat': 'last_buy_date'})

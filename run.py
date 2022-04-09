@@ -34,8 +34,10 @@ def main():
     # 全ユーザをグルーピング
     group_df = user_grouping_online_and_offline(dataset=dataset)
 
+    print("2")
+
     # レコメンド結果を作成し、RecommendResults結果に保存していく。
-    recommend_results_valid = RecommendResults
+    recommend_results_valid = RecommendResults()
     # とりあえずLast Purchased Item
     dataset, predicted = last_purchased_items(train_transaction=train_df,
                                               dataset=dataset)
