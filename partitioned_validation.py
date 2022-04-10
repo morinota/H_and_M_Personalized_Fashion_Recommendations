@@ -16,28 +16,6 @@ plt.style.use('ggplot')
 INPUT_DIR = 'input'
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 
-def validation(actual, predicted, grouping, score=0, index=-1, ignore=False, figsize=(12, 6)):
-    # actual, predicted : list of lists
-    # group : pandas Series
-    # score : pandas DataFrame
-    if ignore: return
-    ap12 = mapk(actual, predicted, return_apks=True)
-    map12 = round(np.mean(ap12), 6)
-    if isinstance(score, int): score = pd.DataFrame({g:[] for g in sorted(grouping.unique().tolist())})
-    if index == -1 : index = score.shape[0]
-    score.loc[index, "All"] = map12
-    plt.figure(figsize=figsize)
-    plt.subplot(1, 2, 1); sns.histplot(data=ap12, log_scale=(0, 10), bins=20); plt.title(f"MAP@12 : {map12}")
-    for g in grouping.unique():
-        map12 = round(mapk(actual[grouping == g], predicted[grouping == g]), 6)
-        score.loc[index, g] = map12
-        print(map12)
-    plt.subplot(1, 2, 2); score[[g for g in grouping.unique()[::-1]] + ['All']].loc[index].plot.barh(); plt.title(f"MAP@12 of Groups")
-    vc = pd.Series(predicted).apply(len).value_counts()
-    score.loc[index, "Fill"] = round(1 - sum(vc[k] * (12 - k) / 12 for k in (set(range(12)) & set(vc.index))) / len(actual), 3) * 100
-    return score
-
-
 
 def partitioned_validation(val_df:pd.DataFrame, pred_df:pd.DataFrame, grouping: pd.Series, score: pd.DataFrame = 0, approach_name: str = "last_purchased_items", ignore: bool = False, figsize=(12, 6)):
     """全ユーザのレコメンド結果を受け取り、グルーピング毎に予測精度を評価する関数。

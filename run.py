@@ -51,7 +51,7 @@ def main():
     score = partitioned_validation(val_df=val_df,
                                    pred_df=df_pred,
                                    grouping=group_series,
-                                   approrach_name="last_purchased_items"
+                                   approach_name="last_purchased_items"
                                    )
     print(score.head())
 
