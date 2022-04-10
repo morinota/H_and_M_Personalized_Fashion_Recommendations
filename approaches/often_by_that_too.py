@@ -48,7 +48,7 @@ class OftenBuyThatToo:
         df = self.transaction_train
         for i in tqdm(range(len(df))):
             # トランザクションのユーザid、アイテムidを取得.
-            customer_id = df.loc[i, "customer_id"]
+            customer_id = df.loc[i, "customer_id_short"]
             article_id = df.loc[i, "article_id"]
 
             # もし既にユーザidがdictのkeyに登録されていれば。。。
@@ -71,7 +71,7 @@ class OftenBuyThatToo:
         # 学習期間の、トランザクション1つ1つに対して処理を実行
         for i in tqdm(range(len(df))):
             # トランザクションのユーザid、アイテムidを取得.
-            customer_id = df.loc[i, "customer_id"]
+            customer_id = df.loc[i, "customer_id_short"]
             article_id = df.loc[i, "article_id"]
             # ユーザのage_binを取得.
             age_bin = cus_agebins[customer_id]
@@ -82,7 +82,7 @@ class OftenBuyThatToo:
         # 再度、学習期間の、トランザクション1つ1つに対して処理を実行
         # Initializeした、対象アイテム：空のリストに、要素(customer_id)を追加していく。
         for i in tqdm(range(len(df))):
-            customer_id = df.loc[i, "customer_id"]
+            customer_id = df.loc[i, "customer_id_short"]
             article_id = df.loc[i, "article_id"]
             age_bin = cus_agebins[customer_id]
             ds_dict_a_c[age_bin][int(article_id)] += [customer_id]
@@ -157,10 +157,10 @@ class OftenBuyThatToo:
             table.to_pickle(os.path.join(OftenBuyThatToo.DRIVE_DIR,
                             f"items_of_other_costomers_{uniBin}.pkl"))
 
-
-        with open("items_of_other_costomers.json", mode="w") as f:
-            ranking = json.dumps(ranking, cls = MyEncoder)
-            f.write(ranking)        
+            # 最後に結果を保存?
+            with open(f"items_of_other_costomers_{uniBin}.json", mode="w") as f:
+                ranking = json.dumps(table, cls = MyEncoder)
+                f.write(ranking)        
 
     def load_ranking(self):
         # 本番レコメンド用のjsonデータをロードする関数
