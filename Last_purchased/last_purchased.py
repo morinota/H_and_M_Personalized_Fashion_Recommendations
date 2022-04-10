@@ -10,13 +10,13 @@ def last_purchased_items(train_transaction: pd.DataFrame, dataset: DataSet) -> p
 
     print(train_transaction.head())
     # 各ユーザの、学習期間内における、最終購入日を取得？
-    last_purchase = train_transaction.groupby('customer_id')["t_dat"].max(
+    last_purchase = train_transaction.groupby('customer_id_short')["t_dat"].max(
     ).reset_index().rename(columns={'t_dat': 'last_buy_date'})
-    # ->カラム["customer_id" ,"last_buy_date"]
+    # ->カラム["customer_id_short" ,"last_buy_date"]
 
     # # 各ユーザの最終購入日を学習用のtransactionデータにマージ
     train_transaction = pd.merge(
-        train_transaction, last_purchase, on='customer_id', how='left')
+        train_transaction, last_purchase, on='customer_id_short', how='left')
 
     # 「各transactionの購入日と、最終購入日との差」を示す"dif_date"カラムを作成
     train_transaction['dif_date'] = (
@@ -29,20 +29,20 @@ def last_purchased_items(train_transaction: pd.DataFrame, dataset: DataSet) -> p
         .sort_values(['t_dat'], ascending=False)
     # アイテム×ユーザの重複を取り除く(drop_duplicatesは、指定したカラムの全てが重複した行を削除)
     train_transaction = train_transaction.drop_duplicates(
-        ['customer_id', 'article_id'])
+        ['customer_id_short', 'article_id'])
 
     # 各ユーザ毎に、最終購入日から二週間以内に購入したアイテム達をまとめる。&(リスト=>strへ変換)&(設定されたindexをカラム化)
     last_purchased_items_df = train_transaction.groupby(
-        'customer_id')['article_id'].apply(iter_to_str).reset_index()
-    # ->カラム=[customer_id, article_id]、レコードは各ユーザ。article_idは「最終購入日から二週間以内に購入したアイテム達」を繋げたstr.
+        'customer_id_short')['article_id'].apply(iter_to_str).reset_index()
+    # ->カラム=[customer_id_short, article_id]、レコードは各ユーザ。article_idは「最終購入日から二週間以内に購入したアイテム達」を繋げたstr.
 
     # ユーザの不足分(トランザクションデータに含まれていないユーザ)を追加する
     dataset.df_sub['predicted'] = pd.merge(last_purchased_items_df, dataset.cid,
-                                                      on='customer_id',
+                                                      on='customer_id_short',
                                                       how='right'
                                                       )["article_id"].fillna('')
     # 結果はcustomer_idとpredictedをカラムに持つDataFrameにする。
-    df_pred = dataset.df_sub[['customer_id', 'predicted']].copy()
+    df_pred = dataset.df_sub[['customer_id_short', 'predicted']].copy()
 
 
     # 返値は2つにしておく?
@@ -110,7 +110,7 @@ def popular_items_for_each_group(train_transaction: pd.DataFrame, dataset: DataS
     dataset : DataSet
         _description_
     grouping_df : pd.DataFrame
-        カラム=[customer_id, group(=groupingのカテゴリ変数)]、レコードが各ユーザのDataFrame
+        カラム=[customer_id_short, group(=groupingのカテゴリ変数)]、レコードが各ユーザのDataFrame
 
     Returns
     -------
@@ -118,7 +118,7 @@ def popular_items_for_each_group(train_transaction: pd.DataFrame, dataset: DataS
         _description_
     """
     # group_dfをtransactionデータにマージする事で、各transactionにグルーピングを付与する。
-    train_transaction = train_transaction.merge(grouping_df, on='customer_id', how='left')
+    train_transaction = train_transaction.merge(grouping_df, on='customer_id_short', how='left')
     # グループ毎に「設定した期間内における各アイテムの購入回数」をカウントする
     ItemCount_eachGroup = train_transaction.groupby(['group', 'article_id'])["t_dat"].count().reset_index()
     # groupbyの後のリセットインデックス大事だわ！
