@@ -30,6 +30,7 @@ def main():
         training_days=9999,
         how="from_init_date_to_last_date"
     )
+    print(len(train_df))
 
     print("2")
 
