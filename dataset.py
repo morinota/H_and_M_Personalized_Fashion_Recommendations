@@ -29,20 +29,17 @@ class DataSet:
 
         # self.df = pd.read_csv(csv_train, dtype={'article_id': str},
         #                       parse_dates=['t_dat'] # datetime型で読み込み
-        #                       ) 
-        # 実際の購買記録の情報
+        #                       )  # 実際の購買記録の情報
         self.df = pd.read_parquet(os.path.join(
             DataSet.DRIVE_DIR, 'transactions_train.parquet'))
-        self.df = self.df.rename({'customer_id':'customer_id_short'})
-        # 提出用のサンプル
-        self.df_sub = pd.read_csv(csv_sub)  
-        # 各顧客の情報(メタデータ)
-        # self.dfu = pd.read_csv(csv_users)  
+        # dfのcustomer_idはshort版に加工されてるから、カラム名を変更しておく
+        self.df.rename(columns={'customer_id':'customer_id_short'})
+        self.df_sub = pd.read_csv(csv_sub)  # 提出用のサンプル
+        # self.dfu = pd.read_csv(csv_users)  # 各顧客の情報(メタデータ)
         self.dfu = pd.read_parquet(os.path.join(
-            DataSet.DRIVE_DIR, 'customers.parquet'))
-            
-        # 各商品の情報(メタデータ)
-        # self.dfi = pd.read_csv(csv_items, dtype={'article_id': str})  
+            DataSet.DRIVE_DIR, 'customers.parquet'))  # 各顧客の情報(メタデータ)
+
+        # self.dfi = pd.read_csv(csv_items, dtype={'article_id': str})  # 各商品の情報(メタデータ)
         self.dfi = pd.read_parquet(os.path.join(
             DataSet.DRIVE_DIR, 'articles.parquet'))  # 各商品の情報(メタデータ)
 
