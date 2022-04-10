@@ -14,6 +14,7 @@ class DataSet:
         # インスタンス変数(属性の初期化)
         self.ALL_ITEMS = []
         self.ALL_USERS = []
+        self.df_val:pd.DataFrame
         pass
 
     def read_data(self):

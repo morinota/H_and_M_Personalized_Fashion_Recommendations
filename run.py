@@ -2,8 +2,9 @@ from tokenize import group
 from kaggle_api import load_data
 from dataset import DataSet
 from Last_purchased.last_purchased import last_purchased_items
-from partitioned_validation import get_train_oneweek_holdout_validation, get_valid_oneweek_holdout_validation, partitioned_validation, user_grouping_online_and_offline
+from partitioned_validation import partitioned_validation, user_grouping_online_and_offline
 from recommend_results import RecommendResults
+from oneweek_holdout_validation import get_train_oneweek_holdout_validation, get_valid_oneweek_holdout_validation
 
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 
@@ -19,7 +20,7 @@ def main():
 
     # One-week hold-out validation
     val_week_id = 104
-    val_df, actual = get_valid_oneweek_holdout_validation(
+    val_df = get_valid_oneweek_holdout_validation(
         dataset=dataset,  # type: ignore
         val_week_id=val_week_id
     )
@@ -40,17 +41,19 @@ def main():
     # レコメンド結果を作成し、RecommendResults結果に保存していく。
     recommend_results_valid = RecommendResults()
     # とりあえずLast Purchased Item
-    dataset, predicted = last_purchased_items(train_transaction=train_df,
-                                              dataset=dataset)
+    df_pred = last_purchased_items(train_transaction=train_df,
+                                   dataset=dataset)
 
     print("3")
 
     # One-week hold-out validationのオフライン評価
-    score = partitioned_validation(actual=actual,
-                           predicted=predicted,
-                           grouping=group_series,
-                           )
+    score = partitioned_validation(val_df=val_df,
+                                   pred_df=df_pred,
+                                   grouping=group_series,
+                                   approrach_name="last_purchased_items"
+                                   )
     print(score.head())
+
 
 if __name__ == '__main__':
     main()

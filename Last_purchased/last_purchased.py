@@ -6,7 +6,7 @@ from useful_func import iter_to_str
 from collections import defaultdict
 
 
-def last_purchased_items(train_transaction: pd.DataFrame, dataset: DataSet) -> Tuple[DataSet, List[List]]:
+def last_purchased_items(train_transaction: pd.DataFrame, dataset: DataSet) -> pd.DataFrame:
 
     print(train_transaction.head())
     # 各ユーザの、学習期間内における、最終購入日を取得？
@@ -37,17 +37,19 @@ def last_purchased_items(train_transaction: pd.DataFrame, dataset: DataSet) -> T
     # ->カラム=[customer_id, article_id]、レコードは各ユーザ。article_idは「最終購入日から二週間以内に購入したアイテム達」を繋げたstr.
 
     # ユーザの不足分(トランザクションデータに含まれていないユーザ)を追加する
-    dataset.df_sub['last_purchased_items'] = pd.merge(last_purchased_items_df, dataset.cid,
+    dataset.df_sub['predicted'] = pd.merge(last_purchased_items_df, dataset.cid,
                                                       on='customer_id',
                                                       how='right'
                                                       )["article_id"].fillna('')
+    # 結果はcustomer_idとpredictedをカラムに持つDataFrameにする。
+    df_pred = dataset.df_sub[['customer_id', 'predicted']].copy()
 
     # レコメンド結果をList[List[str]]でも取得しておく?
     predicted = dataset.df_sub['last_purchased_items'].apply(
         lambda s: [] if pd.isna(s) else s.split())
 
     # 返値は2つにしておく?
-    return (dataset, predicted)
+    return df_pred
 
 
 def other_colors_of_purchased_item(train_transaction: pd.DataFrame, dataset: DataSet):
