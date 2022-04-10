@@ -10,6 +10,7 @@ from dataset import DataSet
 from typing import List, Dict
 from tqdm import tqdm
 
+
 class MyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.integer):
@@ -37,6 +38,7 @@ class OftenBuyThatToo:
 
         # 年齢層グルーピングのSeriesを取得
         cus_agebins = dataset.dfu['age_bins'].astype(str)
+        print(cus_agebins.head())
         # 年齢層グルーピングのユニーク値のリストを取得
         listUniBins = dataset.dfu['age_bins'].unique().tolist()
 
@@ -62,6 +64,10 @@ class OftenBuyThatToo:
 
         # 作成したdictをインスタンス変数に保存
         self.c_a_dict = ds_dict_c_a
+        # jsonファイルでしゅつりょく
+        with open(os.path.join(OftenBuyThatToo.DRIVE_DIR, "dict_c_a_val.json"), mode="w") as f:
+            ds_dict_c_a = json.dumps(ds_dict_c_a, cls=MyEncoder)
+            f.write(ds_dict_c_a)
 
         # 次に、「ある商品を買った客一覧」のDictを作っていく。
         # 結果格納用のdictをInitialize。各年齢層グルーピング毎に、「ある商品を買った客一覧」のDictを格納する。
@@ -74,6 +80,9 @@ class OftenBuyThatToo:
             customer_id = df.loc[i, "customer_id_short"]
             article_id = df.loc[i, "article_id"]
             # ユーザのage_binを取得.
+            print(customer_id)
+            print(type(customer_id))
+            
             age_bin = cus_agebins[customer_id]
             # 各年齢層毎の「ある商品を買った客一覧」のDictに、対象アイテムをkeyで登録していく。
             # valueは空のリスト。考えてみると、この方法が可読性高いかも。
@@ -159,8 +168,8 @@ class OftenBuyThatToo:
 
             # 最後に結果を保存?
             with open(f"items_of_other_costomers_{uniBin}.json", mode="w") as f:
-                ranking = json.dumps(table, cls = MyEncoder)
-                f.write(ranking)        
+                ranking = json.dumps(table, cls=MyEncoder)
+                f.write(ranking)
 
     def load_ranking(self):
         # 本番レコメンド用のjsonデータをロードする関数
