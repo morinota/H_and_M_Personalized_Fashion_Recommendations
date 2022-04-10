@@ -38,7 +38,7 @@ def get_valid_oneweek_holdout_validation(dataset: DataSet, val_week_id: int = 10
     # 検証用weekのtransactionデータから、検証用データ(レコメンドの答え側)を作成する。
     val_df: pd.DataFrame
     val_df = transaction_df_val.groupby(
-        'customer_id')['article_id'].apply(iter_to_str).reset_index()
+        'customer_id_short')['article_id'].apply(iter_to_str).reset_index()
     # ->レコード：各ユーザ、カラム：customer_id, 1週間の購入アイテム達のstr　(submission.csvと同じ形式)　
 
     # 上記のval_dfは、検証用weekでtransactionを発生させたユーザのみ。それ以外のユーザのレコードを付け足す。
