@@ -1,7 +1,7 @@
 from tokenize import group
 from kaggle_api import load_data
 from dataset import DataSet
-from Last_purchased.last_purchased import last_purchased_items
+from approaches.last_purchased import last_purchased_items
 from partitioned_validation import partitioned_validation, user_grouping_online_and_offline
 from recommend_results import RecommendResults
 from oneweek_holdout_validation import get_train_oneweek_holdout_validation, get_valid_oneweek_holdout_validation
