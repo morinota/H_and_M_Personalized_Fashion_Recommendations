@@ -82,6 +82,26 @@ def calculate_mapk(actual, predicted: List[List], k: int = 10) -> float64:
 
     return map_k
 
+def apk(actual, predicted, k=12):
+    if len(predicted) > k:
+        predicted = predicted[:k]
+    score, nhits = 0.0, 0.0
+    for i, p in enumerate(predicted):
+        if p in actual and p not in predicted[:i]:
+            nhits += 1.0
+            score += nhits / (i + 1.0)
+    if not actual:
+        return 0.0
+    return score / min(len(actual), k)
+    
+
+def mapk(actual, predicted, k=12, return_apks=False):
+    assert len(actual) == len(predicted)
+    apks = [apk(ac, pr, k) for ac, pr in zip(actual, predicted) if 0 < len(ac)]
+    if return_apks:
+        return apks
+    return np.mean(apks)
+
 
 def main():
     pass

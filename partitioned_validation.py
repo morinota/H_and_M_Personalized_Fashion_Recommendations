@@ -3,7 +3,7 @@ from useful_func import iter_to_str
 from multiprocessing.spawn import import_main_path
 import os
 from logging import lastResort
-from calculate_MAP12 import calculate_mapk, calculate_apk
+from calculate_MAP12 import calculate_mapk, calculate_apk, mapk, apk
 from collections import defaultdict
 import seaborn as sns
 from typing import Dict, List, Set, Tuple
@@ -16,8 +16,30 @@ plt.style.use('ggplot')
 INPUT_DIR = 'input'
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 
+def validation(actual, predicted, grouping, score=0, index=-1, ignore=False, figsize=(12, 6)):
+    # actual, predicted : list of lists
+    # group : pandas Series
+    # score : pandas DataFrame
+    if ignore: return
+    ap12 = mapk(actual, predicted, return_apks=True)
+    map12 = round(np.mean(ap12), 6)
+    if isinstance(score, int): score = pd.DataFrame({g:[] for g in sorted(grouping.unique().tolist())})
+    if index == -1 : index = score.shape[0]
+    score.loc[index, "All"] = map12
+    plt.figure(figsize=figsize)
+    plt.subplot(1, 2, 1); sns.histplot(data=ap12, log_scale=(0, 10), bins=20); plt.title(f"MAP@12 : {map12}")
+    for g in grouping.unique():
+        map12 = round(mapk(actual[grouping == g], predicted[grouping == g]), 6)
+        score.loc[index, g] = map12
+        print(map12)
+    plt.subplot(1, 2, 2); score[[g for g in grouping.unique()[::-1]] + ['All']].loc[index].plot.barh(); plt.title(f"MAP@12 of Groups")
+    vc = pd.Series(predicted).apply(len).value_counts()
+    score.loc[index, "Fill"] = round(1 - sum(vc[k] * (12 - k) / 12 for k in (set(range(12)) & set(vc.index))) / len(actual), 3) * 100
+    return score
 
-def partitioned_validation(val_df:pd.DataFrame, pred_df:pd.DataFrame, grouping: pd.Series, score: pd.DataFrame = 0, approrach_name: str = "last_purchased_items", ignore: bool = False, figsize=(12, 6)):
+
+
+def partitioned_validation(val_df:pd.DataFrame, pred_df:pd.DataFrame, grouping: pd.Series, score: pd.DataFrame = 0, approach_name: str = "last_purchased_items", ignore: bool = False, figsize=(12, 6)):
     """全ユーザのレコメンド結果を受け取り、グルーピング毎に予測精度を評価する関数。
 
     Parameters
@@ -46,8 +68,8 @@ def partitioned_validation(val_df:pd.DataFrame, pred_df:pd.DataFrame, grouping: 
 
     # val_df["article_id"], dataset.df_sub["last_purchased_items"]からactual, predictedを抽出する.
     ## レコードの順番をそろえたい...。
-    val_df = val_df.sort_values(by='customer_id_short')
-    pred_df = pred_df.sort_values(by='customer_id_short')
+    # val_df = val_df.sort_values(by='customer_id_short')
+    # pred_df = pred_df.sort_values(by='customer_id_short')
     print(val_df[['customer_id_short', 'article_id']].head())
     print(pred_df[['customer_id_short', 'predicted']].head())
 
@@ -56,61 +78,46 @@ def partitioned_validation(val_df:pd.DataFrame, pred_df:pd.DataFrame, grouping: 
     predicted:List[List[str]] = pred_df['predicted'].apply(lambda s: [] if pd.isna(s) else s.split())
 
     k = 12
+
     # もしignore==Trueだったら、この関数は終了。
     if ignore:
         return
 
-    apk_all_users = []
     # 各ユーザのAP@kを算出(後半のヒストグラム作成の為に)
-    for actual_items, predicted_items in zip(actual, predicted):
-        # AP@Kを算出
-        apk_each_user = calculate_apk(actual_items, predicted_items, k)
-        # リストに格納
-        apk_all_users.append(apk_each_user)
-
+    ap12 = mapk(actual, predicted, return_apks=True)
     # MAP@kを算出
-    mapk = np.mean(apk_all_users)
-    mapk = round(mapk, 6)
+    map12 = round(np.mean(ap12), 6)
 
     # isinstance()関数でオブジェクトのデータ型を判定
-    if isinstance(score, int):
-        # 本来はscoreに各Validation結果を格納していく？
-        # scoreがDataFrameじゃなかったら、結果格納用のDataFrameをInitialize
-        score = pd.DataFrame({g: []
-                             for g in sorted(grouping.unique().tolist())})
+    # 本来はscoreに各Validation結果を格納していく？
+    # scoreがDataFrameじゃなかったら、結果格納用のDataFrameをInitialize
+    if isinstance(score, int): score = pd.DataFrame({g:[] for g in sorted(grouping.unique().tolist())})
 
     # もしindex引数が－１だったら...何の処理?
-    if approrach_name == -1:
-        approrach_name = score.shape[0]
+    if approach_name == -1 : approach_name = score.shape[0]
 
     # 結果をDataFrameに保存
-    score.loc[approrach_name, "All"] = mapk
+    score.loc[approach_name, "All"] = map12
 
     # MAP@kの結果を描画。(「各ユーザのAP@kの値」を集計して、ヒストグラムへ。なお縦軸は対数軸！)
     plt.figure(figsize=figsize)
-    plt.subplot(1, 2, 1)
-    sns.histplot(data=apk_all_users, log_scale=(0, 10), bins=20)
-    plt.title(f"MAP@12 : {mapk}")
+    plt.subplot(1, 2, 1); sns.histplot(data=ap12, log_scale=(0, 10), bins=20); plt.title(f"MAP@12 : {map12}")
 
     # グルーピング毎のValidation結果を作成
     for g in grouping.unique():
-        map12 = round(calculate_mapk(
-            actual[grouping == g], predicted[grouping == g], k=12), 6)
+        map12 = round(mapk(actual[grouping == g], predicted[grouping == g]), 6)
         # score:DataFrameに結果を格納
+        score.loc[approach_name, g] = map12
         print(map12)
-        score.loc[approrach_name, g] = map12
 
-    # グルーピング毎にMAP@Kを描画
-    plt.subplot(1, 2, 2)
-    score[[g for g in grouping.unique()[::-1]] + ['All']
-          ].loc[approrach_name].plot.barh()
-    plt.title(f"MAP@12 of Groups")
+    # バープロットの描画
+    plt.subplot(1, 2, 2); score[[g for g in grouping.unique()[::-1]] + ['All']].loc[approach_name].plot.barh(); plt.title(f"MAP@12 of Groups")
+    
+    # 何の処理?
     vc = pd.Series(predicted).apply(len).value_counts()
-    score.loc[approrach_name, "Fill"] = round(
-        1 - sum(vc[k] * (12 - k) / 12 for k in (set(range(12)) & set(vc.index))) / len(actual), 3) * 100
-
+    score.loc[approach_name, "Fill"] = round(1 - sum(vc[k] * (12 - k) / 12 for k in (set(range(12)) & set(vc.index))) / len(actual), 3) * 100
+    
     return score
-
 
 
 def user_grouping_online_and_offline(dataset: DataSet) -> pd.Series:

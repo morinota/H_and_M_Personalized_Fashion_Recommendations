@@ -34,3 +34,12 @@
   - なので、実際に検証する際は、one-week hold-out validationを考慮してレコメンド結果を作り直す必要がある。
   - 要するに学習用データをいじって再計算するだけ。
   - ＝＞だから結局、任意の期間の学習データを渡して、各レコメンド手法を実行するコードを書く必要がある！
+
+# 2022/04/10
+- Partitioned_validationが思った通りの挙動をしてくれない...
+  - One-week holdout関数は上手く機能してる。
+  - Datasetオブジェクトも問題なし。
+  - Last Purchased Itemsも問題なし。
+  - partitioned_validation関数の挙動が異なるみたい...
+    - ＝＞map@kとap@kの計算がおかしい?
+    - 
