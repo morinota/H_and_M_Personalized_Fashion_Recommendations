@@ -120,10 +120,10 @@ def user_grouping_online_and_offline(dataset: DataSet) -> pd.Series:
     alluser_df = dataset.cid
 
     # defaultでは、各ユーザが「オンライン販売かオフライン販売」のどちらで多く購入する週間があるかでグルーピングしてる。
-    group: pd.DataFrame = dataset.df.groupby('customer_id')[
+    group: pd.DataFrame = dataset.df.groupby('customer_id_short')[
         grouping_column].mean().round().reset_index()
     # alluser_dfとグルーピングをマージする
-    group = pd.merge(group, alluser_df, on='customer_id', how='right').rename(
+    group = pd.merge(group, alluser_df, on='customer_id_short', how='right').rename(
         columns={grouping_column: f'group_{grouping_column}'})
     # 欠損値は1で埋める。１と２の違いって何？オンライン販売かオフライン販売？
     grouping = group[f'group_{grouping_column}'].fillna(1.0)
