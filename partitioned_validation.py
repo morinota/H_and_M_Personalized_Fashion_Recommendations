@@ -48,6 +48,9 @@ def partitioned_validation(val_df:pd.DataFrame, pred_df:pd.DataFrame, grouping: 
     ## レコードの順番をそろえたい...。
     val_df = val_df.sort_values(by='customer_id')
     pred_df = pred_df.sort_values(by='customer_id')
+    print(val_df['customer_id'].head())
+    print(pred_df['customer_id'].head())
+
     ## Listで抽出
     actual:List[List[str]] = val_df['article_id'].apply(lambda s: [] if pd.isna(s) else s.split())
     predicted:List[List[str]] = pred_df['predicted'].apply(lambda s: [] if pd.isna(s) else s.split())
