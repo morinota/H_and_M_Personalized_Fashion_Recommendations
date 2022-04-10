@@ -49,7 +49,7 @@ def partitioned_validation(val_df:pd.DataFrame, pred_df:pd.DataFrame, grouping: 
     val_df = val_df.sort_values(by='customer_id_short')
     pred_df = pred_df.sort_values(by='customer_id_short')
     print(val_df[['customer_id_short', 'article_id']].head())
-    print(pred_df['customer_id_short', 'predicted'].head())
+    print(pred_df[['customer_id_short', 'predicted']].head())
 
     ## Listで抽出
     actual:List[List[str]] = val_df['article_id'].apply(lambda s: [] if pd.isna(s) else s.split())
