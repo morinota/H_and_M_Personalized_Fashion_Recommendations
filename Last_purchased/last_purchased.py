@@ -44,9 +44,6 @@ def last_purchased_items(train_transaction: pd.DataFrame, dataset: DataSet) -> p
     # 結果はcustomer_idとpredictedをカラムに持つDataFrameにする。
     df_pred = dataset.df_sub[['customer_id', 'predicted']].copy()
 
-    # レコメンド結果をList[List[str]]でも取得しておく?
-    predicted = dataset.df_sub['last_purchased_items'].apply(
-        lambda s: [] if pd.isna(s) else s.split())
 
     # 返値は2つにしておく?
     return df_pred
