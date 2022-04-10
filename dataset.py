@@ -34,7 +34,10 @@ class DataSet:
             DataSet.DRIVE_DIR, 'transactions_train.parquet'))
         # dfのcustomer_idはshort版に加工されてるから、カラム名を変更しておく
         self.df.rename(columns={'customer_id':'customer_id_short'})
-        self.df_sub = pd.read_csv(csv_sub)  # 提出用のサンプル
+        print(self.df.columns)
+
+        # 提出用のサンプル
+        self.df_sub = pd.read_csv(csv_sub)  
         # self.dfu = pd.read_csv(csv_users)  # 各顧客の情報(メタデータ)
         self.dfu = pd.read_parquet(os.path.join(
             DataSet.DRIVE_DIR, 'customers.parquet'))  # 各顧客の情報(メタデータ)
