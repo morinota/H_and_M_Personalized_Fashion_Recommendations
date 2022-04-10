@@ -27,7 +27,7 @@ def main():
     train_df = get_train_oneweek_holdout_validation(
         dataset=dataset,
         val_week_id=104,
-        training_days=31,
+        training_days=9999,
         how="from_init_date_to_last_date"
     )
 
