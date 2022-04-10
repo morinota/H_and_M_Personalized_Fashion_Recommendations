@@ -33,7 +33,7 @@ class DataSet:
         self.df = pd.read_parquet(os.path.join(
             DataSet.DRIVE_DIR, 'transactions_train.parquet'))
         # dfのcustomer_idはshort版に加工されてるから、カラム名を変更しておく
-        self.df.rename(columns={'customer_id':'customer_id_short'})
+        self.df.rename(columns={'customer_id':'customer_id_short'}, inplace=True)
         print(self.df.columns)
 
         # 提出用のサンプル
