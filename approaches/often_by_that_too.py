@@ -1,11 +1,9 @@
 # 「この商品を買った客は、あの商品もよく買ってるぞ！」という考えをベースにしたレコメンド手法
-import imp
+
 import os
 import pandas as pd
-from bitarray import test
-import implicit
+\
 import numpy as np
-import scipy.sparse
 import json
 from dataset import DataSet
 from typing import List, Dict
