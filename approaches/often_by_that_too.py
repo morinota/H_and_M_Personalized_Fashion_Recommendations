@@ -183,7 +183,7 @@ class OftenBuyThatToo:
     def load_ranking(self):
         """本番レコメンド用のjsonデータをロードする関数
         """
-
+        self.listUniBins = ['(39, 49]', '(19, 29]', '(49, 59]', '(29, 39]', '(69, 119]', '(59, 69]', '(-1, 19]']
         # 「ある商品を買った人が他に買った商品ランキング」を年齢層グループ毎に読み込み
         for uniBin in self.listUniBins:
             # グルーピングがnanなら次のループへ
@@ -257,7 +257,7 @@ class OftenBuyThatToo:
                     # ユーザがどの年齢層グループか取得
                     mask = dataset.dfu['customer_id_short'] == int(customer_id)
                     customer_ageBin = dataset.dfu[mask]['age_bins'].values[0]
-                    print(customer_ageBin)
+                    print(str(customer_ageBin))
 
                     # 「ある商品を買った人が他に買った商品ランキング」の年齢層グループを決定
                     ds_dict = self.OBTT_ages_dict[str(customer_ageBin)]
