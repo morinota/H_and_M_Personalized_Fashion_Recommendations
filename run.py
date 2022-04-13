@@ -54,19 +54,19 @@ def main():
     # One-week hold-out validationのオフライン評価
     score_df = partitioned_validation(val_df=val_df,
                                       pred_df=df_pred_1,
-                                      grouping=group_series['group_sales_channel_id'],
+                                      grouping=group_series['group'],
                                       approach_name="last_purchased_items"
                                       )
     score_df = partitioned_validation(val_df=val_df,
                                       pred_df=df_pred_2,
                                       score=score_df,
-                                      grouping=group_series['group_sales_channel_id'],
+                                      grouping=group_series['group'],
                                       approach_name="other_colors_of_purchased_item"
                                       )
     score_df = partitioned_validation(val_df=val_df,
                                       pred_df=df_pred_3,
                                       score=score_df,
-                                      grouping=group_series['group_sales_channel_id'],
+                                      grouping=group_series['group'],
                                       approach_name="popular_items_for_each_groupm"
                                       )
     print(score_df.head())
