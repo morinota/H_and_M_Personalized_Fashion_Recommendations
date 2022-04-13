@@ -2,9 +2,10 @@
 
 import os
 import pandas as pd
-\
 import numpy as np
 import json
+
+from sympy import Li
 from dataset import DataSet
 from typing import List, Dict
 from tqdm import tqdm
@@ -44,14 +45,12 @@ class OftenBuyThatToo:
         cus_agebins = dataset.dfu['age_bins'].astype(str)
         print(cus_agebins.head())
         # 年齢層グルーピングのユニーク値のリストを取得
-        listUniBins = dataset.dfu['age_bins'].unique().tolist()
+        self.listUniBins = dataset.dfu['age_bins'].unique().tolist()
 
         # まずは、「各ユーザが買った商品一覧」のDictを作っていく。
         # 結果格納用のdictをInitialize
         ds_dict_c_a: Dict[str, List[str]] = {}
 
-        print(len(df))
-        print(df)
         # 学習期間の、トランザクション1つ1つに対して処理を実行
         for i in tqdm(range(len(df))):
             # トランザクションのユーザid、アイテムidを取得.
@@ -70,14 +69,15 @@ class OftenBuyThatToo:
         # 作成したdictをインスタンス変数に保存
         self.c_a_dict = ds_dict_c_a
         # jsonファイルでしゅつりょく
-        with open(os.path.join(OftenBuyThatToo.DRIVE_DIR, "dict_c_a_val.json"), mode="w") as f:
+        with open(os.path.join(OftenBuyThatToo.DRIVE_DIR, "dict_c_a.json"), mode="w") as f:
             ds_dict_c_a = json.dumps(ds_dict_c_a, cls=MyEncoder)
             f.write(ds_dict_c_a)
 
         # 次に、「ある商品を買った客一覧」のDictを作っていく。
         # 結果格納用のdictをInitialize。各年齢層グルーピング毎に、「ある商品を買った客一覧」のDictを格納する。
         ds_dict_a_c: Dict[str, Dict[int, List[int]]]
-        ds_dict_a_c = {listUniBins[i]: {} for i in range(len(listUniBins))}
+        ds_dict_a_c = {self.listUniBins[i]: {}
+                       for i in range(len(self.listUniBins))}
 
         # 学習期間の、トランザクション1つ1つに対して処理を実行
         for i in tqdm(range(len(df))):
@@ -117,7 +117,7 @@ class OftenBuyThatToo:
         table = pd.DataFrame(index=[], columns=cols)
 
         # 各年齢グルーピング毎に、繰り返し処理していく。
-        for uniBin in listUniBins:
+        for uniBin in self.listUniBins:
             # グルーピングがnanなら次のループへ
             if uniBin == 'nan':
                 continue
@@ -127,9 +127,6 @@ class OftenBuyThatToo:
             pred_id = []
             confidence = []
 
-            print(type(self.a_c_dict))
-            print(uniBin)
-
             # 各「あるアイテム」と「ある商品を買った客一覧」毎に、繰り返し処理していく
             for articl, customer_list in tqdm(self.a_c_dict[uniBin].items()):
 
@@ -138,7 +135,6 @@ class OftenBuyThatToo:
 
                 # 「ある商品を買った客」毎に繰り返し処理
                 for customer in customer_list:
-                    print(type(self.c_a_dict))
                     # 各ユーザが購入したアイテム毎に繰り返し処理
                     for x in self.c_a_dict[customer]:
                         # 「ある商品を買った人が他に買っている商品」Listにカウント
@@ -173,19 +169,128 @@ class OftenBuyThatToo:
                             f"items_of_other_costomers_{uniBin}.pkl"))
 
             # 最後に結果を保存?
-            with open(f"items_of_other_costomers_{uniBin}.json", mode="w") as f:
+            json_path = os.path.join(
+                OftenBuyThatToo.DRIVE_DIR, f"items_of_other_costomers_{uniBin}.json")
+            with open(json_path, mode="w") as f:
                 ranking = json.dumps(table, cls=MyEncoder)
                 f.write(ranking)
 
     def load_ranking(self):
-        # 本番レコメンド用のjsonデータをロードする関数
+        """本番レコメンド用のjsonデータをロードする関数
+        """
 
-        # 「ある商品を買った人が他に買った商品ランキング」
-        with open(os.path.join(OftenBuyThatToo.DRIVE_DIR, "items_of_other_costomers.json"), mode="r") as f:
-            self.ds_dict = json.load(f)
-        # 「ある客が買った商品一覧」の辞書
+        # 「ある商品を買った人が他に買った商品ランキング」を年齢層グループ毎に読み込み
+        for uniBin in self.listUniBins:
+            json_path = os.path.join(
+                OftenBuyThatToo.DRIVE_DIR, f"items_of_other_costomers_{uniBin}.json")
+            with open(json_path, mode="r") as f:
+                # {"年齢層bin": {アイテムid: [アイテムid, ...]}}
+                self.OBTT_ages_dict: Dict[str, Dict[int, int]]
+                self.OBTT_ages_dict[uniBin] = json.load(f)
+
+        # 「ある客が買った商品一覧」の辞書を読み込み
         with open(os.path.join(OftenBuyThatToo.DRIVE_DIR, "dict_c_a.json"), mode="r") as f:
             self.c_a_dict = json.load(f)
 
-    def create_recommendation(self):
-        pass
+    def create_recommendation(self, dataset: DataSet):
+        """レコメンド結果を作成する(予測する)メソッド。
+        """
+        # レコメンドの枠として、sample_submissionを生成為ておく。
+        sub = dataset.df_sub
+        # レコメンドアイテムの個数
+        N = 12
+        M = 100
+
+        def _take_supposedly_popular_products()->List:
+            """
+            predictionが12個に満たなかった時や、trainデータに無いcustomer_idがあったときのために、
+            総購入数が多い商品のランキングを作る。
+            """
+
+            # 学習用データ
+            df = self.transaction_train
+            # 学習期間で、最も売れた上位N個のリストを作る。これでOBTTのレコメンドの穴を埋める。
+            general_pred = df["article_id"].astype(str).value_counts(
+            ).sort_values(ascending=True)[-N:].index.to_list()
+
+            return general_pred
+
+        self.general_pred = _take_supposedly_popular_products()
+
+        def _get_recommendation_OBTT()->List[str]:
+            """それぞれの客が購入した商品から、
+            年齢層毎の「ある商品を買った人が他に買った商品ランキング」を用いて、
+            次に買いそうな商品を予測していく。
+            具体的には以下。
+            - 客が買ったそれぞれの商品について、上記ランキングを元に、
+            他に買う商品ランキング1位はM点、2位はM-1点、3位はM-2点、4位はM-3点、
+            という感じに配点をつけていく。
+            """
+            
+            # レコメンド結果を格納するリスト
+            pred_list = []
+
+            # レコメンド対象の各ユーザに対して繰り返し処理
+            for customer_id in tqdm(sub['customer_id_short']):
+                customer_id = int(customer_id)
+                # 「ある客が買った商品一覧」のdictにユーザidが含まれていれば...
+                # すなわち、2年間で一度でも購入した事があるユーザなら...
+                if customer_id in self.c_a_dict:
+                    # レコメンド候補のarticle_id:スコアを格納するdictをInitialize
+                    purchase_dict = {}
+                    # 過去に買った商品のリストを取得
+                    past_list = self.c_a_dict[customer_id]
+
+                    # ユーザがどの年齢層グループか取得
+                    customer_ageBin = dataset.dfu['customer_id_short' ==
+                                                  customer_id]['age_bins']
+                    # 「ある商品を買った人が他に買った商品ランキング」の年齢層グループを決定
+                    ds_dict = self.OBTT_ages_dict[str(customer_ageBin)]
+
+                    # 各「過去に買った商品」に対して繰り返し処理：
+                    for art_id in past_list:
+                        # 各「過去に買った商品」に対して「ある商品を買った人が他に買った商品ランキング」を取得
+                        rank_list:List[int] = ds_dict[int(art_id)]
+                        # ランキング上位M個に対して繰り返し処理：
+                        for j in range(M):
+                            # j+1位のアイテムのartcle_idが10桁になるように、左側を0埋め
+                            item = str(rank_list[j]).zfill(10)
+                            # 対象アイテムが、まだレコメンド候補に含まれていなければ...
+                            if item not in purchase_dict:
+                                # スコアを格納
+                                purchase_dict[item] = M-j
+                            else:  # 対象アイテムが、既にレコメンド候補に含まれていれば...
+                                # スコアを加点。
+                                purchase_dict[item] += M-j
+
+                    # 再び、各「過去に買った商品」に対して繰り返し処理：
+                    for art_id in past_list:
+                        # 対象アイテムが、レコメンド候補に含まれていれば、そのスコアをゼロに
+                        # すなわち、一度買ったアイテム自体はレコメンドしない方針。
+                        if str(art_id).zfill(10) in purchase_dict:
+                            purchase_dict[str(art_id).zfill(10)] = 0
+
+                    # レコメンド候補：スコアのDictをpd.Series()に変換
+                    series = pd.Series(purchase_dict)
+                    # スコアが0より大きいアイテムのみを抽出
+                    series = series[series > 0]
+                    # レコメンド候補から、スコアが大きい上位N個を抽出し、そのindex(=article_id)をリストで取得.
+                    sub_list = series.nlargest(N).index.tolist()
+
+                # もし、対象ユーザが学習データ期間で、トランザクションがゼロなら...
+                else:
+                    # 全体の人気ランキングから補完
+                    sub_list = self.general_pred
+                
+                # 各ユーザのレコメンド商品のリストを、全体のレコメンド結果に保存(list=>strに加工して...)
+                pred_list.append(' '.join(sub_list))
+
+            # 全ユーザのレコメンド商品のリスト(List[str])を返す。
+            return pred_list
+
+        # レコメンド結果をsubに格納
+        sub['prediction'] = _get_recommendation_OBTT()
+
+        # csv出力
+        file_path = os.path.join(OftenBuyThatToo.DRIVE_DIR, 'submission_OBTT.csv')
+        sub.to_csv(file_path, index=None)

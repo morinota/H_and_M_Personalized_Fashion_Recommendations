@@ -42,9 +42,11 @@ def main():
 
     # レコメンド結果を作成し、RecommendResults結果に保存していく。
     recommend_results_valid = RecommendResults()
-    # とりあえずLast Purchased Item
+    # OftenBuyThatToo
     model = OftenBuyThatToo(transaction_train=train_df)
     model.create_ranking(dataset=dataset, test_bool=True)
+    model.load_ranking()
+    model.create_recommendation(dataset=dataset)
 
     print("3")
 
