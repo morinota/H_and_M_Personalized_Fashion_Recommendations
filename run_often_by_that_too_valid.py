@@ -44,7 +44,7 @@ def main():
     recommend_results_valid = RecommendResults()
     # OftenBuyThatToo
     model = OftenBuyThatToo(transaction_train=train_df)
-    # model.create_ranking(dataset=dataset, test_bool=True)
+    model.create_ranking(dataset=dataset, test_bool=True)
     model.load_ranking()
     df_pred = model.create_recommendation(dataset=dataset)
 

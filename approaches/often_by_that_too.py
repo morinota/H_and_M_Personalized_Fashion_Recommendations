@@ -134,9 +134,10 @@ class OftenBuyThatToo:
             article_id = []
             pred_id = []
             confidence = []
+            ranking = {}
 
             # 各「あるアイテム」と「ある商品を買った客一覧」毎に、繰り返し処理していく
-            for articl, customer_list in tqdm(self.a_c_dict[uniBin].items()):
+            for article_id, customer_list in tqdm(self.a_c_dict[uniBin].items()):
 
                 # 「ある商品を買った人が他に買っている商品」をカウントするListをInitialize
                 count = [0]*len(df_articles)
@@ -149,10 +150,11 @@ class OftenBuyThatToo:
                         count[df_a_i[x]] += 1
 
                 # 「あるアイテム」のidを100個格納したリスト(?)を生成
-                art_list = [articl]*100
+                art_list = [article_id]*100
                 # 「あるアイテム」に対して、「ある商品を買った人が他に買っている商品」カウントを降順に並べ替えたリストを生成。
                 pred_list = sorted(range(len(df_articles)),
                                    key=lambda k: count[k], reverse=True)[:100]
+
 
                 # 一緒に買われるアイテム上位100個に対して繰り返し処理：
                 for i in range(len(pred_list)):
@@ -166,6 +168,8 @@ class OftenBuyThatToo:
                 article_id.extend(art_list)
                 pred_id.extend(pred_list)
                 confidence.extend(conf_list)
+
+                ranking[article_id] = pred_list
                 del art_list
                 del pred_list
                 del conf_list
@@ -177,7 +181,7 @@ class OftenBuyThatToo:
             json_path = os.path.join(
                 OftenBuyThatToo.DRIVE_DIR, f"items_of_other_costomers_{uniBin}.json")
             with open(json_path, mode="w") as f:
-                ranking = json.dumps(table, cls=MyEncoder)
+                ranking = json.dumps(ranking, cls=MyEncoder)
                 f.write(ranking)
 
     def load_ranking(self):
