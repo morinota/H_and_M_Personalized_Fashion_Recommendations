@@ -56,8 +56,8 @@ class OftenBuyThatToo:
         # 学習期間の、トランザクション1つ1つに対して処理を実行
         for i in tqdm(range(len(df))):
             # トランザクションのユーザid、アイテムidを取得.
-            customer_id = str(df.loc[i, "customer_id_short"])
-            article_id = str(df.loc[i, "article_id"])
+            customer_id = int(df.loc[i, "customer_id_short"])
+            article_id = int(df.loc[i, "article_id"])
 
             # もし既にユーザidがdictのkeyに登録されていれば。。。
             if customer_id in ds_dict_c_a:
@@ -96,8 +96,8 @@ class OftenBuyThatToo:
         for i in tqdm(range(len(df))):
             customer_id = df.loc[i, "customer_id_short"]
             article_id = df.loc[i, "article_id"]
-            age_bin = cus_agebins[customer_id]
-            ds_dict_a_c[age_bin][int(article_id)] += [customer_id]
+            age_bin = cus_agebins[i]
+            ds_dict_a_c[age_bin][int(article_id)] += [int(customer_id)]
 
         # 作成したdictをインスタンス変数に保存
         self.a_c_dict = ds_dict_c_a
