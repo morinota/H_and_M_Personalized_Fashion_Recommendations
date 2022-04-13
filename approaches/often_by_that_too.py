@@ -261,7 +261,7 @@ class OftenBuyThatToo:
                     # 各「過去に買った商品」に対して繰り返し処理：
                     for art_id in past_list:
                         # 各「過去に買った商品」に対して「ある商品を買った人が他に買った商品ランキング」を取得
-                        rank_list:List[int] = ds_dict[int(art_id)]
+                        rank_list:List[int] = ds_dict[str(art_id)]
                         # ランキング上位M個に対して繰り返し処理：
                         for j in range(M):
                             # j+1位のアイテムのartcle_idが10桁になるように、左側を0埋め
