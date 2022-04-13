@@ -89,7 +89,7 @@ class OftenBuyThatToo:
             article_id = df.loc[i, "article_id"]
             # ユーザのage_binを取得.
             mask = dataset.dfu['customer_id_short'] == int(customer_id)
-            age_bin = dataset.dfu[mask]['age_bins']
+            age_bin = dataset.dfu[mask]['age_bins'].values[0]
             print(type(age_bin))
             print(str(age_bin.values))
             # 各年齢層毎の「ある商品を買った客一覧」のDictに、対象アイテムをkeyで登録していく。
@@ -102,7 +102,7 @@ class OftenBuyThatToo:
             article_id = df.loc[i, "article_id"]
             # ユーザのage_binを取得.
             mask = dataset.dfu['customer_id_short'] == int(customer_id)
-            age_bin = dataset.dfu[mask]['age_bins']
+            age_bin = dataset.dfu[mask]['age_bins'].values[0]
 
             # 前のループ処理でInitializeした、対象アイテム：空のリストに、要素(customer_id)を追加していく。
             ds_dict_a_c[age_bin][int(article_id)] += [int(customer_id)]
@@ -255,7 +255,7 @@ class OftenBuyThatToo:
 
                     # ユーザがどの年齢層グループか取得
                     mask = dataset.dfu['customer_id_short'] == int(customer_id)
-                    customer_ageBin = dataset.dfu[mask]['age_bins'][0]
+                    customer_ageBin = dataset.dfu[mask]['age_bins'].values[0]
                     # 「ある商品を買った人が他に買った商品ランキング」の年齢層グループを決定
                     ds_dict = self.OBTT_ages_dict[str(customer_ageBin)]
 
