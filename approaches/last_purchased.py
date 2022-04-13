@@ -1,6 +1,7 @@
 
 from typing import List, Tuple
 import pandas as pd
+from sympy import arg
 from dataset import DataSet
 from useful_func import iter_to_str
 from collections import defaultdict
@@ -139,4 +140,3 @@ def popular_items_for_each_group(train_transaction: pd.DataFrame, dataset: DataS
 
     # 返値は2つにしておく?
     return df_pred
-

@@ -5,6 +5,7 @@ from approaches import last_purchased
 from partitioned_validation import partitioned_validation, user_grouping_online_and_offline
 from recommend_results import RecommendResults
 from oneweek_holdout_validation import get_train_oneweek_holdout_validation, get_valid_oneweek_holdout_validation
+from recommend_emsemble import recommend_emsemble
 
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 
@@ -67,8 +68,22 @@ def main():
                                       pred_df=df_pred_3,
                                       score=score_df,
                                       grouping=group_series['group'],
-                                      approach_name="popular_items_for_each_groupm"
+                                      approach_name="popular_items_for_each_group"
                                       )
+    predicted_kwargs = {"last_purchased_items": df_pred_1,
+                        "other_colors_of_purchased_item": df_pred_2,
+                        "popular_items_for_each_groupm": df_pred_3
+                        }
+    predicted_weights = [100, 10, 1]
+    df_pred_0 = recommend_emsemble(predicted_kwargs=predicted_kwargs, weight_args=predicted_weights, 
+    dataset=dataset, val_week_id=val_week_id)
+
+    score_df = partitioned_validation(val_df=val_df,
+                                    pred_df=df_pred_0,
+                                    score=score_df,
+                                    grouping=group_series['group'],
+                                    approach_name="blend"
+                                    )
     print(score_df.head())
 
 

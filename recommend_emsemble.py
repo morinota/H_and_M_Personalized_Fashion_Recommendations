@@ -1,5 +1,7 @@
+from sympy import Li
 from calculate_MAP12 import calculate_mapk, calculate_apk
-from collections import defaultdict
+
+from dataset import DataSet
 import seaborn as sns
 from typing import Dict, List, Set
 import numpy as np
@@ -106,5 +108,50 @@ def _prune(pred: str, ok_set: Set[int], k: int = 12) -> str:
     # 再びList＝＞Strに戻してReturn
     return " ".join(post[:k])
 
-def recommend_emsemble():
-    pass
+
+def recommend_emsemble(predicted_kwargs:Dict[str, pd.DataFrame], weight_args:List, dataset: DataSet, val_week_id: int = 105)->pd.DataFrame:
+    """_summary_
+
+    Parameters
+    ----------
+    predicted_kwargs : Dict[str, pd.DataFrame]
+        _description_
+    weight_args : List
+        _description_
+    dataset : DataSet
+        _description_
+    val_week_id : int, optional
+        _description_, by default 105
+
+    Returns
+    -------
+    pd.DataFrame
+        _description_
+    """
+
+    # ok_setを作る。(今シーズン一回も誰にも買われてないアイテムはレコメンドしない)
+    df = dataset.df
+    last_date = df.loc[df.week < val_week_id].t_dat.max()
+    init_date = last_date - datetime.timedelta(days=11)
+    sold_set = set(df.loc[(df.t_dat >= init_date) & (
+        df.t_dat <= last_date)].article_id.tolist())
+
+    submission_df: pd.DataFrame
+    i = 0
+    # DataFrameを合成
+    for k, v in predicted_kwargs.items():
+        if i = 0:
+            submission_df = v
+        else:
+            submission_df.merge(
+                right=predicted_kwargs[i], on='customer_id_short')
+        # カラム名を変更
+        submission_df.rename(columns={'predicted': k})
+        i += 1
+
+    # 各レコメンド結果を重み付け
+    p_columns_list = predicted_kwargs.keys()
+    submission_df['prediction'] = submission_df[p_columns_list].apply(
+        _blend, weight_args, acis=1, k=32).apply(_prune, ok_set=sold_set)
+
+    return submission_df[['customer_id_short', 'prediction']]
