@@ -131,15 +131,16 @@ class OftenBuyThatToo:
             print(uniBin)
 
             # 各「あるアイテム」と「ある商品を買った客一覧」毎に、繰り返し処理していく
-            for articl, coslist in tqdm(self.a_c_dict[uniBin].items()):
+            for articl, customer_list in tqdm(self.a_c_dict[uniBin].items()):
 
                 # 「ある商品を買った人が他に買っている商品」をカウントするListをInitialize
                 count = [0]*len(df_articles)
 
                 # 「ある商品を買った客」毎に繰り返し処理
-                for costomer in coslist:
+                for customer in customer_list:
+                    print(type(self.c_a_dict))
                     # 各ユーザが購入したアイテム毎に繰り返し処理
-                    for x in ds_dict_c_a[costomer]:
+                    for x in self.c_a_dict[customer]:
                         # 「ある商品を買った人が他に買っている商品」Listにカウント
                         count[df_a_i[x]] += 1
 
