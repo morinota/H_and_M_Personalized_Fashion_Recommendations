@@ -89,7 +89,9 @@ class OftenBuyThatToo:
             article_id = df.loc[i, "article_id"]
             # ユーザのage_binを取得.
             mask = dataset.dfu['customer_id_short'] == int(customer_id)
-            age_bin = dataset.dfu[mask]['age_bins'][0]
+            age_bin = dataset.dfu[mask]['age_bins']
+            print(type(age_bin))
+            print(age_bin)
             # 各年齢層毎の「ある商品を買った客一覧」のDictに、対象アイテムをkeyで登録していく。
             # valueは空のリスト。考えてみると、この方法が可読性高いかも。
             ds_dict_a_c[age_bin][int(article_id)] = []
@@ -100,7 +102,8 @@ class OftenBuyThatToo:
             article_id = df.loc[i, "article_id"]
             # ユーザのage_binを取得.
             mask = dataset.dfu['customer_id_short'] == int(customer_id)
-            age_bin = dataset.dfu[mask]['age_bins'][0]
+            age_bin = dataset.dfu[mask]['age_bins']
+
             # 前のループ処理でInitializeした、対象アイテム：空のリストに、要素(customer_id)を追加していく。
             ds_dict_a_c[age_bin][int(article_id)] += [int(customer_id)]
 
