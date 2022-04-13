@@ -140,7 +140,7 @@ def recommend_emsemble(predicted_kwargs:Dict[str, pd.DataFrame], weight_args:Lis
     i = 0
     # DataFrameを合成
     for k, v in predicted_kwargs.items():
-        if i = 0:
+        if i == 0:
             submission_df = v
         else:
             submission_df.merge(
