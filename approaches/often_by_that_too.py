@@ -265,7 +265,8 @@ class OftenBuyThatToo:
                     # ユーザがどの年齢層グループか取得
                     mask = dataset.dfu['customer_id_short'] == int(customer_id)
                     customer_ageBin = dataset.dfu[mask]['age_bins'].values[0]
-                    print(str(customer_ageBin))
+                    if customer_ageBin == 'nan':
+                        customer_ageBin = '(19, 29]'
 
                     # 「ある商品を買った人が他に買った商品ランキング」の年齢層グループを決定
                     ds_dict = self.OBTT_ages_dict[str(customer_ageBin)]
