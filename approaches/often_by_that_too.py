@@ -99,7 +99,7 @@ class OftenBuyThatToo:
             ds_dict_a_c[age_bin][int(article_id)] += [int(customer_id)]
 
         # 作成したdictをインスタンス変数に保存
-        self.a_c_dict = ds_dict_c_a
+        self.a_c_dict = ds_dict_a_c
 
         # 買った商品集計リストを作成しやすくするために、article_idを空間圧縮
         df_a_i = {}
