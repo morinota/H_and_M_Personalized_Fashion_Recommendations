@@ -86,10 +86,7 @@ class OftenBuyThatToo:
             customer_id = df.loc[i, "customer_id_short"]
             article_id = df.loc[i, "article_id"]
             # ユーザのage_binを取得.
-            print(customer_id)
-            print(type(customer_id))
-            
-            age_bin = cus_agebins[customer_id]
+            age_bin = cus_agebins[i]
             # 各年齢層毎の「ある商品を買った客一覧」のDictに、対象アイテムをkeyで登録していく。
             # valueは空のリスト。考えてみると、この方法が可読性高いかも。
             ds_dict_a_c[age_bin][int(article_id)] = []
