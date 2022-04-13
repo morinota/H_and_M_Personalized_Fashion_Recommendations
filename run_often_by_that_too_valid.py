@@ -38,7 +38,7 @@ def main():
     # 全ユーザをグルーピング
     group_series = user_grouping_online_and_offline(dataset=dataset)
     print(type(group_series))
-    print("2")
+    print("2")s
 
     # レコメンド結果を作成し、RecommendResults結果に保存していく。
     recommend_results_valid = RecommendResults()
@@ -46,7 +46,7 @@ def main():
     model = OftenBuyThatToo(transaction_train=train_df)
     model.create_ranking(dataset=dataset, test_bool=True)
     model.load_ranking()
-    df_pred = model.create_recommendation(dataset=dataset)
+    # df_pred = model.create_recommendation(dataset=dataset)
 
     print("3")
 

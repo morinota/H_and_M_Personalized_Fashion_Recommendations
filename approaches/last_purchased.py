@@ -1,4 +1,4 @@
-from multiprocessing.spawn import import_main_path
+
 from typing import List, Tuple
 import pandas as pd
 from dataset import DataSet
@@ -49,7 +49,7 @@ def last_purchased_items(train_transaction: pd.DataFrame, dataset: DataSet) -> p
     return df_pred
 
 
-def other_colors_of_purchased_item(train_transaction: pd.DataFrame, dataset: DataSet):
+def other_colors_of_purchased_item(train_transaction: pd.DataFrame, dataset: DataSet)->pd.DataFrame:
 
     # 設定した期間のtransactionデータに対して、各アイテムの購入回数を集計?
     item_counts_trainTerm: pd.DataFrame = train_transaction.groupby(
@@ -89,18 +89,16 @@ def other_colors_of_purchased_item(train_transaction: pd.DataFrame, dataset: Dat
         return ' '.join(map(f, s.split()))
 
     # 上記関数の処理をapplyで適用。other_colorsのレコメンド結果を生成。
-    dataset.df_sub['other_colors'] = dataset.df_sub['last_purchased_items'].fillna(
+    dataset.df_sub['predicted'] = dataset.df_sub['last_purchased_items'].fillna(
         '').apply(_map_to_variation)
 
-    # 予測結果をValidationする為に、str=>Listへ。
-    predicted = dataset.df_sub['other_colors'].apply(
-        lambda s: [] if pd.isna(s) else s.split())
+    df_pred = dataset.df_sub[['customer_id_short', 'predicted']].copy()
 
     # 返値は2つにしておく?
-    return (dataset, predicted)
+    return df_pred
 
 
-def popular_items_for_each_group(train_transaction: pd.DataFrame, dataset: DataSet, grouping_df:pd.DataFrame)-> Tuple[DataSet, List[List]]:
+def popular_items_for_each_group(train_transaction: pd.DataFrame, dataset: DataSet, grouping_df:pd.DataFrame)-> pd.DataFrame:
     """_summary_
 
     Parameters
@@ -109,8 +107,8 @@ def popular_items_for_each_group(train_transaction: pd.DataFrame, dataset: DataS
         _description_
     dataset : DataSet
         _description_
-    grouping_df : pd.DataFrame
-        カラム=[customer_id_short, group(=groupingのカテゴリ変数)]、レコードが各ユーザのDataFrame
+    grouping_df : pd.Series
+        カラム=[group(=groupingのカテゴリ変数)]、レコードが各ユーザのDataFrame
 
     Returns
     -------
@@ -133,11 +131,11 @@ def popular_items_for_each_group(train_transaction: pd.DataFrame, dataset: DataS
         items[group] = iter_to_str(ItemCount_eachGroup.loc[ItemCount_eachGroup["group"] == group].sort_values('t_dat', ascending=False)["article_id"].tolist()[:12])
         
     # 各ユーザに対して、「グループ別の人気アイテム」を取得。レコメンド結果を保存
-    dataset.df_sub["poplular_items_eachgroup"] = grouping_df["group"].map(items)
+    dataset.df_sub["predicted"] = grouping_df["group"].map(items)
 
-    # 予測結果をValidationする為に、str=>Listへ。
-    predicted = dataset.df_sub['popular_items_eachgroup'].apply(lambda s: [] if pd.isna(s) else s.split())
+    #
+    df_pred = dataset.df_sub[['customer_id_short', 'predicted']].copy()
 
     # 返値は2つにしておく?
-    return (dataset, predicted)
+    return df_pred
 

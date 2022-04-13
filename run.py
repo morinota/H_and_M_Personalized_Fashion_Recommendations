@@ -1,13 +1,12 @@
 from tokenize import group
 from kaggle_api import load_data
 from dataset import DataSet
-from approaches.last_purchased import last_purchased_items
+from approaches import last_purchased
 from partitioned_validation import partitioned_validation, user_grouping_online_and_offline
 from recommend_results import RecommendResults
 from oneweek_holdout_validation import get_train_oneweek_holdout_validation, get_valid_oneweek_holdout_validation
 
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
-
 
 
 def main():
@@ -43,18 +42,34 @@ def main():
     # レコメンド結果を作成し、RecommendResults結果に保存していく。
     recommend_results_valid = RecommendResults()
     # とりあえずLast Purchased Item
-    df_pred = last_purchased_items(train_transaction=train_df,
-                                   dataset=dataset)
+    df_pred_1 = last_purchased.last_purchased_items(train_transaction=train_df,
+                                                    dataset=dataset)
+    df_pred_2 = last_purchased.other_colors_of_purchased_item(
+        train_transaction=train_df, dataset=dataset)
+    df_pred_3 = last_purchased.popular_items_for_each_group(
+        train_transaction=train_df, dataset=dataset, grouping_df=group_series)
 
     print("3")
 
     # One-week hold-out validationのオフライン評価
-    score = partitioned_validation(val_df=val_df,
-                                   pred_df=df_pred,
-                                   grouping=group_series,
-                                   approach_name="last_purchased_items"
-                                   )
-    print(score.head())
+    score_df = partitioned_validation(val_df=val_df,
+                                      pred_df=df_pred_1,
+                                      grouping=group_series['group_sales_channel_id'],
+                                      approach_name="last_purchased_items"
+                                      )
+    score_df = partitioned_validation(val_df=val_df,
+                                      pred_df=df_pred_2,
+                                      score=score_df,
+                                      grouping=group_series['group_sales_channel_id'],
+                                      approach_name="other_colors_of_purchased_item"
+                                      )
+    score_df = partitioned_validation(val_df=val_df,
+                                      pred_df=df_pred_3,
+                                      score=score_df,
+                                      grouping=group_series['group_sales_channel_id'],
+                                      approach_name="popular_items_for_each_groupm"
+                                      )
+    print(score_df.head())
 
 
 if __name__ == '__main__':

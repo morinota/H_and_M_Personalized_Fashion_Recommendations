@@ -124,6 +124,57 @@ class OftenBuyThatToo:
         cols = ["article_id", "pred_id", "confidence"]
         table = pd.DataFrame(index=[], columns=cols)
 
+        def _get_ranking():
+
+            # 各「あるアイテム」と「ある商品を買った客一覧」毎に、繰り返し処理していく
+            for article_id, customer_list in tqdm(self.a_c_dict[uniBin].items()):
+
+                # 「ある商品を買った人が他に買っている商品」をカウントするListをInitialize
+                count = [0]*len(df_articles)
+
+                # 「ある商品を買った客」毎に繰り返し処理
+                for customer in customer_list:
+                    # 各ユーザが購入したアイテム毎に繰り返し処理
+                    for x in self.c_a_dict[customer]:
+                        # 「ある商品を買った人が他に買っている商品」Listにカウント
+                        count[df_a_i[x]] += 1
+
+                # 「あるアイテム」のidを100個格納したリスト(?)を生成
+                art_list = [article_id]*100
+                # 「あるアイテム」に対して、「ある商品を買った人が他に買っている商品」カウントを降順に並べ替えたリストを生成。
+                pred_list = sorted(range(len(df_articles)),
+                                   key=lambda k: count[k], reverse=True)[:100]
+
+
+                # 一緒に買われるアイテム上位100個に対して繰り返し処理：
+                for i in range(len(pred_list)):
+                    # 結果格納用のListに格納していく。
+                    pred_list[i] = df_i_a[pred_list[i]]
+
+                # カウント自体も信頼度を示す指標としてListに保存
+                conf_list = sorted(count, reverse=True)[:100]
+
+                # 結果格納用(全アイテム)のリストに、各アイテムの結果を追加。
+                article_ids.extend(art_list)
+                pred_ids.extend(pred_list)
+                confidences.extend(conf_list)
+
+                ranking[article_id] = pred_list
+                del art_list
+                del pred_list
+                del conf_list
+
+            table = pd.DataFrame(
+                list(zip(article_ids, pred_ids, confidences)), columns=cols)
+
+            # 最後に結果を保存?
+            json_path = os.path.join(
+                OftenBuyThatToo.DRIVE_DIR, f"items_of_other_costomers_{uniBin}.json")
+            with open(json_path, mode="w") as f:
+                ranking = json.dumps(ranking, cls=MyEncoder)
+                f.write(ranking)
+            
+
         # 各年齢グルーピング毎に、繰り返し処理していく。
         for uniBin in self.listUniBins:
             # グルーピングがnanなら次のループへ
@@ -270,11 +321,9 @@ class OftenBuyThatToo:
 
                     # 「ある商品を買った人が他に買った商品ランキング」の年齢層グループを決定
                     ds_dict = self.OBTT_ages_dict[str(customer_ageBin)]
-                    print(ds_dict.keys())
                     # 各「過去に買った商品」に対して繰り返し処理：
                     for art_id in past_list:
                         # 各「過去に買った商品」に対して「ある商品を買った人が他に買った商品ランキング」を取得
-                        print(ds_dict[str(art_id)])
                         rank_list:List[int] = ds_dict[str(art_id)]
                         # ランキング上位M個に対して繰り返し処理：
                         for j in range(M):

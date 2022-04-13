@@ -98,7 +98,7 @@ def partitioned_validation(val_df:pd.DataFrame, pred_df:pd.DataFrame, grouping: 
     return score
 
 
-def user_grouping_online_and_offline(dataset: DataSet) -> pd.Series:
+def user_grouping_online_and_offline(dataset: DataSet) -> pd.DataFrame:
     grouping_column: str = "sales_channel_id"
 
     # ユーザレコードの補完用にcustomer_id_dfを使う.
@@ -112,9 +112,9 @@ def user_grouping_online_and_offline(dataset: DataSet) -> pd.Series:
     group = pd.merge(group, alluser_df, on='customer_id_short', how='right').rename(
         columns={grouping_column: f'group_{grouping_column}'})
     # 欠損値は1で埋める。１と２の違いって何？オンライン販売かオフライン販売？
-    grouping = group[f'group_{grouping_column}'].fillna(1.0)
+    grouping_df = group[['customer_id_short', f'group_{grouping_column}']].fillna(1.0)
 
-    return grouping
+    return grouping_df
 
 
 def make_user_grouping(transaction_df, customer_df: pd.DataFrame, grouping_column: str = "sales_channel_id") -> pd.DataFrame:
