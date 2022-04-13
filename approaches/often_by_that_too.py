@@ -293,8 +293,10 @@ class OftenBuyThatToo:
             return pred_list
 
         # レコメンド結果をsubに格納
-        sub['prediction'] = _get_recommendation_OBTT()
+        sub['predicted'] = _get_recommendation_OBTT()
 
         # csv出力
         file_path = os.path.join(OftenBuyThatToo.DRIVE_DIR, 'submission_OBTT.csv')
         sub.to_csv(file_path, index=None)
+
+        return sub

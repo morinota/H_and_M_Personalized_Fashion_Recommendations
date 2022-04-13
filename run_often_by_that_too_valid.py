@@ -46,11 +46,11 @@ def main():
     model = OftenBuyThatToo(transaction_train=train_df)
     model.create_ranking(dataset=dataset, test_bool=True)
     model.load_ranking()
-    model.create_recommendation(dataset=dataset)
+    df_pred = model.create_recommendation(dataset=dataset)
 
     print("3")
 
-    # # One-week hold-out validationのオフライン評価
+    # One-week hold-out validationのオフライン評価
     score = partitioned_validation(val_df=val_df,
                                    pred_df=df_pred,
                                    grouping=group_series,
