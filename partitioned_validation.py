@@ -103,10 +103,11 @@ def user_grouping_online_and_offline(dataset: DataSet) -> pd.Series:
 
     # ユーザレコードの補完用にcustomer_id_dfを使う.
     alluser_df = dataset.cid
-
-    # defaultでは、各ユーザが「オンライン販売かオフライン販売」のどちらで多く購入する週間があるかでグルーピングしてる。
-    group: pd.DataFrame = dataset.df.groupby('customer_id_short')[
-        grouping_column].mean().round().reset_index()
+    
+    if 'customer_id_short' in dataset.df.columns:
+        # defaultでは、各ユーザが「オンライン販売かオフライン販売」のどちらで多く購入する週間があるかでグルーピングしてる。
+        group: pd.DataFrame = dataset.df.groupby('customer_id_short')[
+            grouping_column].mean().round().reset_index()
     # alluser_dfとグルーピングをマージする
     group = pd.merge(group, alluser_df, on='customer_id_short', how='right').rename(
         columns={grouping_column: f'group_{grouping_column}'})

@@ -1,4 +1,4 @@
-from tokenize import group
+
 from approaches.often_by_that_too import OftenBuyThatToo
 from kaggle_api import load_data
 from dataset import DataSet
@@ -12,11 +12,11 @@ DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized
 
 def main():
     # kaggle APIからデータロード
-    load_data()
+    # load_data()
     # DataSetオブジェクトの読み込み
     dataset = DataSet()
     # DataFrameとしてデータ読み込み
-    dataset.read_data(c_id_short=True)
+    dataset.read_data(c_id_short=False)
     print("1")
 
     # One-week hold-out validation
@@ -36,8 +36,8 @@ def main():
     print("2")
 
     # 全ユーザをグルーピング
-    group_series = user_grouping_online_and_offline(dataset=dataset)
-    print(type(group_series))
+    # group_series = user_grouping_online_and_offline(dataset=dataset)
+    # print(type(group_series))
     print("2")
 
     # レコメンド結果を作成し、RecommendResults結果に保存していく。
