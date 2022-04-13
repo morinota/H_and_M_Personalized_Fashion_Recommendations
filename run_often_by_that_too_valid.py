@@ -16,7 +16,7 @@ def main():
     # DataSetオブジェクトの読み込み
     dataset = DataSet()
     # DataFrameとしてデータ読み込み
-    dataset.read_data(c_id_short=False)
+    dataset.read_data(c_id_short=True)
     print("1")
 
     # One-week hold-out validation
