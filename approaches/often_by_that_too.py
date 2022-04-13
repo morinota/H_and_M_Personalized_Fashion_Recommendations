@@ -28,13 +28,12 @@ class OftenBuyThatToo:
         self.transaction_train = transaction_train
         pass
 
-    def create_ranking(self, dataset: DataSet, test_bool = False):
+    def create_ranking(self, dataset: DataSet, test_bool=False):
         # 動作確認用の時は...
         if test_bool:
-            df =self.transaction_train[:10000].reset_index()
+            df = self.transaction_train[:10000].reset_index()
         else:
             df = self.transaction_train.reset_index()
-
 
         # 年齢層ごとに別のランキングを作りたいので、客がどの年齢層に所属しているかを示すカラムを作っていく。
         listBin = [-1, 19, 29, 39, 49, 59, 69, 119]
@@ -50,7 +49,7 @@ class OftenBuyThatToo:
         # まずは、「各ユーザが買った商品一覧」のDictを作っていく。
         # 結果格納用のdictをInitialize
         ds_dict_c_a: Dict[str, List[str]] = {}
-        
+
         print(len(df))
         print(df)
         # 学習期間の、トランザクション1つ1つに対して処理を実行
@@ -77,8 +76,8 @@ class OftenBuyThatToo:
 
         # 次に、「ある商品を買った客一覧」のDictを作っていく。
         # 結果格納用のdictをInitialize。各年齢層グルーピング毎に、「ある商品を買った客一覧」のDictを格納する。
-        ds_dict_a_c: Dict[str, Dict[int, List[str]]] = {
-            listUniBins[i]: {} for i in range(len(listUniBins))}
+        ds_dict_a_c: Dict[str, Dict[int, List[int]]]
+        ds_dict_a_c = {listUniBins[i]: {} for i in range(len(listUniBins))}
 
         # 学習期間の、トランザクション1つ1つに対して処理を実行
         for i in tqdm(range(len(df))):
@@ -127,6 +126,9 @@ class OftenBuyThatToo:
             article_id = []
             pred_id = []
             confidence = []
+
+            print(type(self.a_c_dict))
+            print(uniBin)
 
             # 各「あるアイテム」と「ある商品を買った客一覧」毎に、繰り返し処理していく
             for articl, coslist in tqdm(self.a_c_dict[uniBin].items()):
