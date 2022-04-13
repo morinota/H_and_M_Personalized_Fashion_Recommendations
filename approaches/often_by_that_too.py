@@ -72,7 +72,7 @@ class OftenBuyThatToo:
         # 作成したdictをインスタンス変数に保存
         self.c_a_dict = ds_dict_c_a
         # jsonファイルでしゅつりょく
-        with open(os.path.join(OftenBuyThatToo.DRIVE_DIR, "dict_c_a.json"), mode="w") as f:
+        with open(os.path.join(OftenBuyThatToo.DRIVE_DIR, "dict_c_a_val.json"), mode="w") as f:
             ds_dict_c_a = json.dumps(ds_dict_c_a, cls=MyEncoder)
             f.write(ds_dict_c_a)
 
@@ -172,9 +172,6 @@ class OftenBuyThatToo:
 
             table = pd.DataFrame(
                 list(zip(article_id, pred_id, confidence)), columns=cols)
-            # 結果を保存.
-            table.to_pickle(os.path.join(OftenBuyThatToo.DRIVE_DIR,
-                            f"items_of_other_costomers_{uniBin}.pkl"))
 
             # 最後に結果を保存?
             json_path = os.path.join(
@@ -200,7 +197,7 @@ class OftenBuyThatToo:
                 self.OBTT_ages_dict[uniBin] = json.load(f)
 
         # 「ある客が買った商品一覧」の辞書を読み込み
-        with open(os.path.join(OftenBuyThatToo.DRIVE_DIR, "dict_c_a.json"), mode="r") as f:
+        with open(os.path.join(OftenBuyThatToo.DRIVE_DIR, "dict_c_a_val.json"), mode="r") as f:
             self.c_a_dict = json.load(f)
 
     def create_recommendation(self, dataset: DataSet):
@@ -247,6 +244,7 @@ class OftenBuyThatToo:
                 # 「ある客が買った商品一覧」のdictにユーザidが含まれていれば...
                 # すなわち、2年間で一度でも購入した事があるユーザなら...
                 if customer_id in self.c_a_dict:
+                    print('True!')
                     # レコメンド候補のarticle_id:スコアを格納するdictをInitialize
                     purchase_dict = {}
                     # 過去に買った商品のリストを取得
