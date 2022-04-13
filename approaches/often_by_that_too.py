@@ -197,6 +197,7 @@ class OftenBuyThatToo:
                 self.OBTT_ages_dict[uniBin] = json.load(f)
 
         print(self.OBTT_ages_dict.keys())
+        print(type(self.OBTT_ages_dict['(39, 49]']))
 
         # 「ある客が買った商品一覧」の辞書を読み込み
         with open(os.path.join(OftenBuyThatToo.DRIVE_DIR, "dict_c_a_val.json"), mode="r") as f:
