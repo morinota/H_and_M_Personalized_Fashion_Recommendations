@@ -182,6 +182,9 @@ class OftenBuyThatToo:
 
         # 「ある商品を買った人が他に買った商品ランキング」を年齢層グループ毎に読み込み
         for uniBin in self.listUniBins:
+            # グルーピングがnanなら次のループへ
+            if uniBin == 'nan':
+                continue
             json_path = os.path.join(
                 OftenBuyThatToo.DRIVE_DIR, f"items_of_other_costomers_{uniBin}.json")
             with open(json_path, mode="r") as f:
