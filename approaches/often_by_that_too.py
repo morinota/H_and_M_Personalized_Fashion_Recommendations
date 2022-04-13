@@ -242,7 +242,7 @@ class OftenBuyThatToo:
             # レコメンド対象の各ユーザに対して繰り返し処理
             for customer_id in tqdm(sub['customer_id_short']):
 
-                customer_id = int(customer_id)
+                customer_id = str(customer_id)
                 # 「ある客が買った商品一覧」のdictにユーザidが含まれていれば...
                 # すなわち、2年間で一度でも購入した事があるユーザなら...
                 if customer_id in self.c_a_dict:
