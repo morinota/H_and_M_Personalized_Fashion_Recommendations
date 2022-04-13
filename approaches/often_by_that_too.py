@@ -99,7 +99,9 @@ class OftenBuyThatToo:
         for i in tqdm(range(len(df))):
             customer_id = df.loc[i, "customer_id_short"]
             article_id = df.loc[i, "article_id"]
-            age_bin = cus_agebins[i]
+            # ユーザのage_binを取得.
+            age_bin = dataset.dfu['customer_id_short' ==
+                                                  customer_id]['age_bins']
             ds_dict_a_c[age_bin][int(article_id)] += [int(customer_id)]
 
         # 作成したdictをインスタンス変数に保存
