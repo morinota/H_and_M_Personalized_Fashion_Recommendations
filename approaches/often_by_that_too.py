@@ -205,6 +205,9 @@ class OftenBuyThatToo:
     def create_recommendation(self, dataset: DataSet):
         """レコメンド結果を作成する(予測する)メソッド。
         """
+        listBin = [-1, 19, 29, 39, 49, 59, 69, 119]
+        dataset.dfu['age_bins'] = pd.cut(
+            dataset.dfu['age'], listBin).astype(str)
         # レコメンドの枠として、sample_submissionを生成為ておく。
         sub = dataset.df_sub
         # レコメンドアイテムの個数
