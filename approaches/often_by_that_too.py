@@ -131,9 +131,9 @@ class OftenBuyThatToo:
                 continue
 
             # 結果格納用のTemporalな変数をInitialize
-            article_id = []
-            pred_id = []
-            confidence = []
+            article_ids = []
+            pred_ids = []
+            confidences = []
             ranking = {}
 
             # 各「あるアイテム」と「ある商品を買った客一覧」毎に、繰り返し処理していく
@@ -165,9 +165,9 @@ class OftenBuyThatToo:
                 conf_list = sorted(count, reverse=True)[:100]
 
                 # 結果格納用(全アイテム)のリストに、各アイテムの結果を追加。
-                article_id.extend(art_list)
-                pred_id.extend(pred_list)
-                confidence.extend(conf_list)
+                article_ids.extend(art_list)
+                pred_ids.extend(pred_list)
+                confidences.extend(conf_list)
 
                 ranking[article_id] = pred_list
                 del art_list
@@ -175,7 +175,7 @@ class OftenBuyThatToo:
                 del conf_list
 
             table = pd.DataFrame(
-                list(zip(article_id, pred_id, confidence)), columns=cols)
+                list(zip(article_ids, pred_ids, confidences)), columns=cols)
 
             # 最後に結果を保存?
             json_path = os.path.join(
