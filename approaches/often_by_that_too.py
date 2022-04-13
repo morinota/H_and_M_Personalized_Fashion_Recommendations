@@ -257,10 +257,11 @@ class OftenBuyThatToo:
                     customer_ageBin = dataset.dfu[mask]['age_bins'].values[0]
                     # 「ある商品を買った人が他に買った商品ランキング」の年齢層グループを決定
                     ds_dict = self.OBTT_ages_dict[str(customer_ageBin)]
-
+                    print(ds_dict.keys())
                     # 各「過去に買った商品」に対して繰り返し処理：
                     for art_id in past_list:
                         # 各「過去に買った商品」に対して「ある商品を買った人が他に買った商品ランキング」を取得
+                        print(ds_dict[str(art_id)])
                         rank_list:List[int] = ds_dict[str(art_id)]
                         # ランキング上位M個に対して繰り返し処理：
                         for j in range(M):
