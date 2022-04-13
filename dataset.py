@@ -36,6 +36,8 @@ class DataSet:
             # 各顧客の情報(メタデータ)
             self.dfu = pd.read_parquet(os.path.join(
                 DataSet.DRIVE_DIR, 'customers.parquet'))
+            self.dfu.rename(
+                columns={'customer_id': 'customer_id_short'}, inplace=True)
             # 各商品の情報(メタデータ)
             self.dfi = pd.read_parquet(os.path.join(
                 DataSet.DRIVE_DIR, 'articles.parquet'))

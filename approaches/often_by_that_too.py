@@ -88,20 +88,20 @@ class OftenBuyThatToo:
             customer_id = df.loc[i, "customer_id_short"]
             article_id = df.loc[i, "article_id"]
             # ユーザのage_binを取得.
-            age_bin = dataset.dfu['customer_id_short' ==
-                                                  customer_id]['age_bins']
+            mask = dataset.dfu['customer_id_short'] == int(customer_id)
+            age_bin = dataset.dfu[mask]['age_bins']
             # 各年齢層毎の「ある商品を買った客一覧」のDictに、対象アイテムをkeyで登録していく。
             # valueは空のリスト。考えてみると、この方法が可読性高いかも。
             ds_dict_a_c[age_bin][int(article_id)] = []
 
         # 再度、学習期間の、トランザクション1つ1つに対して処理を実行
-        # Initializeした、対象アイテム：空のリストに、要素(customer_id)を追加していく。
         for i in tqdm(range(len(df))):
             customer_id = df.loc[i, "customer_id_short"]
             article_id = df.loc[i, "article_id"]
             # ユーザのage_binを取得.
-            age_bin = dataset.dfu['customer_id_short' ==
-                                                  customer_id]['age_bins']
+            mask = dataset.dfu['customer_id_short'] == int(customer_id)
+            age_bin = dataset.dfu[mask]['age_bins']
+            # 前のループ処理でInitializeした、対象アイテム：空のリストに、要素(customer_id)を追加していく。
             ds_dict_a_c[age_bin][int(article_id)] += [int(customer_id)]
 
         # 作成したdictをインスタンス変数に保存
@@ -251,8 +251,8 @@ class OftenBuyThatToo:
                     past_list = self.c_a_dict[customer_id]
 
                     # ユーザがどの年齢層グループか取得
-                    customer_ageBin = dataset.dfu['customer_id_short' ==
-                                                  customer_id]['age_bins']
+                    mask = dataset.dfu['customer_id_short'] == int(customer_id)
+                    customer_ageBin = dataset.dfu[mask]['age_bins']
                     # 「ある商品を買った人が他に買った商品ランキング」の年齢層グループを決定
                     ds_dict = self.OBTT_ages_dict[str(customer_ageBin)]
 
