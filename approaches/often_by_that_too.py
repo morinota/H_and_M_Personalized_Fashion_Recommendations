@@ -50,7 +50,9 @@ class OftenBuyThatToo:
         # まずは、「各ユーザが買った商品一覧」のDictを作っていく。
         # 結果格納用のdictをInitialize
         ds_dict_c_a: Dict[str, List[str]] = {}
-
+        
+        print(len(df))
+        print(df)
         # 学習期間の、トランザクション1つ1つに対して処理を実行
         for i in tqdm(range(len(df))):
             # トランザクションのユーザid、アイテムidを取得.
