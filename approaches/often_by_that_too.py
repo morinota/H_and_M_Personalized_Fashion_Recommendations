@@ -31,9 +31,9 @@ class OftenBuyThatToo:
     def create_ranking(self, dataset: DataSet, test_bool = False):
         # 動作確認用の時は...
         if test_bool:
-            df =self.transaction_train[:10000]
+            df =self.transaction_train[:10000].reset_index()
         else:
-            df = self.transaction_train
+            df = self.transaction_train.reset_index()
 
 
         # 年齢層ごとに別のランキングを作りたいので、客がどの年齢層に所属しているかを示すカラムを作っていく。
