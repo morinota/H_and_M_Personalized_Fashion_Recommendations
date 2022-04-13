@@ -91,7 +91,7 @@ class OftenBuyThatToo:
             mask = dataset.dfu['customer_id_short'] == int(customer_id)
             age_bin = dataset.dfu[mask]['age_bins']
             print(type(age_bin))
-            print(age_bin)
+            print(str(age_bin.values))
             # 各年齢層毎の「ある商品を買った客一覧」のDictに、対象アイテムをkeyで登録していく。
             # valueは空のリスト。考えてみると、この方法が可読性高いかも。
             ds_dict_a_c[age_bin][int(article_id)] = []
