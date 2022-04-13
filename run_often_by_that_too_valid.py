@@ -16,7 +16,7 @@ def main():
     # DataSetオブジェクトの読み込み
     dataset = DataSet()
     # DataFrameとしてデータ読み込み
-    dataset.read_data(c_id_short=False)
+    dataset.read_data(c_id_short=True)
     print("1")
 
     # One-week hold-out validation
@@ -36,8 +36,8 @@ def main():
     print("2")
 
     # 全ユーザをグルーピング
-    # group_series = user_grouping_online_and_offline(dataset=dataset)
-    # print(type(group_series))
+    group_series = user_grouping_online_and_offline(dataset=dataset)
+    print(type(group_series))
     print("2")
 
     # レコメンド結果を作成し、RecommendResults結果に保存していく。
