@@ -16,7 +16,7 @@ def main():
     # DataSetオブジェクトの読み込み
     dataset = DataSet()
     # DataFrameとしてデータ読み込み
-    dataset.read_data()
+    dataset.read_data(c_id_short=False)
     print("1")
 
     # One-week hold-out validation
@@ -44,7 +44,7 @@ def main():
     recommend_results_valid = RecommendResults()
     # とりあえずLast Purchased Item
     model = OftenBuyThatToo(transaction_train=train_df)
-    model.create_ranking(dataset=dataset)
+    model.create_ranking(dataset=dataset, test_bool=True)
 
     print("3")
 

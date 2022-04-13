@@ -2,6 +2,7 @@
 import imp
 import os
 import pandas as pd
+from bitarray import test
 import implicit
 import numpy as np
 import scipy.sparse
@@ -29,7 +30,13 @@ class OftenBuyThatToo:
         self.transaction_train = transaction_train
         pass
 
-    def create_ranking(self, dataset: DataSet):
+    def create_ranking(self, dataset: DataSet, test_bool = False):
+        # 動作確認用の時は...
+        if test_bool:
+            df =self.transaction_train[:10000]
+        else:
+            df = self.transaction_train
+
 
         # 年齢層ごとに別のランキングを作りたいので、客がどの年齢層に所属しているかを示すカラムを作っていく。
         listBin = [-1, 19, 29, 39, 49, 59, 69, 119]
@@ -47,7 +54,6 @@ class OftenBuyThatToo:
         ds_dict_c_a: Dict[str, List[str]] = {}
 
         # 学習期間の、トランザクション1つ1つに対して処理を実行
-        df = self.transaction_train
         for i in tqdm(range(len(df))):
             # トランザクションのユーザid、アイテムidを取得.
             customer_id = df.loc[i, "customer_id_short"]

@@ -17,7 +17,7 @@ class DataSet:
         self.df_val: pd.DataFrame
         pass
 
-    def read_data(self):
+    def read_data(self, c_id_short:bool=True):
 
         # ファイルパスを用意
         csv_train = os.path.join(DataSet.INPUT_DIR, 'transactions_train.csv')
@@ -26,28 +26,33 @@ class DataSet:
         csv_items = os.path.join(DataSet.INPUT_DIR, 'articles.csv')
 
         # データをDataFrame型で読み込み
-
-        # self.df = pd.read_csv(csv_train, dtype={'article_id': str},
-        #                       parse_dates=['t_dat'] # datetime型で読み込み
-        #                       )  # 実際の購買記録の情報
-        self.df = pd.read_parquet(os.path.join(
-            DataSet.DRIVE_DIR, 'transactions_train.parquet'))
-        # dfのcustomer_idはshort版に加工されてるから、カラム名を変更しておく
-        self.df.rename(columns={'customer_id':'customer_id_short'}, inplace=True)
-        print(self.df.columns)
+        if c_id_short == True:
+            # 実際の購買記録の情報
+            self.df = pd.read_parquet(os.path.join(
+                DataSet.DRIVE_DIR, 'transactions_train.parquet'))
+            # dfのcustomer_idはshort版に加工されてるから、カラム名を変更しておく
+            self.df.rename(
+                columns={'customer_id': 'customer_id_short'}, inplace=True)
+            # 各顧客の情報(メタデータ)
+            self.dfu = pd.read_parquet(os.path.join(
+                DataSet.DRIVE_DIR, 'customers.parquet'))
+            # 各商品の情報(メタデータ)
+            self.dfi = pd.read_parquet(os.path.join(
+                DataSet.DRIVE_DIR, 'articles.parquet'))
+        else:
+            self.df = pd.read_csv(csv_train, dtype={'article_id': str},
+                                  parse_dates=['t_dat']  # datetime型で読み込み
+                                  )
+            self.dfu = pd.read_csv(csv_users)  # 各顧客の情報(メタデータ)
+            self.dfi = pd.read_csv(
+                csv_items, dtype={'article_id': str})  # 各商品の情報(メタデータ)
 
         # 提出用のサンプル
-        self.df_sub = pd.read_csv(csv_sub)  
-        # self.dfu = pd.read_csv(csv_users)  # 各顧客の情報(メタデータ)
-        self.dfu = pd.read_parquet(os.path.join(
-            DataSet.DRIVE_DIR, 'customers.parquet'))  # 各顧客の情報(メタデータ)
-
-        # self.dfi = pd.read_csv(csv_items, dtype={'article_id': str})  # 各商品の情報(メタデータ)
-        self.dfi = pd.read_parquet(os.path.join(
-            DataSet.DRIVE_DIR, 'articles.parquet'))  # 各商品の情報(メタデータ)
+        self.df_sub = pd.read_csv(csv_sub)
 
         # customer_idカラムのみのpd.DataFrameを作っておく(たぶん色々便利なので)
-        self.df_sub["customer_id_short"] = pd.DataFrame(self.df_sub["customer_id"].apply(lambda s: int(s[-16:], 16))).astype("uint64")
+        self.df_sub["customer_id_short"] = pd.DataFrame(
+            self.df_sub["customer_id"].apply(lambda s: int(s[-16:], 16))).astype("uint64")
         self.cid = pd.DataFrame(self.df_sub["customer_id_short"])
 
     def _extract_byDay(self):

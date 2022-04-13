@@ -9,6 +9,7 @@ from oneweek_holdout_validation import get_train_oneweek_holdout_validation, get
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 
 
+
 def main():
     # kaggle APIからデータロード
     load_data()
