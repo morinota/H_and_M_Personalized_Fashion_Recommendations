@@ -45,6 +45,8 @@ class OftenBuyThatToo:
         # 年齢層グルーピングのSeriesを取得
         cus_agebins = dataset.dfu['age_bins'].astype(str)
         print(cus_agebins.head())
+        print(len(cus_agebins))
+
         # 年齢層グルーピングのユニーク値のリストを取得
         self.listUniBins = dataset.dfu['age_bins'].unique().tolist()
 
