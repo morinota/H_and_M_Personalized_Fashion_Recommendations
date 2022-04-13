@@ -51,12 +51,12 @@ def main():
     print("3")
 
     # # One-week hold-out validationのオフライン評価
-    # score = partitioned_validation(val_df=val_df,
-    #                                pred_df=df_pred,
-    #                                grouping=group_series,
-    #                                approach_name="last_purchased_items"
-    #                                )
-    # print(score.head())
+    score = partitioned_validation(val_df=val_df,
+                                   pred_df=df_pred,
+                                   grouping=group_series,
+                                   approach_name="last_purchased_items"
+                                   )
+    print(score.head())
 
 
 if __name__ == '__main__':

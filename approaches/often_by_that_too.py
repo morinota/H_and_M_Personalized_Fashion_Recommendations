@@ -27,6 +27,7 @@ class OftenBuyThatToo:
         self.ALL_ITEMS = []
         self.ALL_USERS = []
         self.transaction_train = transaction_train
+        self.OBTT_ages_dict: Dict[str, Dict[int, int]] = {}
         pass
 
     def create_ranking(self, dataset: DataSet, test_bool=False):
@@ -185,7 +186,7 @@ class OftenBuyThatToo:
                 OftenBuyThatToo.DRIVE_DIR, f"items_of_other_costomers_{uniBin}.json")
             with open(json_path, mode="r") as f:
                 # {"年齢層bin": {アイテムid: [アイテムid, ...]}}
-                self.OBTT_ages_dict: Dict[str, Dict[int, int]]
+                
                 self.OBTT_ages_dict[uniBin] = json.load(f)
 
         # 「ある客が買った商品一覧」の辞書を読み込み
