@@ -2,7 +2,7 @@
 
 - レコメンドを予測するのは、transaction_train.csvの最終週の翌週1週間の各ユーザの購入。
 - 予測対象の一週間はどんな季節？
-  - =>transaction_train.csvの最終週は～2020年9月22日。
+  - =>transaction_train.csvの最終週は2020年9月16～2020年9月22日。
   - よって、予測するのは2020年9月23日～2020年9月29日の7日間。
   - 前年度の同シーズンの売れ筋とか見てもいいかも。
 - グルーピング毎に、各レコメンド手法のオフライン精度評価は異なる！
@@ -26,6 +26,7 @@
   - アクセサリを買う事が多い人か、服を買うことが多い人か、下着を買うことが多い人か、etc.
 
 # 2022/04/09
+
 - 各レコメンド手法の結果をまとめて管理するRecommendResultsクラスを定義する。
   - Validationしやすくなりそう？
   - こういうグルーピングのユーザにはこのレコメンド手法の精度がよさそう！みたいな調査ができそう...!
@@ -36,6 +37,7 @@
   - ＝＞だから結局、任意の期間の学習データを渡して、各レコメンド手法を実行するコードを書く必要がある！
 
 # 2022/04/10
+
 - Partitioned_validationが思った通りの挙動をしてくれない...
   - One-week holdout関数は上手く機能してる。
   - Datasetオブジェクトも問題なし。
@@ -45,4 +47,23 @@
     - もしくはその下の処理？
   - ＝＞何が間違ってたのかまだ分かってないけど、とりあえず見本のNotebookの関数をとってきて、何とかパイプラインが正しい評価値を出せるようになった！
 - 以降は、色んなレコメンド手法やグルーピング毎のValidationを進めていく！
-    - 
+
+# 2022/04/14
+
+    - Google Drive以下のval_results_csvに検証用のレコメンド結果を保存していく。
+      - last purchased items
+      - TimeDecayingPopularity
+      - Time is our best friend
+      - Rule based by customer age
+      - Trending Product
+      - Implicit ALS
+      - Byfone approach
+      - Chris approach
+      - Byfone and Chris combination
+      - LSTM_item_features
+      - SVD reRanking 
+
+# 2022/04/16
+- 検証用データをまとめるクラスを定義する?
+  - 検証用データが格納されたフォルダを指定して、globとか使う？
+  - ファイル名＝＞アプローチ名を取得？

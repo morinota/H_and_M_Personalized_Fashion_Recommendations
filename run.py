@@ -1,3 +1,8 @@
+import numpy as np
+import pandas as pd
+from tqdm import tqdm
+from datetime import datetime
+from re import I
 from tokenize import group
 from kaggle_api import load_data
 from dataset import DataSet
@@ -6,6 +11,8 @@ from partitioned_validation import partitioned_validation, user_grouping_online_
 from recommend_results import RecommendResults
 from oneweek_holdout_validation import get_train_oneweek_holdout_validation, get_valid_oneweek_holdout_validation
 from recommend_emsemble import recommend_emsemble
+import os
+from torch import CudaIntStorageBase
 
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 
@@ -75,16 +82,19 @@ def main():
                         "popular_items_for_each_groupm": df_pred_3
                         }
     predicted_weights = [100, 10, 1]
-    df_pred_0 = recommend_emsemble(predicted_kwargs=predicted_kwargs, weight_args=predicted_weights, 
-    dataset=dataset, val_week_id=val_week_id)
+    df_pred_0 = recommend_emsemble(predicted_kwargs=predicted_kwargs, weight_args=predicted_weights,
+                                   dataset=dataset, val_week_id=val_week_id)
 
     score_df = partitioned_validation(val_df=val_df,
-                                    pred_df=df_pred_0,
-                                    score=score_df,
-                                    grouping=group_series['group'],
-                                    approach_name="blend"
-                                    )
+                                      pred_df=df_pred_0,
+                                      score=score_df,
+                                      grouping=group_series['group'],
+                                      approach_name="blend"
+                                      )
     print(score_df.head())
+
+    val_result_dir = os.path.join(DRIVE_DIR, 'val_results_csv')
+    score_df.to_csv(os.path.join(val_result_dir, 'val_last_purchased.csv'))
 
 
 if __name__ == '__main__':
