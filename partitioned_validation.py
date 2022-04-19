@@ -17,7 +17,7 @@ INPUT_DIR = 'input'
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 
 
-def partitioned_validation(val_df:pd.DataFrame, pred_df:pd.DataFrame, grouping: pd.Series, score: pd.DataFrame = 0, approach_name: str = "last_purchased_items", ignore: bool = False, figsize=(12, 6)):
+def partitioned_validation(val_df: pd.DataFrame, pred_df: pd.DataFrame, grouping: pd.Series, score: pd.DataFrame = 0, approach_name: str = "last_purchased_items", ignore: bool = False, figsize=(12, 6)):
     """全ユーザのレコメンド結果を受け取り、グルーピング毎に予測精度を評価する関数。
 
     Parameters
@@ -45,15 +45,17 @@ def partitioned_validation(val_df:pd.DataFrame, pred_df:pd.DataFrame, grouping: 
     """
 
     # val_df["article_id"], dataset.df_sub["last_purchased_items"]からactual, predictedを抽出する.
-    ## レコードの順番をそろえたい...。
+    # レコードの順番をそろえたい...。
     # val_df = val_df.sort_values(by='customer_id_short')
     # pred_df = pred_df.sort_values(by='customer_id_short')
     print(val_df[['customer_id_short', 'article_id']].head())
-    print(pred_df[['customer_id_short', 'predicted']].head())
+    print(pred_df[['customer_id_short', f'{approach_name}']].head())
 
-    ## Listで抽出
-    actual:List[List[str]] = val_df['article_id'].apply(lambda s: [] if pd.isna(s) else s.split())
-    predicted:List[List[str]] = pred_df['predicted'].apply(lambda s: [] if pd.isna(s) else s.split())
+    # Listで抽出
+    actual: List[List[str]] = val_df['article_id'].apply(
+        lambda s: [] if pd.isna(s) else s.split())
+    predicted: List[List[str]] = pred_df[f'{approach_name}'].apply(
+        lambda s: [] if pd.isna(s) else s.split())
 
     k = 12
 
@@ -69,17 +71,22 @@ def partitioned_validation(val_df:pd.DataFrame, pred_df:pd.DataFrame, grouping: 
     # isinstance()関数でオブジェクトのデータ型を判定
     # 本来はscoreに各Validation結果を格納していく？
     # scoreがDataFrameじゃなかったら、結果格納用のDataFrameをInitialize
-    if isinstance(score, int): score = pd.DataFrame({g:[] for g in sorted(grouping.unique().tolist())})
+    if isinstance(score, int):
+        score = pd.DataFrame({g: []
+                             for g in sorted(grouping.unique().tolist())})
 
     # もしindex引数が－１だったら...何の処理?
-    if approach_name == -1 : approach_name = score.shape[0]
+    if approach_name == -1:
+        approach_name = score.shape[0]
 
     # 結果をDataFrameに保存
     score.loc[approach_name, "All"] = map12
 
     # MAP@kの結果を描画。(「各ユーザのAP@kの値」を集計して、ヒストグラムへ。なお縦軸は対数軸！)
     plt.figure(figsize=figsize)
-    plt.subplot(1, 2, 1); sns.histplot(data=ap12, log_scale=(0, 10), bins=20); plt.title(f"MAP@12 : {map12}")
+    plt.subplot(1, 2, 1)
+    sns.histplot(data=ap12, log_scale=(0, 10), bins=20)
+    plt.title(f"MAP@12 : {map12}")
 
     # グルーピング毎のValidation結果を作成
     for g in grouping.unique():
@@ -89,21 +96,37 @@ def partitioned_validation(val_df:pd.DataFrame, pred_df:pd.DataFrame, grouping: 
         print(map12)
 
     # バープロットの描画
-    plt.subplot(1, 2, 2); score[[g for g in grouping.unique()[::-1]] + ['All']].loc[approach_name].plot.barh(); plt.title(f"MAP@12 of Groups")
-    
+    plt.subplot(1, 2, 2)
+    score[[g for g in grouping.unique()[::-1]] + ['All']
+          ].loc[approach_name].plot.barh()
+    plt.title(f"MAP@12 of Groups")
+
     # 何の処理?
     vc = pd.Series(predicted).apply(len).value_counts()
-    score.loc[approach_name, "Fill"] = round(1 - sum(vc[k] * (12 - k) / 12 for k in (set(range(12)) & set(vc.index))) / len(actual), 3) * 100
-    
+    score.loc[approach_name, "Fill"] = round(
+        1 - sum(vc[k] * (12 - k) / 12 for k in (set(range(12)) & set(vc.index))) / len(actual), 3) * 100
+
     return score
 
 
 def user_grouping_online_and_offline(dataset: DataSet) -> pd.DataFrame:
+    """Datasetオブジェクトを受け取って、各ユーザの「オンライン販売かオフライン販売のどちらで多く購入する習慣があるか」でグルーピングする関数。
+
+    Parameters
+    ----------
+    dataset : DataSet
+        _description_
+
+    Returns
+    -------
+    pd.DataFrame
+        グルーピング結果を格納したDataFrame。
+    """
     grouping_column: str = "sales_channel_id"
 
     # ユーザレコードの補完用にcustomer_id_dfを使う.
     alluser_df = dataset.cid
-    
+
     if 'customer_id_short' in dataset.df.columns:
         # defaultでは、各ユーザが「オンライン販売かオフライン販売」のどちらで多く購入する週間があるかでグルーピングしてる。
         group: pd.DataFrame = dataset.df.groupby('customer_id_short')[

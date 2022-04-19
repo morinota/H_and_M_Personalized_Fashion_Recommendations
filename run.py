@@ -43,8 +43,8 @@ def main():
     print("2")
 
     # 全ユーザをグルーピング
-    group_series = user_grouping_online_and_offline(dataset=dataset)
-    print(type(group_series))
+    grouping_df = user_grouping_online_and_offline(dataset=dataset)
+    print(type(grouping_df))
     print("2")
 
     # レコメンド結果を作成し、RecommendResults結果に保存していく。
@@ -55,26 +55,26 @@ def main():
     df_pred_2 = last_purchased.other_colors_of_purchased_item(
         train_transaction=train_df, dataset=dataset)
     df_pred_3 = last_purchased.popular_items_for_each_group(
-        train_transaction=train_df, dataset=dataset, grouping_df=group_series)
+        train_transaction=train_df, dataset=dataset, grouping_df=grouping_df)
 
     print("3")
 
     # One-week hold-out validationのオフライン評価
     score_df = partitioned_validation(val_df=val_df,
                                       pred_df=df_pred_1,
-                                      grouping=group_series['group'],
+                                      grouping=grouping_df['group'],
                                       approach_name="last_purchased_items"
                                       )
     score_df = partitioned_validation(val_df=val_df,
                                       pred_df=df_pred_2,
                                       score=score_df,
-                                      grouping=group_series['group'],
+                                      grouping=grouping_df['group'],
                                       approach_name="other_colors_of_purchased_item"
                                       )
     score_df = partitioned_validation(val_df=val_df,
                                       pred_df=df_pred_3,
                                       score=score_df,
-                                      grouping=group_series['group'],
+                                      grouping=grouping_df['group'],
                                       approach_name="popular_items_for_each_group"
                                       )
     predicted_kwargs = {"last_purchased_items": df_pred_1,
@@ -88,7 +88,7 @@ def main():
     score_df = partitioned_validation(val_df=val_df,
                                       pred_df=df_pred_0,
                                       score=score_df,
-                                      grouping=group_series['group'],
+                                      grouping=grouping_df['group'],
                                       approach_name="blend"
                                       )
     print(score_df.head())
