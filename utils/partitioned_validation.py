@@ -144,12 +144,33 @@ def user_grouping_online_and_offline(dataset: DataSet) -> pd.DataFrame:
     return grouping_df
 
 def user_grouping_age_bin(dataset: DataSet) -> pd.DataFrame:
+    """Datasetオブジェクトを受け取って、
+    各ユーザの年齢層でグルーピングする関数。
+
+    Parameters
+    ----------
+    dataset : DataSet
+        _description_
+
+    Returns
+    -------
+    pd.DataFrame
+        _description_
+    """
 
     # ユーザのメタデータを使用する
     df_customer = dataset.dfu
     # 年齢層毎にグルーピング
     listBin = [-1, 19, 29, 39, 49, 59, 69, 119]
     df_customer['age_bins'] = pd.cut(df_customer['age'], listBin)
+    # 年齢の欠損値の数を確認
+    x = df_customer[df_customer['age_bins'].isnull()].shape[0]
+    print(f'{x} customer_id do not have age information.\n')
+    # =>とりあえず欠損値のままでOK？
+
+    # 返値用のdfを生成
+    df_customer.rename(columns={'age_bin':'group'}, inplace=True)
+    grouping_df = df_customer[['customer_id_short', 'group']]
 
     return grouping_df
 
