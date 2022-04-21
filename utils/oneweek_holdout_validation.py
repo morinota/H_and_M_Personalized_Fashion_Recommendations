@@ -54,7 +54,7 @@ def get_valid_oneweek_holdout_validation(dataset: DataSet, val_week_id: int = 10
     return val_df
 
 
-def get_train_oneweek_holdout_validation(dataset: DataSet, val_week_id: int = 104, training_days: int = 9999, how: str = "from_init_date_to_last_date") -> pd.DataFrame:
+def get_train_oneweek_holdout_validation(dataset: DataSet, val_week_id: int = 104, training_days: int = 31, how: str = "from_init_date_to_last_date") -> pd.DataFrame:
 
     # 学習用データを作成する
     transaction_df_train = pd.DataFrame()

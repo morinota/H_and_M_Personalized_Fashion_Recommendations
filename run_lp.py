@@ -93,7 +93,7 @@ def main(val_week_id=104):
         '''
 if val_week_id == 105:
     sub_result_dir = os.path.join(DRIVE_DIR, 'submission_csv')
-    df_sub.to_csv(os.path.join(val_result_dir, 'val_last_purchased.csv'))
+    df_pred.to_csv(os.path.join(sub_result_dir, 'val_last_purchased.csv'))
 if __name__ == '__main__':
     create_logger(VERSION)
     get_logger(VERSION).info("メッセージ")

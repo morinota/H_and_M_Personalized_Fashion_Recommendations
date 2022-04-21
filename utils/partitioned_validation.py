@@ -169,7 +169,7 @@ def user_grouping_age_bin(dataset: DataSet) -> pd.DataFrame:
     # =>とりあえず欠損値のままでOK？
 
     # 返値用のdfを生成
-    df_customer.rename(columns={'age_bin':'group'}, inplace=True)
+    df_customer.rename(columns={'age_bins':'group'}, inplace=True)
     grouping_df = df_customer[['customer_id_short', 'group']]
 
     return grouping_df
