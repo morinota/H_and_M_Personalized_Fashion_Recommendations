@@ -1,13 +1,8 @@
-import numpy as np
-import pandas as pd
-from tqdm import tqdm
-from datetime import datetime
 from my_class.dataset import DataSet
 from my_class.results_class import Results
 
-from models import last_purchased
 from utils.partitioned_validation import partitioned_validation, user_grouping_online_and_offline
-from utils.oneweek_holdout_validation import get_train_oneweek_holdout_validation, get_valid_oneweek_holdout_validation
+from utils.oneweek_holdout_validation import get_valid_oneweek_holdout_validation
 
 from logs.base_log import create_logger, get_logger, stop_watch
 # from logs.time_keeper import stop_watch
@@ -18,18 +13,19 @@ VERSION = "partationed_validation_models"
 
 
 @stop_watch(VERSION)
-def validation_eachmodel(val_results:Results, val_df, grouping_df):
+def validation_eachmodel(val_results: Results, val_df, grouping_df):
     score_df = 0
     for name in val_results.approach_names_list:
 
         score_df = partitioned_validation(val_df=val_df,
-                                      pred_df=val_results.df_sub,
-                                      score=score_df,
-                                      grouping=grouping_df['group'],
-                                      approach_name=name
-                                      )
+                                          pred_df=val_results.df_sub,
+                                          score=score_df,
+                                          grouping=grouping_df['group'],
+                                          approach_name=name
+                                          )
 
     return score_df
+
 
 def main():
     # DataSetオブジェクトの読み込み
@@ -41,7 +37,7 @@ def main():
     val_df = get_valid_oneweek_holdout_validation(
         dataset=dataset,  # type: ignore
         val_week_id=104
-        )
+    )
 
     # レコメンド結果の読み込み
     val_results = Results()
@@ -55,6 +51,7 @@ def main():
     score_df = validation_eachmodel(val_results, val_df, grouping_df)
     # スコアをロギング
     get_logger(VERSION).info('\t' + score_df.to_string().replace('\n', '\n\t'))
+
 
 if __name__ == '__main__':
     create_logger(VERSION)
