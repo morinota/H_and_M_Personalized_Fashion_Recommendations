@@ -42,9 +42,9 @@ def last_purchased_items(train_transaction: pd.DataFrame, dataset: DataSet) -> p
                                                       on='customer_id_short',
                                                       how='right'
                                                       )["article_id"].fillna('')
-    dataset.df_sub['predicted'] = dataset.df_sub['last_purchased_items']
+    dataset.df_sub['prediction'] = dataset.df_sub['last_purchased_items']
     # 結果はcustomer_idとpredictedをカラムに持つDataFrameにする。
-    df_pred = dataset.df_sub[['customer_id_short', 'predicted']].copy()
+    df_pred = dataset.df_sub[['customer_id_short', 'prediction']].copy()
 
 
     # 返値は2つにしておく?

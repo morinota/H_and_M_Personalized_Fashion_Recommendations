@@ -52,12 +52,12 @@ def partitioned_validation(val_df: pd.DataFrame, pred_df: pd.DataFrame, grouping
     # val_df = val_df.sort_values(by='customer_id_short')
     # pred_df = pred_df.sort_values(by='customer_id_short')
     print(val_df[['customer_id_short', 'article_id']].head())
-    print(pred_df[['customer_id_short', f'{approach_name}']].head())
+    print(pred_df[['customer_id_short', f'prediction']].head())
 
     # Listで抽出
     actual: List[List[str]] = val_df['article_id'].apply(
         lambda s: [] if pd.isna(s) else s.split())
-    predicted: List[List[str]] = pred_df[f'{approach_name}'].apply(
+    predicted: List[List[str]] = pred_df['prediction'].apply(
         lambda s: [] if pd.isna(s) else s.split())
 
     k = 12
