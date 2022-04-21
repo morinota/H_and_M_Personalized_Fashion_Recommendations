@@ -43,10 +43,7 @@ def main(val_week_id=104):
     # レコメンド結果を生成
     model = MatrixFactrization(transaction_train=train_df, dataset=dataset)
     model.preprocessing()
-    model.fit(hyper_params={'factors': 500,
-                            'iterations': 3,
-                            'regularization': 0.01,
-                            'confidence': 50}
+    model.fit(hyper_params={}
               )
     df_sub = model.create_reccomendation()
 
