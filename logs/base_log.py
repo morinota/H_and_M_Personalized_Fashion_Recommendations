@@ -9,8 +9,8 @@ DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized
 
 def create_logger(exp_version: str):
     # ログファイルのパス
-    log_file_path = (os.path.join(DRIVE_DIR, f'logs/{exp_version}.log'))
-    # log_file_path = ('logs/' + f'log_{exp_version}.log')
+    # log_file_path = (os.path.join(DRIVE_DIR, f'logs/{exp_version}.log'))
+    log_file_path = ('logs/' + f'log_{exp_version}.log')
 
     # loggerインスタンスの生成
     logger_ = logging.getLogger(name=exp_version)
