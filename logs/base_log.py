@@ -9,7 +9,8 @@ DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized
 
 def create_logger(exp_version: str):
     # ログファイルのパス
-    log_file = (os.path.join(DRIVE_DIR, f'log/{exp_version}.log'))
+    log_file_path = (os.path.join(DRIVE_DIR, f'log/{exp_version}.log'))
+    # log_file_path = ('logs/' + f'log_{exp_version}.log')
 
     # loggerインスタンスの生成
     logger_ = logging.getLogger(name=exp_version)
@@ -19,7 +20,7 @@ def create_logger(exp_version: str):
     fmr = logging.Formatter("[%(levelname)s] %(asctime)s >>\t%(message)s")
 
     # file handlerインスタンスの生成
-    fh = logging.FileHandler(log_file)
+    fh = logging.FileHandler(filename=log_file_path, mode='a')
     fh.setLevel(level=logging.DEBUG)
     fh.setFormatter(fmt=fmr)
 
@@ -58,3 +59,7 @@ def stop_watch(VERSION):
         return wrapper
 
     return _stop_watch
+
+create_logger('20220421テスト')
+get_logger('20220421テスト').info("メッセージ")
+print('finish')
