@@ -1,4 +1,4 @@
-from scripts.dataset import DataSet
+from my_class.dataset import DataSet
 from utils.useful_func import iter_to_str
 from multiprocessing.spawn import import_main_path
 import os
