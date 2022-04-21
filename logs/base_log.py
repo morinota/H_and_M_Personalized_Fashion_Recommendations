@@ -60,6 +60,7 @@ def stop_watch(VERSION):
 
     return _stop_watch
 
-create_logger('20220421テスト')
-get_logger('20220421テスト').info("メッセージ")
-print('finish')
+if __name__ == '__main__':
+    create_logger('20220421テスト')
+    get_logger('20220421テスト').info("メッセージ")
+    print('finish')
