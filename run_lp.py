@@ -2,9 +2,6 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from datetime import datetime
-from re import I
-from tokenize import group
-from kaggle_api import load_data
 from dataset import DataSet
 from models import last_purchased
 from partitioned_validation import partitioned_validation, user_grouping_online_and_offline
@@ -12,9 +9,8 @@ from recommend_results import RecommendResults
 from oneweek_holdout_validation import get_train_oneweek_holdout_validation, get_valid_oneweek_holdout_validation
 from recommend_emsemble import recommend_emsemble
 import os
-from torch import CudaIntStorageBase
-from logs.base_log import create_logger, get_logger
-from logs.time_keeper import stop_watch
+from logs.base_log import create_logger, get_logger, stop_watch
+# from logs.time_keeper import stop_watch
 
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 
@@ -104,4 +100,5 @@ def main(val_week_id=104):
 if __name__ == '__main__':
     create_logger(VERSION)
     get_logger(VERSION).info("メッセージ")
-    main(val_week_id=104)
+    # main(val_week_id=104)
+
