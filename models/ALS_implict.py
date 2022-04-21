@@ -103,8 +103,8 @@ class MatrixFactrization:
                        show_progress=True)
 
         # 学習後、推定されたUser MatrixとItem Matrixを保存
-        self.user_matrix = self.model.user_factors.to_numpy()
-        self.item_matrix = self.model.item_factors.to_numpy()
+        self.user_matrix = self.model.user_factors
+        self.item_matrix = self.model.item_factors
 
     def _predict(self):
         preds = []
