@@ -1,6 +1,5 @@
 import time
 from functools import wraps
-from unittest import result
 from base_log import get_logger
 
 
