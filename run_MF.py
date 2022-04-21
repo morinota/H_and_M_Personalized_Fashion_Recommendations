@@ -34,7 +34,7 @@ def main(val_week_id=104):
         dataset=dataset,
         val_week_id=104,
         training_days=31,
-        how="from_init_date_to_last_date"
+        how="use_same_season_in_past"
     )
 
     # 全ユーザをグルーピング

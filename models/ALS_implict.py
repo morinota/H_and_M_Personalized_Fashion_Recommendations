@@ -39,8 +39,8 @@ class MatrixFactrization:
         self.item_ids = dict(list(enumerate(self.ALL_ITEMS)))
 
         # 辞書内包表記で、keyとvalueをいれかえてる...なぜ?? =>mapメソッドを使う為.
-        user_map = {u: uidx for uidx, u in user_ids.items()}
-        item_map = {i: iidx for iidx, i in item_ids.items()}
+        user_map = {u: uidx for uidx, u in self.user_ids.items()}
+        item_map = {i: iidx for iidx, i in self.item_ids.items()}
 
         # mapメソッドで置換.
         # 引数にdictを指定すると、keyと一致する要素がvalueに置き換えられる.
