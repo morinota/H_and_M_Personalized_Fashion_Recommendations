@@ -6,7 +6,7 @@ from utils.useful_func import iter_to_str
 import numpy as np
 import scipy.sparse
 from implicit.als import AlternatingLeastSquares
-
+from tqdm import tqdm
 
 INPUT_DIR = r"input"
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
