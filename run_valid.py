@@ -28,7 +28,9 @@ def validation_eachmodel(val_results: Results, val_df, grouping_df)->pd.DataFram
                                           approach_name=name
                                           )
         del pred_df
-        print(type(score_df))
+        print(score_df.columns)
+
+    print(type(score_df))
     return score_df
 
 

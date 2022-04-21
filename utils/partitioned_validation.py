@@ -20,7 +20,7 @@ def divide_transaction_data_with_group(dataset:DataSet, divide_column:str)->pd.D
     pass
 
 
-def partitioned_validation(val_df: pd.DataFrame, pred_df: pd.DataFrame, grouping: pd.Series, score: pd.DataFrame = 0, approach_name: str = "last_purchased_items", ignore: bool = False, figsize=(12, 6)):
+def partitioned_validation(val_df: pd.DataFrame, pred_df: pd.DataFrame, grouping: pd.Series, score: pd.DataFrame = 0, approach_name: str = "last_purchased_items", ignore: bool = False, figsize=(12, 6))->pd.DataFrame:
     """全ユーザのレコメンド結果を受け取り、グルーピング毎に予測精度を評価する関数。
 
     Parameters
