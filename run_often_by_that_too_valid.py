@@ -1,11 +1,11 @@
 
 from approaches.often_by_that_too import OftenBuyThatToo
-from kaggle_api import load_data
-from dataset import DataSet
+from utils.kaggle_api import load_data
+from scripts.dataset import DataSet
 from approaches.last_purchased import last_purchased_items
-from partitioned_validation import partitioned_validation, user_grouping_online_and_offline
-from recommend_results import RecommendResults
-from oneweek_holdout_validation import get_train_oneweek_holdout_validation, get_valid_oneweek_holdout_validation
+from utils.partitioned_validation import partitioned_validation, user_grouping_online_and_offline
+from scripts.recommend_results import RecommendResults
+from utils.oneweek_holdout_validation import get_train_oneweek_holdout_validation, get_valid_oneweek_holdout_validation
 
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 
@@ -38,7 +38,7 @@ def main():
     # 全ユーザをグルーピング
     group_series = user_grouping_online_and_offline(dataset=dataset)
     print(type(group_series))
-    print("2")s
+    print("2")
 
     # レコメンド結果を作成し、RecommendResults結果に保存していく。
     recommend_results_valid = RecommendResults()

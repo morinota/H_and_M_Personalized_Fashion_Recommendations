@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import numpy as np
 
-from partitioned_validation import DRIVE_DIR, INPUT_DIR
+from utils.partitioned_validation import DRIVE_DIR, INPUT_DIR
 
 class RecommendResults:
     """各レコメンド手法の結果をまとめて管理するRecommendResultsクラス

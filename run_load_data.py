@@ -1,4 +1,4 @@
-from kaggle_api import load_data
+from utils.kaggle_api import load_data
 
 
 

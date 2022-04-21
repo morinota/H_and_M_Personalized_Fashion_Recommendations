@@ -2,8 +2,8 @@
 from typing import List, Tuple
 import pandas as pd
 from sympy import arg
-from dataset import DataSet
-from useful_func import iter_to_str
+from scripts.dataset import DataSet
+from utils.useful_func import iter_to_str
 from collections import defaultdict
 
 
@@ -46,12 +46,11 @@ def last_purchased_items(train_transaction: pd.DataFrame, dataset: DataSet) -> p
     # 結果はcustomer_idとpredictedをカラムに持つDataFrameにする。
     df_pred = dataset.df_sub[['customer_id_short', 'prediction']].copy()
 
-
     # 返値は2つにしておく?
     return df_pred
 
 
-def other_colors_of_purchased_item(train_transaction: pd.DataFrame, dataset: DataSet)->pd.DataFrame:
+def other_colors_of_purchased_item(train_transaction: pd.DataFrame, dataset: DataSet) -> pd.DataFrame:
 
     # 設定した期間のtransactionデータに対して、各アイテムの購入回数を集計?
     item_counts_trainTerm: pd.DataFrame = train_transaction.groupby(
@@ -100,7 +99,7 @@ def other_colors_of_purchased_item(train_transaction: pd.DataFrame, dataset: Dat
     return df_pred
 
 
-def popular_items_for_each_group(train_transaction: pd.DataFrame, dataset: DataSet, grouping_df:pd.DataFrame)-> pd.DataFrame:
+def popular_items_for_each_group(train_transaction: pd.DataFrame, dataset: DataSet, grouping_df: pd.DataFrame) -> pd.DataFrame:
     """_summary_
 
     Parameters
@@ -118,9 +117,11 @@ def popular_items_for_each_group(train_transaction: pd.DataFrame, dataset: DataS
         _description_
     """
     # group_dfをtransactionデータにマージする事で、各transactionにグルーピングを付与する。
-    train_transaction = train_transaction.merge(grouping_df, on='customer_id_short', how='left')
+    train_transaction = train_transaction.merge(
+        grouping_df, on='customer_id_short', how='left')
     # グループ毎に「設定した期間内における各アイテムの購入回数」をカウントする
-    ItemCount_eachGroup = train_transaction.groupby(['group', 'article_id'])["t_dat"].count().reset_index()
+    ItemCount_eachGroup = train_transaction.groupby(['group', 'article_id'])[
+        "t_dat"].count().reset_index()
     # groupbyの後のリセットインデックス大事だわ！
     # -> カラム=[group, article_id, t_dat]、レコードは各アイテム。
 
@@ -130,8 +131,9 @@ def popular_items_for_each_group(train_transaction: pd.DataFrame, dataset: DataS
         # 各グループで、「設定した期間内における各アイテムの購入回数」の多い上位12個をリストで取得
         # List＝＞strに変換
         # dictのvalueとして保存。keyはグループを示すカテゴリ変数。
-        items[group] = iter_to_str(ItemCount_eachGroup.loc[ItemCount_eachGroup["group"] == group].sort_values('t_dat', ascending=False)["article_id"].tolist()[:12])
-        
+        items[group] = iter_to_str(ItemCount_eachGroup.loc[ItemCount_eachGroup["group"] == group].sort_values(
+            't_dat', ascending=False)["article_id"].tolist()[:12])
+
     # 各ユーザに対して、「グループ別の人気アイテム」を取得。レコメンド結果を保存
     dataset.df_sub["predicted"] = grouping_df["group"].map(items)
 

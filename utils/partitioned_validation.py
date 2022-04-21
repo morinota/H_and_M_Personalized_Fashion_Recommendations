@@ -1,9 +1,9 @@
-from dataset import DataSet
-from useful_func import iter_to_str
+from scripts.dataset import DataSet
+from utils.useful_func import iter_to_str
 from multiprocessing.spawn import import_main_path
 import os
 from logging import lastResort
-from calculate_MAP12 import calculate_mapk, calculate_apk, mapk, apk
+from utils.calculate_MAP12 import calculate_mapk, calculate_apk, mapk, apk
 from collections import defaultdict
 import seaborn as sns
 from typing import Dict, List, Set, Tuple

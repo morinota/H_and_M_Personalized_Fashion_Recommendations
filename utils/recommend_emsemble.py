@@ -1,7 +1,7 @@
 from sympy import Li
-from calculate_MAP12 import calculate_mapk, calculate_apk
+from utils.calculate_MAP12 import calculate_mapk, calculate_apk
 
-from dataset import DataSet
+from scripts.dataset import DataSet
 import seaborn as sns
 from typing import Dict, List, Set
 import numpy as np

@@ -1,8 +1,8 @@
 from multiprocessing.spawn import import_main_path
 from typing import List, Tuple
 import pandas as pd
-from dataset import DataSet
-from useful_func import iter_to_str
+from scripts.dataset import DataSet
+from utils.useful_func import iter_to_str
 from collections import defaultdict
 
 class LSTM:

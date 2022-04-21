@@ -6,7 +6,7 @@ import numpy as np
 import json
 
 from sympy import Li
-from dataset import DataSet
+from scripts.dataset import DataSet
 from typing import List, Dict
 from tqdm import tqdm
 

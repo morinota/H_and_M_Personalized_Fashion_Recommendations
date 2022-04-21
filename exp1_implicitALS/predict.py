@@ -1,5 +1,5 @@
 from kaggle import KaggleApi
-from dataset import DataSet
+from scripts.dataset import DataSet
 from implicit.gpu.als import AlternatingLeastSquares
 
 
