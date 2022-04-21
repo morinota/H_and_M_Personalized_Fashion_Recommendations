@@ -20,6 +20,7 @@ class MatrixFactrization:
         self.transaction_train = transaction_train
         self.ALL_ITEMS = []
         self.ALL_USERS = []
+        self.hyper_params = {}
 
     def _count_all_unique_user_and_item(self):
         """Rating Matrixのindexと、customer_id、article_idの対応表を作る。
@@ -74,7 +75,10 @@ class MatrixFactrization:
         self._add_originalId_item_and_user()
         self._get_rating_matrix()
 
-    def fit(self, hyper_params: Dict = {}):
+    def fit(self, hyper_params: Dict = {'factors': 500,
+                                 'iterations': 3,
+                                 'regularization': 0.01,
+                                 'confidence': 50}):
         """ALSでMatrix Factrizationを実行するメソッド。
 
         Parameters
@@ -83,21 +87,14 @@ class MatrixFactrization:
             _description_, by default {}
         """
 
-        # ALSのハイパーパラメータの設定
-        if hyper_params == {}:
-            self.hypyr_params = {'factors': 500,
-                                 'iterations': 3,
-                                 'regularization': 0.01,
-                                 'confidence': 50
-                                 }
-        else:
-            self.hyper_params = hyper_params
+        # ALSのハイパーパラメータの設定:
+        self.hyper_params = hyper_params
 
         # モデルのInitialize
         self.model = AlternatingLeastSquares(
             factors=self.hyper_params['factors'],
-            iterations=self.hypyr_params['iterations'],
-            regularization=self.hypyr_params['regularization'],  # 正則化項のb
+            iterations=self.hyper_params['iterations'],
+            regularization=self.hyper_params['regularization'],  # 正則化項のb
             random_state=42
         )
         # 学習
