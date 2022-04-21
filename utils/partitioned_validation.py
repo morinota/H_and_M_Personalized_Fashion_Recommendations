@@ -16,11 +16,12 @@ plt.style.use('ggplot')
 INPUT_DIR = 'input'
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 
-def divide_transaction_data_with_group(dataset:DataSet, divide_column:str)->pd.DataFrame:
+
+def divide_transaction_data_with_group(dataset: DataSet, divide_column: str) -> pd.DataFrame:
     pass
 
 
-def partitioned_validation(val_df: pd.DataFrame, pred_df: pd.DataFrame, grouping: pd.Series, score: pd.DataFrame = 0, approach_name: str = "last_purchased_items", ignore: bool = False, figsize=(12, 6))->pd.DataFrame:
+def partitioned_validation(val_df: pd.DataFrame, pred_df: pd.DataFrame, grouping: pd.Series, score: pd.DataFrame = 0, approach_name: str = "last_purchased_items", ignore: bool = False, figsize=(12, 6)) -> pd.DataFrame:
     """全ユーザのレコメンド結果を受け取り、グルーピング毎に予測精度を評価する関数。
 
     Parameters
@@ -76,7 +77,7 @@ def partitioned_validation(val_df: pd.DataFrame, pred_df: pd.DataFrame, grouping
     # scoreがDataFrameじゃなかったら、結果格納用のDataFrameをInitialize
     if isinstance(score, int):
         score = pd.DataFrame({g: []
-                             for g in sorted(grouping.unique().tolist())})
+                             for g in grouping.unique().tolist()})
 
     # もしindex引数が－１だったら...何の処理?
     if approach_name == -1:
@@ -85,24 +86,12 @@ def partitioned_validation(val_df: pd.DataFrame, pred_df: pd.DataFrame, grouping
     # 結果をDataFrameに保存
     score.loc[approach_name, "All"] = map12
 
-    # MAP@kの結果を描画。(「各ユーザのAP@kの値」を集計して、ヒストグラムへ。なお縦軸は対数軸！)
-    plt.figure(figsize=figsize)
-    plt.subplot(1, 2, 1)
-    sns.histplot(data=ap12, log_scale=(0, 10), bins=20)
-    plt.title(f"MAP@12 : {map12}")
-
     # グルーピング毎のValidation結果を作成
     for g in grouping.unique():
         map12 = round(mapk(actual[grouping == g], predicted[grouping == g]), 6)
         # score:DataFrameに結果を格納
         score.loc[approach_name, g] = map12
         print(map12)
-
-    # バープロットの描画
-    plt.subplot(1, 2, 2)
-    score[[g for g in grouping.unique()[::-1]] + ['All']
-          ].loc[approach_name].plot.barh()
-    plt.title(f"MAP@12 of Groups")
 
     # レコメンドアイテム数は制限(12個×全ユーザ)の何%を占めてる？
     vc = pd.Series(predicted).apply(len).value_counts()
@@ -143,6 +132,7 @@ def user_grouping_online_and_offline(dataset: DataSet) -> pd.DataFrame:
 
     return grouping_df
 
+
 def user_grouping_age_bin(dataset: DataSet) -> pd.DataFrame:
     """Datasetオブジェクトを受け取って、
     各ユーザの年齢層でグルーピングする関数。
@@ -169,52 +159,10 @@ def user_grouping_age_bin(dataset: DataSet) -> pd.DataFrame:
     # =>とりあえず欠損値のままでOK？
 
     # 返値用のdfを生成
-    df_customer.rename(columns={'age_bins':'group'}, inplace=True)
+    df_customer.rename(columns={'age_bins': 'group'}, inplace=True)
     grouping_df = df_customer[['customer_id_short', 'group']]
 
     return grouping_df
-
-
-def make_user_grouping(transaction_df, customer_df: pd.DataFrame, grouping_column: str = "sales_channel_id") -> pd.DataFrame:
-    """_summary_
-
-    Parameters
-    ----------
-    transaction_df : pd.DataFrame
-        _description_
-    customer_df : pd.DataFrame
-        _description_
-    grouping_column : str, optional
-        _description_, by default "sales_channel_id"
-
-    Returns
-    -------
-    pd.Series
-        _description_
-    """
-
-    transaction_columns = ["sales_channel_id"]
-    customer_columns = []
-    article_columns = []
-
-    # 補完用にsample_
-    sub_df = pd.read_csv(os.path.join(INPUT_DIR, 'sample_submission.csv'))
-    alluser_series = pd.DataFrame(sub_df["customer_id"].apply(
-        lambda s: int(s[-16:], 16))).astype(str)
-
-    grouping = pd.Series()
-
-    if grouping_column in transaction_columns:
-        # defaultでは、各ユーザが「オンライン販売かオフライン販売」のどちらで多く購入する週間があるかでグルーピングしてる。
-        group = transaction_df.groupby('customer_id')[
-            grouping_column].mean().round().reset_index()
-        # submission用のデータとグルーピングをマージする
-        group = pd.merge(group, alluser_series, on='customer_id', how='right').rename(
-            columns={grouping_column: 'group'})
-        # 欠損値は1で埋める。１と２の違いって何？オンライン販売かオフライン販売？
-        grouping: pd.Series = group["group"].fillna(1.0)
-
-    return grouping
 
 
 def main():

@@ -73,7 +73,15 @@ def get_train_oneweek_holdout_validation(dataset: DataSet, val_week_id: int = 10
         transaction_df_train: pd.DataFrame = dataset.df[train_mask]
 
     # 学習データ戦略2(昨年の同じシーズンのトランザクションを使う)
+    # ex) 2020年の8～9月のトランザクション + 2019年の8～9月ののトランザクション
     if how == "use_same_season_in_past":
-        pass
+        # "検証用の一週間"の前日の日付を取得
+        mask = dataset.df["week"] < val_week_id
+        last_date: datetime.datetime = dataset.df[mask]["t_dat"].max()
+        # 学習用データのスタートの日付を取得
+        init_date: datetime.datetime = last_date - \
+            datetime.timedelta(days=training_days)
+
+
 
     return transaction_df_train
