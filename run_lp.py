@@ -100,5 +100,5 @@ def main(val_week_id=104):
 if __name__ == '__main__':
     create_logger(VERSION)
     get_logger(VERSION).info("メッセージ")
-    # main(val_week_id=104)
+    main(val_week_id=104)
 
