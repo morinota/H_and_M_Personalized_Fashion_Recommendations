@@ -5,7 +5,7 @@ from my_class.dataset import DataSet
 from utils.useful_func import iter_to_str
 import numpy as np
 import scipy.sparse
-from implicit.gpu.als import AlternatingLeastSquares
+from implicit.als import AlternatingLeastSquares
 
 
 INPUT_DIR = r"input"
