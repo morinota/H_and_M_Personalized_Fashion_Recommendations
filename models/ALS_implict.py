@@ -149,7 +149,7 @@ class MatrixFactrization:
     def create_reccomendation(self):
         df_preds = self._predict()
         df_sub = pd.merge(df_preds,
-                          self.dataset.df_sub,
+                          self.dataset.df_sub[['customer_id_short', 'customer_id']],
                           on='customer_id_short',
                           how='left')
 
