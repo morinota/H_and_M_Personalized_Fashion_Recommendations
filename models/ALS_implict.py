@@ -63,10 +63,13 @@ class MatrixFactrization:
         # => あれ？重複含んでない？？
 
         # 元の疎行列を生成.COO = [値、(行インデックス、列インデックス)]
-        self.rating_matrix = scipy.sparse.coo_matrix((data, (row, col)), shape=(
+        self.rating_matrix_coo = scipy.sparse.coo_matrix((data, (row, col)), shape=(
             len(self.ALL_USERS), len(self.ALL_ITEMS)))
         # coo_matrixは同じ座標を指定すると、要素が加算される性質がある。
         # =>各要素が購買回数の、implictな評価行列の完成！
+
+        # csr形式も保存しておく
+        self.rating_matrix_csr = self.rating_matrix_coo.tocsr()
 
     def preprocessing(self):
         """Matrix Factrizationの為の前処理を実行するメソッド.
@@ -99,7 +102,7 @@ class MatrixFactrization:
         )
         # 学習
         # Confidenceのパラメータは直接、Rating Matrixへ掛け合わせて設定する。
-        self.model.fit(self.hyper_params['confidence'] * self.rating_matrix,
+        self.model.fit(self.hyper_params['confidence'] * self.rating_matrix_coo,
                        show_progress=True)
 
         # 学習後、推定されたUser MatrixとItem Matrixを保存
@@ -119,7 +122,7 @@ class MatrixFactrization:
             pred_item_ids, pred_scores = self.model.recommend(
                 userid=batch_user_ids,
                 # Rating Matrixの実測値
-                user_items=self.rating_matrix[batch_user_ids],
+                user_items=self.rating_matrix_csr[batch_user_ids],
                 N=12,
                 filter_already_liked_items=True
             )
