@@ -104,8 +104,9 @@ def partitioned_validation(val_df: pd.DataFrame, pred_df: pd.DataFrame, grouping
           ].loc[approach_name].plot.barh()
     plt.title(f"MAP@12 of Groups")
 
-    # 何の処理?
+    # レコメンドアイテム数は制限(12個×全ユーザ)の何%を占めてる？
     vc = pd.Series(predicted).apply(len).value_counts()
+    # PercentageをFILLカラムに格納。
     score.loc[approach_name, "Fill"] = round(
         1 - sum(vc[k] * (12 - k) / 12 for k in (set(range(12)) & set(vc.index))) / len(actual), 3) * 100
 

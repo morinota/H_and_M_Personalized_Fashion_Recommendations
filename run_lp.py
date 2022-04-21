@@ -41,10 +41,8 @@ def main(val_week_id=104):
     # 全ユーザをグルーピング
     grouping_df = user_grouping_online_and_offline(dataset=dataset)
 
-    # レコメンド結果を作成し、RecommendResults結果に保存していく。
-    recommend_results_valid = RecommendResults()
-    # とりあえずLast Purchased Item
-    df_pred_1 = last_purchased.last_purchased_items(train_transaction=train_df,
+    # Last Purchased Itemによるレコメンド結果を生成
+    df_pred = last_purchased.last_purchased_items(train_transaction=train_df,
                                                     dataset=dataset)
     '''df_pred_2 = last_purchased.other_colors_of_purchased_item(
         train_transaction=train_df, dataset=dataset)
@@ -54,7 +52,7 @@ def main(val_week_id=104):
 
     # One-week hold-out validationのオフライン評価
     score_df = partitioned_validation(val_df=val_df,
-                                      pred_df=df_pred_1,
+                                      pred_df=df_pred,
                                       grouping=grouping_df['group'],
                                       approach_name="last_purchased_items"
                                       )
