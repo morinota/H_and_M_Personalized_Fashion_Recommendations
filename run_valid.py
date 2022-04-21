@@ -16,13 +16,17 @@ VERSION = "partationed_validation_models"
 def validation_eachmodel(val_results: Results, val_df, grouping_df):
     score_df = 0
     for name in val_results.approach_names_list:
-
+        # 特定のモデルのレコメンド結果だけ抽出
+        pred_df = val_results.df_sub[['customer_id', 'customer_id_short', f'{name}']]
+        pred_df.rename(columns={f'{name}':'prediction'}, inplace=True)
+        # オフラインスコアの検証
         score_df = partitioned_validation(val_df=val_df,
-                                          pred_df=val_results.df_sub,
+                                          pred_df=pred_df,
                                           score=score_df,
                                           grouping=grouping_df['group'],
                                           approach_name=name
                                           )
+        del pred_df
 
     return score_df
 
