@@ -53,7 +53,7 @@ def stop_watch(VERSION):
 
             # ログ出力
             get_logger(VERSION).info(
-                f'[elapsed_time]\t>> {hour: 0>2}:{minits: 0>2}:{sec:0>2}')
+                f'[elapsed_time]\t>> {hour}:{minits}:{sec}')
 
         return wrapper
 
