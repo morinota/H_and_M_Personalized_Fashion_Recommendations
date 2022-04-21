@@ -143,6 +143,16 @@ def user_grouping_online_and_offline(dataset: DataSet) -> pd.DataFrame:
 
     return grouping_df
 
+def user_grouping_age_bin(dataset: DataSet) -> pd.DataFrame:
+
+    # ユーザのメタデータを使用する
+    df_customer = dataset.dfu
+    # 年齢層毎にグルーピング
+    listBin = [-1, 19, 29, 39, 49, 59, 69, 119]
+    df_customer['age_bins'] = pd.cut(df_customer['age'], listBin)
+
+    return grouping_df
+
 
 def make_user_grouping(transaction_df, customer_df: pd.DataFrame, grouping_column: str = "sales_channel_id") -> pd.DataFrame:
     """_summary_

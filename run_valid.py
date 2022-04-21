@@ -13,13 +13,14 @@ VERSION = "partationed_validation_models"
 
 
 @stop_watch(VERSION)
-def validation_eachmodel(val_results: Results, val_df, grouping_df)->pd.DataFrame:
+def validation_eachmodel(val_results: Results, val_df, grouping_df) -> pd.DataFrame:
     # 初期値をInitialize
     score_df = 0
     for name in val_results.approach_names_list:
         # 特定のモデルのレコメンド結果だけ抽出
-        pred_df = val_results.df_sub[['customer_id', 'customer_id_short', f'{name}']]
-        pred_df.rename(columns={f'{name}':'prediction'}, inplace=True)
+        pred_df = val_results.df_sub[[
+            'customer_id', 'customer_id_short', f'{name}']]
+        pred_df.rename(columns={f'{name}': 'prediction'}, inplace=True)
         # オフラインスコアの検証
         score_df = partitioned_validation(val_df=val_df,
                                           pred_df=pred_df,
@@ -31,9 +32,13 @@ def validation_eachmodel(val_results: Results, val_df, grouping_df)->pd.DataFram
         print(score_df.columns)
 
     print(type(score_df))
+    # スコアをロギング
+    get_logger(VERSION).info('\t' + score_df.to_string().replace('\n', '\n\t'))
+
     return score_df
 
 
+@stop_watch(VERSION)
 def main():
     # DataSetオブジェクトの読み込み
     dataset = DataSet()
@@ -57,10 +62,7 @@ def main():
     # オフラインスコアを検証
     score_df = validation_eachmodel(val_results, val_df, grouping_df)
     print(type(score_df))
-    # スコアをロギング
-    get_logger(VERSION).info('\t' + score_df.to_string().replace('\n', '\n\t'))
-
-
+    
 if __name__ == '__main__':
     create_logger(VERSION)
     get_logger(VERSION).info("メッセージ")
