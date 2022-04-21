@@ -22,7 +22,7 @@ def validation_eachmodel(val_results:Results, val_df, grouping_df):
     score_df = 0
     for name in val_results.approach_names_list:
 
-    score_df = partitioned_validation(val_df=val_df,
+        score_df = partitioned_validation(val_df=val_df,
                                       pred_df=val_results.df_sub,
                                       score=score_df,
                                       grouping=grouping_df['group'],
