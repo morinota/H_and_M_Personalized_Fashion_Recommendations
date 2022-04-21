@@ -1,14 +1,14 @@
 import os
 import pandas as pd
-import implicit
+
 import numpy as np
 import scipy.sparse
 
 
 class DataSet:
     # クラス変数の定義
-    INPUT_DIR = r"input"
     DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
+    INPUT_DIR = os.path.join(DRIVE_DIR, 'input')
 
     def __init__(self) -> None:
         # インスタンス変数(属性の初期化)
@@ -33,6 +33,8 @@ class DataSet:
             # dfのcustomer_idはshort版に加工されてるから、カラム名を変更しておく
             self.df.rename(
                 columns={'customer_id': 'customer_id_short'}, inplace=True)
+
+            # dfのarticle_idを文字列に為ておく?
             # 各顧客の情報(メタデータ)
             self.dfu = pd.read_parquet(os.path.join(
                 DataSet.DRIVE_DIR, 'customers.parquet'))

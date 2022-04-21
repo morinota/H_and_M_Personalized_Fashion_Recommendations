@@ -13,8 +13,8 @@ class Results:
         # インスタンス変数(属性の初期化)
         self.ALL_ITEMS = []
         self.ALL_USERS = []
-        self.INPUT_DIR = r"input"
         self.DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
+        self.INPUT_DIR = os.path.join(self.DRIVE_DIR, 'input')
         pass
 
     def read_val_data(self):

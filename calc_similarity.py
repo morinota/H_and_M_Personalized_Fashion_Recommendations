@@ -1,5 +1,5 @@
 from turtle import distance
-from typing import Dict
+from typing import Dict, List
 from sklearn.neighbors import NearestNeighbors
 import numpy as np
 
@@ -31,3 +31,4 @@ for i, key in enumerate(images_features_dict.keys()):
 
     # 保存
     simularity_dict[key] = {'distances': distances, 'indices': indices}
+

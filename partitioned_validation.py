@@ -16,6 +16,9 @@ plt.style.use('ggplot')
 INPUT_DIR = 'input'
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 
+def divide_transaction_data_with_group(dataset:DataSet, divide_column:str)->pd.DataFrame:
+    pass
+
 
 def partitioned_validation(val_df: pd.DataFrame, pred_df: pd.DataFrame, grouping: pd.Series, score: pd.DataFrame = 0, approach_name: str = "last_purchased_items", ignore: bool = False, figsize=(12, 6)):
     """全ユーザのレコメンド結果を受け取り、グルーピング毎に予測精度を評価する関数。
