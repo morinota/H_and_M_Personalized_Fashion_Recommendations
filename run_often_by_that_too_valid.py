@@ -1,10 +1,10 @@
 
-from approaches.often_by_that_too import OftenBuyThatToo
+from models.often_by_that_too import OftenBuyThatToo
 from utils.kaggle_api import load_data
-from scripts.dataset import DataSet
-from approaches.last_purchased import last_purchased_items
+from my_class.dataset import DataSet
+
 from utils.partitioned_validation import partitioned_validation, user_grouping_online_and_offline
-from scripts.recommend_results import RecommendResults
+
 from utils.oneweek_holdout_validation import get_train_oneweek_holdout_validation, get_valid_oneweek_holdout_validation
 
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
