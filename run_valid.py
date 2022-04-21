@@ -3,7 +3,7 @@ from my_class.results_class import Results
 import pandas as pd
 from utils.partitioned_validation import partitioned_validation, user_grouping_online_and_offline, user_grouping_age_bin
 from utils.oneweek_holdout_validation import get_valid_oneweek_holdout_validation
-
+import os
 from logs.base_log import create_logger, get_logger, stop_watch
 # from logs.time_keeper import stop_watch
 
@@ -34,7 +34,8 @@ def validation_eachmodel(val_results: Results, val_df, grouping_df) -> pd.DataFr
     print(type(score_df))
     # スコアをロギング
     get_logger(VERSION).info('\t' + score_df.to_string().replace('\n', '\n\t'))
-
+    # csvでも保存しておく
+    score_df.to_csv(os.path.join(DRIVE_DIR, f'logs/{VERSION}.csv'), index=True)
     return score_df
 
 
