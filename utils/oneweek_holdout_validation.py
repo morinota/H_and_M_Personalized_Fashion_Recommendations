@@ -85,7 +85,12 @@ def get_train_oneweek_holdout_validation(dataset: DataSet, val_week_id: int = 10
         last_date_2019 = last_date - datetime.timedelta(days=365)
         init_date_2019 = init_date - datetime.timedelta(days=365)
 
-
-
+        # 学習用データのMaskを定義
+        train_mask_2020 = (dataset.df["t_dat"] >= init_date) & (
+            dataset.df["t_dat"] <= last_date)
+        train_mask_2019 = (dataset.df["t_dat"] >= init_date_2019) & (
+            dataset.df["t_dat"] <= last_date_2019)
+        # 学習用データを作成
+        transaction_df_train: pd.DataFrame = dataset.df[train_mask_2020 | train_mask_2019]
 
     return transaction_df_train

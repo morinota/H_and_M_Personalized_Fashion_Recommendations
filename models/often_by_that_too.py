@@ -145,7 +145,6 @@ class OftenBuyThatToo:
                 pred_list = sorted(range(len(df_articles)),
                                    key=lambda k: count[k], reverse=True)[:100]
 
-
                 # 一緒に買われるアイテム上位100個に対して繰り返し処理：
                 for i in range(len(pred_list)):
                     # 結果格納用のListに格納していく。
@@ -173,7 +172,6 @@ class OftenBuyThatToo:
             with open(json_path, mode="w") as f:
                 ranking = json.dumps(ranking, cls=MyEncoder)
                 f.write(ranking)
-            
 
         # 各年齢グルーピング毎に、繰り返し処理していく。
         for uniBin in self.listUniBins:
@@ -206,7 +204,6 @@ class OftenBuyThatToo:
                 pred_list = sorted(range(len(df_articles)),
                                    key=lambda k: count[k], reverse=True)[:100]
 
-
                 # 一緒に買われるアイテム上位100個に対して繰り返し処理：
                 for i in range(len(pred_list)):
                     # 結果格納用のListに格納していく。
@@ -238,7 +235,8 @@ class OftenBuyThatToo:
     def load_ranking(self):
         """本番レコメンド用のjsonデータをロードする関数
         """
-        self.listUniBins = ['(39, 49]', '(19, 29]', '(49, 59]', '(29, 39]', '(69, 119]', '(59, 69]', '(-1, 19]']
+        self.listUniBins = ['(39, 49]', '(19, 29]', '(49, 59]',
+                            '(29, 39]', '(69, 119]', '(59, 69]', '(-1, 19]']
         # 「ある商品を買った人が他に買った商品ランキング」を年齢層グループ毎に読み込み
         for uniBin in self.listUniBins:
             # グルーピングがnanなら次のループへ
@@ -248,7 +246,7 @@ class OftenBuyThatToo:
                 OftenBuyThatToo.DRIVE_DIR, f"items_of_other_costomers_{uniBin}.json")
             with open(json_path, mode="r") as f:
                 # {"年齢層bin": {アイテムid: [アイテムid, ...]}}
-                
+
                 self.OBTT_ages_dict[uniBin] = json.load(f)
 
         print(self.OBTT_ages_dict.keys())
@@ -270,7 +268,7 @@ class OftenBuyThatToo:
         N = 12
         M = 100
 
-        def _take_supposedly_popular_products()->List:
+        def _take_supposedly_popular_products() -> List:
             """
             predictionが12個に満たなかった時や、trainデータに無いcustomer_idがあったときのために、
             総購入数が多い商品のランキングを作る。
@@ -286,7 +284,7 @@ class OftenBuyThatToo:
 
         self.general_pred = _take_supposedly_popular_products()
 
-        def _get_recommendation_OBTT()->List[str]:
+        def _get_recommendation_OBTT() -> List[str]:
             """それぞれの客が購入した商品から、
             年齢層毎の「ある商品を買った人が他に買った商品ランキング」を用いて、
             次に買いそうな商品を予測していく。
@@ -295,7 +293,7 @@ class OftenBuyThatToo:
             他に買う商品ランキング1位はM点、2位はM-1点、3位はM-2点、4位はM-3点、
             という感じに配点をつけていく。
             """
-            
+
             # レコメンド結果を格納するリスト
             pred_list = []
             print(self.c_a_dict.keys())
@@ -324,7 +322,7 @@ class OftenBuyThatToo:
                     # 各「過去に買った商品」に対して繰り返し処理：
                     for art_id in past_list:
                         # 各「過去に買った商品」に対して「ある商品を買った人が他に買った商品ランキング」を取得
-                        rank_list:List[int] = ds_dict[str(art_id)]
+                        rank_list: List[int] = ds_dict[str(art_id)]
                         # ランキング上位M個に対して繰り返し処理：
                         for j in range(M):
                             # j+1位のアイテムのartcle_idが10桁になるように、左側を0埋め
@@ -355,7 +353,7 @@ class OftenBuyThatToo:
                 else:
                     # 全体の人気ランキングから補完
                     sub_list = self.general_pred
-                
+
                 # 各ユーザのレコメンド商品のリストを、全体のレコメンド結果に保存(list=>strに加工して...)
                 pred_list.append(' '.join(sub_list))
 
@@ -366,7 +364,8 @@ class OftenBuyThatToo:
         sub['predicted'] = _get_recommendation_OBTT()
 
         # csv出力
-        file_path = os.path.join(OftenBuyThatToo.DRIVE_DIR, 'submission_OBTT.csv')
+        file_path = os.path.join(
+            OftenBuyThatToo.DRIVE_DIR, 'submission_OBTT.csv')
         sub.to_csv(file_path, index=None)
 
         return sub

@@ -26,7 +26,8 @@ def submit(csv_filepath: str, message: str):
     api.competition_submit(file_name=csv_filepath,
                            message=message, competition=compe_name)
 
-
+    def fit(self):
+        
 def main():
     # predict something on test dataset
 
