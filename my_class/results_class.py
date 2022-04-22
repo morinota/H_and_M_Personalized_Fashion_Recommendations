@@ -17,12 +17,12 @@ class Results:
         self.INPUT_DIR = os.path.join(self.DRIVE_DIR, 'input')
         pass
 
-    def read_val_data(self):
+    def read_val_data(self, val_week_id=104):
         """検証用のレコメンド結果を読み込むMethod
         """
         # ファイルパスを用意
         csv_sub = os.path.join(self.INPUT_DIR, 'sample_submission.csv')
-        val_dir = os.path.join(self.DRIVE_DIR, 'val_results_csv')
+        val_dir = os.path.join(self.DRIVE_DIR, f'val_results_{val_week_id}_csv')
 
         # 提出用のサンプル
         self.df_sub = pd.read_csv(csv_sub)
