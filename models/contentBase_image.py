@@ -65,18 +65,19 @@ class ContentBaseImage:
                 try:
                     # 各購入アイテム毎に近傍アイテムを取得し、リストに追加
                     nearest_articles = nearest_articles + \
-                        self.nearest_neighbor_dictionary[article_id]['nn_article_id'][1:]
+                        self.nearest_neighbor_dictionary[article_id]['nn_article_id'][:5]
 
                 except:
                     continue
 
             # 2重のリストを一重に変換
-            # nearest_articles = nearest_articles
+            nearest_articles = nearest_articles
 
             # 12個にする処理.
             if len(nearest_articles) > 12:
                 # ランダムに12個を選ぶ.
                 nearest_articles = random.sample(nearest_articles, 12)
+                # 類似度が高いものを選ぶ
             elif len(nearest_articles) < 12:
                 nearest_articles.extend(random.sample(
                     self.most_bought_articles, 12 - len(nearest_articles)))
