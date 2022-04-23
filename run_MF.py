@@ -77,4 +77,4 @@ if __name__ == '__main__':
     get_logger(VERSION).info("メッセージ")
     val_week_ids = [104, 103, 102]
     for val_week_id in val_week_ids:
-        run_validation(val_week_id=104)
+        run_validation(val_week_id=val_week_id)
