@@ -53,7 +53,7 @@ class RankLearningLgbm:
         self.user_features[['club_member_status', 'fashion_news_frequency']]= (
                    self.user_features[['club_member_status',
                        'fashion_news_frequency']]
-                   .apply(lambda x: pd.factorize(x)[0])).astype('int8')
+                   .apply(lambda x: pd.factorize(x)[0])).astype("uint64")
 
     def _merge_user_item_feature_to_transactions(self):
         self.df= self.df.merge(self.user_features, on = ('customer_id_short'))
