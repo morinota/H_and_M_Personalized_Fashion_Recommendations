@@ -23,8 +23,8 @@ def run_validation(val_week_id=104):
     # DataSetオブジェクトの読み込み
     dataset = DataSet()
     # DataFrameとしてデータ読み込み
-    # dataset.read_data()
-    dataset.read_data_sampled()
+    dataset.read_data()
+    # dataset.read_data_sampled()
 
     print("1")
 
