@@ -212,7 +212,8 @@ class RankLearningLgbm:
         )
 
         X_train = self.train.drop(columns=['t_dat', 'customer_id', 'customer_id_short', 'article_id', 'label'])
-        print(X_train.columns)
+        # 特徴量のカラム名を保存
+        self.feature_names= X_train.columns
         y_train = self.train.pop('label')
         self.ranker = self.ranker.fit(
             X=X_train,
@@ -241,7 +242,7 @@ class RankLearningLgbm:
         batch_size = 1_000_000
         for bucket in tqdm(range(0, len(self.candidates), batch_size)):
             # 特徴量を用意。
-            X_pred = self.candidates.iloc[bucket: bucket+batch_size].drop(columns = ['customer_id_short', 'customer_id', 'article_id'])
+            X_pred = self.candidates.iloc[bucket: bucket+batch_size][self.feature_names]
             print(X_pred.columns)
             # モデルに特徴量を入力して、出力値を取得
             outputs = self.ranker.predict(X=X_pred)
