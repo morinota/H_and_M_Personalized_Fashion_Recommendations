@@ -50,8 +50,8 @@ def partitioned_validation(val_df: pd.DataFrame, pred_df: pd.DataFrame, grouping
 
     # val_df["article_id"], dataset.df_sub["last_purchased_items"]からactual, predictedを抽出する.
     # レコードの順番をそろえたい...。
-    # val_df = val_df.sort_values(by='customer_id_short')
-    # pred_df = pred_df.sort_values(by='customer_id_short')
+    val_df = val_df.sort_values(by='customer_id_short')
+    pred_df = pred_df.sort_values(by='customer_id_short')
     print(val_df[['customer_id_short', 'article_id']].head())
     print(pred_df[['customer_id_short', f'prediction']].head())
 
