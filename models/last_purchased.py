@@ -2,7 +2,7 @@
 from typing import List, Tuple
 import pandas as pd
 from sympy import arg
-from scripts.dataset import DataSet
+from my_class.dataset import DataSet
 from utils.useful_func import iter_to_str
 from collections import defaultdict
 
