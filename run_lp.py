@@ -17,7 +17,7 @@ VERSION = "last_purchased"
 
 
 @stop_watch(VERSION)
-def main(val_week_id=104):
+def run_validation(val_week_id=104):
 
     # DataSetオブジェクトの読み込み
     dataset = DataSet()
