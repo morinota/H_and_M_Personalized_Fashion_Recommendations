@@ -221,7 +221,7 @@ class RankLearningLgbm:
     def _prepare_prediction(self):
         self.sample_sub = self.dataset.cid
 
-        self.candidates = self._prepare_candidates(self.sample_sub.customer_id.unique(), 12)
+        self.candidates = self._prepare_candidates(self.sample_sub['customer_id_short'].unique(), 12)
         self.candidates['article_id'] = self.candidates['article_id'].astype('int')
         self.candidates = (
             self.candidates
