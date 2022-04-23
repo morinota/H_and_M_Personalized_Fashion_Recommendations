@@ -1,3 +1,4 @@
+from idna import valid_contextj
 import numpy as np
 import pandas as pd
 from models.ALS_implict import MatrixFactrization
@@ -13,16 +14,18 @@ from logs.base_log import create_logger, get_logger, stop_watch
 
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 
-VERSION = "MF_train_SameSeason"
+VERSION = "MF_train_OneMonth"
 
 
 @stop_watch(VERSION)
-def main(val_week_id=104):
+def run_validation(val_week_id=104):
 
     # DataSetオブジェクトの読み込み
     dataset = DataSet()
     # DataFrameとしてデータ読み込み
-    dataset.read_data()
+    # dataset.read_data()
+    dataset.read_data_sampled()
+
     print("1")
 
     # One-week hold-out validation
@@ -32,7 +35,7 @@ def main(val_week_id=104):
     )
     train_df = get_train_oneweek_holdout_validation(
         dataset=dataset,
-        val_week_id=104,
+        val_week_id=val_week_id,
         training_days=31,
         # how="use_same_season_in_past"
     )
@@ -53,18 +56,24 @@ def main(val_week_id=104):
                                       approach_name=VERSION
                                       )
     # スコアをロギング
+    get_logger(VERSION).info(f'va_week_id is {val_week_id}')
     get_logger(VERSION).info('\t' + score_df.to_string().replace('\n', '\n\t'))
 
     # レコメンド結果を保存
-    if val_week_id == 104:
-        val_result_dir = os.path.join(DRIVE_DIR, 'val_results_csv')
-        df_sub.to_csv(os.path.join(val_result_dir, f'val_{VERSION}.csv'))
-    
+
     if val_week_id == 105:
         sub_result_dir = os.path.join(DRIVE_DIR, 'submission_csv')
         df_sub.to_csv(os.path.join(sub_result_dir, f'sub_{VERSION}.csv'))
 
+    else:
+        val_result_dir = os.path.join(
+            DRIVE_DIR, f'val_results_{val_week_id}_csv')
+        df_sub.to_csv(os.path.join(val_result_dir, f'val_{VERSION}.csv'))
+
+
 if __name__ == '__main__':
     create_logger(VERSION)
     get_logger(VERSION).info("メッセージ")
-    main(val_week_id=104)
+    val_week_ids = [104, 103, 102]
+    for val_week_id in val_week_ids:
+        run_validation(val_week_id=104)

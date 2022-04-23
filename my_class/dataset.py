@@ -1,4 +1,5 @@
 import os
+from cv2 import INPAINT_NS
 import pandas as pd
 
 import numpy as np
@@ -17,7 +18,7 @@ class DataSet:
         self.df_val: pd.DataFrame
         pass
 
-    def read_data(self, c_id_short:bool=True):
+    def read_data(self, c_id_short: bool = True):
 
         # ファイルパスを用意
         csv_train = os.path.join(DataSet.INPUT_DIR, 'transactions_train.csv')
@@ -59,96 +60,27 @@ class DataSet:
             self.df_sub["customer_id"].apply(lambda s: int(s[-16:], 16))).astype("uint64")
         self.cid = pd.DataFrame(self.df_sub["customer_id_short"])
 
-    def _extract_byDay(self):
-        mask = self.df['t_dat'] > '2020-08-21'
-        self.df = self.df[mask]
+    def read_data_sampled(self, sampling_percentage: float = 5):
+        # ファイルパスを用意
+        sampled_data_dir = os.path.join(DataSet.INPUT_DIR, 'sampling_dir')
+        path_transactions = os.path.join(
+            sampled_data_dir, f'transactions_train_sample{sampling_percentage}')
+        path_article = os.path.join(
+            sampled_data_dir, f'articles_train_sample{sampling_percentage}')
+        path_customers = os.path.join(
+            sampled_data_dir, f'customers_train_sample{sampling_percentage}')
 
-    def _count_all_unique_user_and_item(self):
-        self.ALL_ITEMS = self.dfu['customer_id'].unique(
-        ).tolist()  # ユーザidのユニーク値のリスト
-        self.ALL_USERS = self.dfi['article_id'].unique(
-        ).tolist()  # アイテムidのユニーク値のリスト
-
-    def _add_originalId_item_and_user(self):
-        '''
-        # ユーザーとアイテムの両方に0から始まる自動インクリメントのidを割り当てる関数
-        '''
-        # key:0から始まるindex, value:ユーザidのdict
-        user_ids = dict(list(enumerate(self.ALL_USERS)))
-        # key:0から始まるindex, value:アイテムidのdict
-        item_ids = dict(list(enumerate(self.ALL_ITEMS)))
-
-        # 辞書内包表記で、keyとvalueをいれかえてる...なぜ?? =>mapメソッドを使う為.
-        user_map = {u: uidx for uidx, u in user_ids.items()}
-        item_map = {i: iidx for iidx, i in item_ids.items()}
-
-        # mapメソッドで置換.
-        # 引数にdictを指定すると、keyと一致する要素がvalueに置き換えられる.
-        # customer_id : ユーザと一意に定まる文字列, user_id：0～ユニーク顧客数のindex
-        self.df['user_id'] = self.df['customer_id'].map(user_map)
-        # article_id : アイテムと一意に定まる文字列, item_id：0～ユニークアイテム数のindex
-        self.df['item_id'] = self.df['article_id'].map(item_map)
-
-    def _get_rating_matrix(self):
-        '''
-        トランザクションデータから評価行列を作成する関数
-        '''
-        # COO形式で、ユーザ×アイテムの疎行列を生成.
-        row = self.df['user_id'].values  # 行インデックス
-        col = self.df['item_id'].values  # 列インデックス
-        data = np.ones(self.df.shape[0])  # 値 (トランザクションの総数, １の配列)
-        # => あれ？重複含んでない？？
-
-        # 元の疎行列を生成.COO = [値、(行インデックス、列インデックス)]
-        self.coo_train = scipy.sparse.coo_matrix((data, (row, col)), shape=(
-            len(self.ALL_USERS), len(self.ALL_ITEMS)))
-        # coo_matrixは同じ座標を指定すると、要素が加算される性質がある。
-        # =>各要素が購買回数の、implictな評価行列の完成！
-
-    def _drop_previous_month(self):
-        '''
-        最後の数日(実験のためのアップ)を除いて、すべてを落とす。
-        前の月の情報はあまり意味がない。
-        4週間を訓練用データ1~4、最後の1週間を検証用データとして残す。
-        '''
-        df = self.df
-        # object型=>datatime型に変換
-        df["t_dat"] = pd.to_datetime(df["t_dat"])
-
-        # 直近4週間のデータをそれぞれトレーニングデータとして抽出
-        import datetime
-        # ２～１weeks ago
-        mask = (df["t_dat"] >= datetime.datetime(2020, 9, 8)) & (
-            df['t_dat'] < datetime.datetime(2020, 9, 16))
-        self.train1 = df.loc[mask]
-        # 3～2 weeks ago
-        mask = (df["t_dat"] >= datetime.datetime(2020, 9, 1)) & (
-            df['t_dat'] < datetime.datetime(2020, 9, 8))
-        self.train2 = df.loc[mask]
-        # 4～3 weeks ago
-        mask = (df["t_dat"] >= datetime.datetime(2020, 8, 23)) & (
-            df['t_dat'] < datetime.datetime(2020, 9, 1))
-        self.train3 = df.loc[mask]
-        # 5～4 weeks ago
-        mask = (df["t_dat"] >= datetime.datetime(2020, 8, 16)) & (
-            df['t_dat'] < datetime.datetime(2020, 8, 23))
-        self.train4 = df.loc[mask]
-
-        # 1～0 weeks agoを検証用に
-        mask = (df["t_dat"] >= datetime.datetime(2020, 9, 16))
-        self.val = df.loc[mask]
-
-        del mask
-
-    def preprocessing(self):
-        self._extract_byDay()
-        self._count_all_unique_user_and_item()
-        self._add_originalId_item_and_user()
-        self._get_rating_matrix()
+        # インスタンス変数として読み込み
+        self.df = pd.read_csv(path_transactions,
+                              dtype={'article_id': str},
+                              parse_dates=['t_dat']  # datetime型で読み込み
+                              )
+        self.dfi = pd.read_csv(path_article, dtype={'article_id': str})
+        self.dfu = pd.read_csv(path_customers)
 
 
 def main():
-    print(implicit.__version__)
+
     print(scipy.sparse.coo_matrix)
 
 

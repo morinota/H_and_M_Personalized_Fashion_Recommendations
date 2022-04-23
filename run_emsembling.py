@@ -3,7 +3,10 @@ import numpy as np
 import pandas as pd
 import gc
 
-INPUT_DIR = r"C:\Users\Masat\OneDrive - 国立大学法人東海国立大学機構\input"
+val_week_id = 104
+DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
+# VERSION = "partationed_validation_models_onlineOrOffline"
+VERSION = f"emsembling_models_{val_week_id}_ageBin"
 
 
 def get_submissions():

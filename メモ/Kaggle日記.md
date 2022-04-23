@@ -83,3 +83,12 @@
 # 2022/04/21
 - 画像特徴量を用いたコンテンツベースのレコメンド結果を作成(notebook)
 - ロギングモジュールを定義(script)
+
+# 2022/04/22
+- 画像特徴量を用いたコンテンツベースのレコメンドscriptを作成。
+- 良いブログを発見
+  - https://zenn.dev/panyoriokome/scraps/d521e032f3be15
+- レコメンドのPersonalization Levelに関して
+  - Non-personalized、Semi-personalized、Personalizedの3段階。
+  - 今は、Non-personalizedとPersonalizedをベースにしてる。
+  - コンテンツベースフィルタリングで、Semi-Personalizedを試して見る?

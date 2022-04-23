@@ -7,10 +7,10 @@ import os
 from logs.base_log import create_logger, get_logger, stop_watch
 # from logs.time_keeper import stop_watch
 
+val_week_id = 104
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
-
 # VERSION = "partationed_validation_models_onlineOrOffline"
-VERSION = "partationed_validation_models_ageBin"
+VERSION = f"partationed_validation_models_{val_week_id}_ageBin"
 
 
 @stop_watch(VERSION)
@@ -41,7 +41,7 @@ def validation_eachmodel(val_results: Results, val_df, grouping_df) -> pd.DataFr
 
 
 @stop_watch(VERSION)
-def main():
+def main(val_week_id):
     # DataSetオブジェクトの読み込み
     dataset = DataSet()
     # DataFrameとしてデータ読み込み
@@ -50,12 +50,12 @@ def main():
     # 検証用データを作成
     val_df = get_valid_oneweek_holdout_validation(
         dataset=dataset,  # type: ignore
-        val_week_id=104
+        val_week_id=val_week_id
     )
 
     # レコメンド結果の読み込み
     val_results = Results()
-    val_results.read_val_data()
+    val_results.read_val_data(val_week_id=val_week_id)
     val_results.join_results_all_approaches()
 
    # 全ユーザをグルーピング
@@ -71,4 +71,4 @@ def main():
 if __name__ == '__main__':
     create_logger(VERSION)
     get_logger(VERSION).info("メッセージ")
-    main()
+    main(val_week_id)
