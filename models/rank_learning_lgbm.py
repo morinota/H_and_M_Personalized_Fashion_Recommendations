@@ -208,7 +208,8 @@ class RankLearningLgbm:
             max_depth=7,
             n_estimators=300,
             importance_type='gain',
-            verbose=10
+            verbose=10, 
+            num_leaves=1000000
         )
 
         self.ranker = self.ranker.fit(
