@@ -38,8 +38,8 @@ def last_purchased_items(train_transaction: pd.DataFrame, dataset: DataSet) -> p
     # ->カラム=[customer_id_short, article_id]、レコードは各ユーザ。article_idは「最終購入日から二週間以内に購入したアイテム達」を繋げたstr.
 
     # ユーザの不足分(トランザクションデータに含まれていないユーザ)を追加する
-    df_sub = pd.DataFrame()
-    df_sub['last_purchased_items'] = pd.merge(last_purchased_items_df, dataset.cid,
+    df_sub = dataset.cid.copy()
+    df_sub['last_purchased_items'] = pd.merge(last_purchased_items_df, df_sub,
                                                       on='customer_id_short',
                                                       how='right'
                                                       )["article_id"].fillna('')
