@@ -45,7 +45,9 @@ class RankLearningLgbm:
         self.user_features = pd.read_parquet(os.path.join(
             DRIVE_DIR, 'input/user_features.parquet')).reset_index()
         # customer_id_shortカラムを作成
+        print('a')
         self.user_features["customer_id_short"] = self.user_features["customer_id"].apply(lambda s: int(s[-16:], 16)).astype("uint64")
+        print('a')
 
     def _preprocessing_user_feature(self):
         self.user_features[['club_member_status', 'fashion_news_frequency']]= (
