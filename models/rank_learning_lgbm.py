@@ -59,7 +59,8 @@ class RankLearningLgbm:
         self.df.sort_values(['t_dat', 'customer_id'], inplace=True)
 
     def _create_train_and_valid(self):
-        self.train = self.df.loc[self.df.t_dat <= (pd.to_datetime('2020-09-15') - self.date_minus)]
+        N_ROWS = 1_000_000
+        self.train = self.df.loc[self.df.t_dat <= (pd.to_datetime('2020-09-15') - self.date_minus)].iloc[:N_ROWS]
         self.valid = self.df.loc[self.df.t_dat >= (pd.to_datetime('2020-09-16') - self.date_minus)]
 
         # delete transactions to save memory
