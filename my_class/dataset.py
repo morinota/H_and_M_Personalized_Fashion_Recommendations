@@ -77,6 +77,13 @@ class DataSet:
                               )
         self.dfi = pd.read_csv(path_article, dtype={'article_id': str})
         self.dfu = pd.read_csv(path_customers)
+        # df_subはそのまま
+        csv_sub = os.path.join(DataSet.INPUT_DIR, 'sample_submission.csv')
+        self.df_sub = pd.read_csv(csv_sub)
+        # customer_idカラムのみのpd.DataFrameを作っておく(たぶん色々便利なので)
+        self.df_sub["customer_id_short"] = pd.DataFrame(
+            self.df_sub["customer_id"].apply(lambda s: int(s[-16:], 16))).astype("uint64")
+        self.cid = pd.DataFrame(self.df_sub["customer_id_short"])
 
 
 def main():
