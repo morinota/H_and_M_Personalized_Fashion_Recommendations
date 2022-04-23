@@ -54,7 +54,7 @@ class RankLearningLgbm:
                    .apply(lambda x: pd.factorize(x)[0])).astype('int8')
 
     def _merge_user_item_feature_to_transactions(self):
-        self.df= self.df.merge(self.user_features, on = ('customer_id'))
+        self.df= self.df.merge(self.user_features, on = ('customer_id_short'))
         self.df= self.df.merge(self.item_features, on = ('article_id'))
         self.df.sort_values(['t_dat', 'customer_id'], inplace=True)
 
