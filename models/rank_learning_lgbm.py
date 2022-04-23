@@ -211,7 +211,7 @@ class RankLearningLgbm:
             verbose=10, 
         )
 
-        X_train = self.train.drop(columns=['t_dat', 'customer_id', 'customer_id_short', 'article_id', 'label'])
+        X_train = self.train.drop(columns=['t_dat', 'customer_id', 'customer_id_short', 'article_id', 'label', 'week'])
         # 特徴量のカラム名を保存
         self.feature_names= X_train.columns
         y_train = self.train.pop('label')
