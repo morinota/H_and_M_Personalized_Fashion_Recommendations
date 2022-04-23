@@ -80,6 +80,10 @@ class DataSet:
         # df_subはそのまま
         csv_sub = os.path.join(DataSet.INPUT_DIR, 'sample_submission.csv')
         self.df_sub = pd.read_csv(csv_sub)
+        # customer_id_shortカラムを作る.
+        self.df_sub["customer_id_short"] = pd.DataFrame(
+            self.df_sub["customer_id"].apply(lambda s: int(s[-16:], 16))).astype("uint64")
+
         # customer_idカラムのみのpd.DataFrameを作っておく(たぶん色々便利なので)
         self.cid = pd.DataFrame(self.dfu["customer_id_short"].copy())
         print(self.cid)
