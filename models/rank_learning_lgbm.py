@@ -24,20 +24,20 @@ class RankLearningLgbm:
         self.val_week_id = val_week_id
 
     def _create_df_1w_to4w(self):
-        date_minus = timedelta(days=7*(105 - self.val_week_id))
+        self.date_minus = timedelta(days=7*(105 - self.val_week_id))
         # トランザクション
         df = self.dataset.df.copy()
         df['article_id'] = df['article_id'].astype('int')
         self.df = df
 
         self.df_1w = df[df['t_dat'] >= (
-            pd.to_datetime('2020-09-15') - date_minus)].copy()
+            pd.to_datetime('2020-09-15') - self.date_minus)].copy()
         self.df_2w = df[df['t_dat'] >= (
-            pd.to_datetime('2020-09-07') - date_minus)].copy()
+            pd.to_datetime('2020-09-07') - self.date_minus)].copy()
         self.df_3w = df[df['t_dat'] >= (
-            pd.to_datetime('2020-08-31') - date_minus)].copy()
+            pd.to_datetime('2020-08-31') - self.date_minus)].copy()
         self.df_4w = df[df['t_dat'] >= (
-            pd.to_datetime('2020-08-24') - date_minus)].copy()
+            pd.to_datetime('2020-08-24') - self.date_minus)].copy()
 
     def _load_feature_data(self):
         self.item_features = pd.read_parquet(os.path.join(
@@ -59,8 +59,8 @@ class RankLearningLgbm:
         self.df.sort_values(['t_dat', 'customer_id'], inplace=True)
 
     def _create_train_and_valid(self):
-        self.train = self.df.loc[self.df.t_dat <= (pd.to_datetime('2020-09-15') - timedelta(7))]
-        self.valid = self.df.loc[self.df.t_dat >= (pd.to_datetime('2020-09-16') - timedelta(7))]
+        self.train = self.df.loc[self.df.t_dat <= (pd.to_datetime('2020-09-15') - self.date_minus)]
+        self.valid = self.df.loc[self.df.t_dat >= (pd.to_datetime('2020-09-16') - self.date_minus)]
 
         # delete transactions to save memory
         del self.df
