@@ -68,7 +68,7 @@ class DataSet:
         path_article = os.path.join(
             sampled_data_dir, f'articles_train_sample{sampling_percentage}.csv.gz')
         path_customers = os.path.join(
-            sampled_data_dir, f'customers_train_sample{sampling_percentage}.csv.gz')
+            sampled_data_dir, f'customers_sample{sampling_percentage}.csv.gz')
 
         # インスタンス変数として読み込み
         self.df = pd.read_csv(path_transactions,
