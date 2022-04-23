@@ -72,10 +72,16 @@ class RankLearningLgbm:
         """Matrix Factrizationの為の前処理を実行するメソッド.
         """
         self._create_df_1w_to4w()
+        print("g")
         self._load_feature_data()
+        print("g")
+
         self._preprocessing_user_feature()
+        print("g")
         self._merge_user_item_feature_to_transactions()
+        print("g")
         self._create_train_and_valid()
+        print("g")
 
     def _create_purchased_dict(self):
 
