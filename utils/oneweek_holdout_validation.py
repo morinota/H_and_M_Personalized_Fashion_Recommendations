@@ -43,8 +43,8 @@ def get_valid_oneweek_holdout_validation(dataset: DataSet, val_week_id: int = 10
 
     # 上記のval_dfは、検証用weekでtransactionを発生させたユーザのみ。それ以外のユーザのレコードを付け足す。
     alluser_df = dataset.cid
-    print(alluser_df.head())
-    print(val_df.head())
+    print(alluser_df)
+    print(val_df)
     # val_dfに検証用weekでtransactionを発生させていないユーザのレコードを付け足す。
     val_df = pd.merge(val_df, alluser_df, how="right", on='customer_id_short')
 
