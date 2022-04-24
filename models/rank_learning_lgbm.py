@@ -130,6 +130,7 @@ class RankLearningLgbm:
             self.df_1w)
 
         del self.df_1w, self.df_3w, self.df_4w
+
     def __prepare_candidates(self, customers_id, n_candidates: int = 100):
         """各ユーザ毎に、各ユーザの過去の購買記録に基づいて、全アイテムの中から購入しそうなアイテムn(=ex. 1000)個を抽出し、候補として渡す。
         その「候補」をランク付けする事でレコメンドを達成する。
@@ -243,7 +244,7 @@ class RankLearningLgbm:
 
         # 各ユーザに対して、「候補」アイテムをn個取得する。(transaction_dfっぽい形式になってる!)
         self.negatives_df = self.__prepare_candidates(
-            customers_id=self.train['customer_id_short'].unique(), n_candidates=100)
+            customers_id=self.train['customer_id_short'].unique(), n_candidates=50)
         # negativeなレコードのt_datは、last_datesで穴埋めする。
         self.negatives_df['t_dat'] = self.negatives_df['customer_id_short'].map(
             last_dates)
@@ -260,7 +261,6 @@ class RankLearningLgbm:
         self.negatives_df['label'] = 0
 
         # 検証用データも同様の手順で、
-
 
     def _merge_train_and_negatives(self):
 
@@ -305,14 +305,14 @@ class RankLearningLgbm:
             'importance_type': 'gain'
         }
         self.ranker = LGBMRanker(
-                objective="lambdarank",
-                metric="ndcg",
-                boosting_type="dart",
-                max_depth=7,
-                n_estimators=300,
-                importance_type='gain',
-                verbose=10,
-                ndcg_eval_at = [3,5]
+            objective="lambdarank",
+            metric="ndcg",
+            boosting_type="dart",
+            max_depth=7,
+            n_estimators=300,
+            importance_type='gain',
+            verbose=10,
+            ndcg_eval_at=[3, 5]
         )
         # 特徴量とターゲットを分割
         X_train = self.train.drop(
