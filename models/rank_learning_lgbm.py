@@ -8,7 +8,6 @@ from tqdm import tqdm
 import os
 from lightgbm.sklearn import LGBMRanker
 from pathlib import Path
-from lightgbm as lgb
 
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 
