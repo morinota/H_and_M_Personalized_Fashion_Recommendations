@@ -299,7 +299,16 @@ class RankLearningLgbm:
             'verbose': 10,
             'importance_type': 'gain'
         }
-        self.ranker = LGBMRanker(self.params)
+        self.ranker = LGBMRanker(
+                objective="lambdarank",
+                metric="ndcg",
+                boosting_type="dart",
+                max_depth=7,
+                n_estimators=300,
+                importance_type='gain',
+                verbose=10,
+                ndcg_eval_at = [3,5]
+        )
         # 特徴量とターゲットを分割
         X_train = self.train.drop(
             columns=['t_dat', 'customer_id', 'customer_id_short', 'article_id', 'label', 'week'])
@@ -314,7 +323,6 @@ class RankLearningLgbm:
             X=X_train,
             y=y_train,
             group=self.train_baskets,
-
         )
 
     def _prepare_prediction(self):
