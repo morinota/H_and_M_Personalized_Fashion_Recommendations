@@ -129,7 +129,7 @@ class RankLearningLgbm:
         self.purchase_dict_1w, self.dummy_list_1w = __create_purchased_dict(
             self.df_1w)
 
-        del self.df_1w, self.df_3w, self.df_4wmada
+        del self.df_1w, self.df_3w, self.df_4w
 
     def __prepare_candidates(self, customers_id, n_candidates: int = 100):
         """各ユーザ毎に、各ユーザの過去の購買記録に基づいて、全アイテムの中から購入しそうなアイテムn(=ex. 1000)個を抽出し、候補として渡す。
