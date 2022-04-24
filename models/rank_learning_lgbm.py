@@ -219,6 +219,7 @@ class RankLearningLgbm:
         self.train = self.train.assign(
             rn=self.train.groupby(['customer_id_short'])['rank']
             .rank(method='first', ascending=False))
+        # rn が15以下のレコードだけ残す。
         self.train = self.train.query("rn <= 15")
         self.train.drop(columns=['price', 'sales_channel_id'], inplace=True)
         self.train.sort_values(['t_dat', 'customer_id_short'], inplace=True)
@@ -256,6 +257,14 @@ class RankLearningLgbm:
         )
         # negatives_dfのLabelカラムを0にする。(重複ない??)
         self.negatives_df['label'] = 0
+
+        # 検証用データも同様の手順で、
+        last_dates = (
+            self.valid
+            .groupby('customer_id_short')['t_dat']
+            .max()
+            .to_dict()
+        )
 
     def _merge_train_and_negatives(self):
 
@@ -315,9 +324,9 @@ class RankLearningLgbm:
         y_train = self.train['label']
         # 特徴量のカラム名を保存
         self.feature_names = X_train.columns
-        # X_valid = self.valid.drop(
-        #     columns=['t_dat', 'customer_id', 'customer_id_short', 'article_id', 'label', 'week'])
-        # y_valid = self.valid['label']
+        X_valid = self.valid.drop(
+            columns=['t_dat', 'customer_id', 'customer_id_short', 'article_id', 'label', 'week'])
+        y_valid = self.valid['label']
         # 学習
         self.ranker = self.ranker.fit(
             X=X_train,

@@ -71,10 +71,25 @@ def run_validation(val_week_id=104):
             DRIVE_DIR, f'val_results_{val_week_id}_csv')
         df_sub.to_csv(os.path.join(val_result_dir, f'val_{VERSION}.csv'))
 
+def run_create_sub():
+    # DataSetオブジェクトの読み込み
+    dataset = DataSet()
+    # DataFrameとしてデータ読み込み
+    dataset.read_data()
+    # dataset.read_data_sampled()
+    # レコメンド結果を生成
+    model = RankLearningLgbm(transaction_train=pd.DataFrame(), dataset=dataset, val_week_id=105)
+    model.preprocessing()
+    model.fit()
+    df_sub = model.create_reccomendation()
+    sub_result_dir = os.path.join(DRIVE_DIR, 'submission_csv')
+    df_sub.to_csv(os.path.join(sub_result_dir, f'sub_{VERSION}.csv'))
 
 if __name__ == '__main__':
     create_logger(VERSION)
     get_logger(VERSION).info("メッセージ")
     val_week_ids = [104, 103, 102]
-    for val_week_id in val_week_ids:
-        run_validation(val_week_id=val_week_id)
+    # for val_week_id in val_week_ids:
+    #     run_validation(val_week_id=val_week_id)
+
+    run_create_sub()
