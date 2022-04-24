@@ -58,7 +58,7 @@ class RankLearningLgbm:
     def _merge_user_item_feature_to_transactions(self):
         self.df= self.df.merge(self.user_features, on = ('customer_id_short'))
         self.df= self.df.merge(self.item_features, on = ('article_id'))
-        self.df.sort_values(['t_dat', 'customer_id'], inplace=True)
+        self.df.sort_values(['t_dat', 'customer_id'], inplace=True, ascending=False)
 
     def _create_train_and_valid(self):
         N_ROWS = 1_000_000
