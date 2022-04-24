@@ -58,6 +58,7 @@ class RankLearningLgbm:
     def _merge_user_item_feature_to_transactions(self):
         self.df= self.df.merge(self.user_features, on = ('customer_id_short'))
         self.df= self.df.merge(self.item_features, on = ('article_id'))
+        # 降順で並び変え
         self.df.sort_values(['t_dat', 'customer_id'], inplace=True, ascending=False)
 
     def _create_train_and_valid(self):
@@ -177,7 +178,7 @@ class RankLearningLgbm:
         del self.train['rank']
         del self.train['rn']
 
-        self.valid.sort_values(['t_dat', 'customer_id_short'], inplace = True)
+        self.train.sort_values(['t_dat', 'customer_id_short'], inplace = True)
     
     def _append_negatives_to_positives_using_lastDate_fromTrain(self):
         last_dates = (
@@ -252,7 +253,6 @@ class RankLearningLgbm:
         for bucket in tqdm(range(0, len(self.candidates), batch_size)):
             # 特徴量を用意。
             X_pred = self.candidates.iloc[bucket: bucket+batch_size][self.feature_names]
-            print(X_pred.columns)
             # モデルに特徴量を入力して、出力値を取得
             outputs = self.ranker.predict(X=X_pred)
             # 予測値のリストに追加
