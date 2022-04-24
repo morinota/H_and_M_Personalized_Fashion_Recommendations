@@ -89,7 +89,7 @@ if __name__ == '__main__':
     create_logger(VERSION)
     get_logger(VERSION).info("メッセージ")
     val_week_ids = [104, 103, 102]
-    for val_week_id in val_week_ids:
-        run_validation(val_week_id=val_week_id)
+    # for val_week_id in val_week_ids:
+    #     run_validation(val_week_id=val_week_id)
 
-    # run_create_sub()
+    run_create_sub()
