@@ -67,7 +67,8 @@ def partitioned_validation(val_df: pd.DataFrame, pred_df: pd.DataFrame, grouping
     if ignore:
         return
 
-    print(len(actual), len(predicted))
+    print(f'length of user in actual is...{len(actual)}')
+    print(f'length of user in predicted is...{len(predicted)}')
     # 各ユーザのAP@kを算出(後半のヒストグラム作成の為に)
     ap12 = mapk(actual, predicted, return_apks=True)
     # MAP@kを算出

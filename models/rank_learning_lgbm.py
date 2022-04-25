@@ -343,6 +343,13 @@ class RankLearningLgbm:
         )
 
     def _prepare_prediction(self):
+        """予測の準備をするメソッド。
+        具体的には、
+        - sample_submissionを読み込んでおく.
+        - 予測する各ユニークユーザに対して、Candidateを用意。
+        - 作成されたDataFrame(レコード数= len(unique ser) * n_candidate)に対して、
+        アイテム特徴量とユーザ特徴量をマージ
+        """
         self.sample_sub = self.dataset.df_sub.copy()
 
         self.candidates = self.__prepare_candidates(

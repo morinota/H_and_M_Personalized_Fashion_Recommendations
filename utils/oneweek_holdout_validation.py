@@ -42,7 +42,7 @@ def get_valid_oneweek_holdout_validation(dataset: DataSet, val_week_id: int = 10
     # ->レコード：各ユーザ、カラム：customer_id, 1週間の購入アイテム達のstr　(submission.csvと同じ形式)　
 
     # 上記のval_dfは、検証用weekでtransactionを発生させたユーザのみ。それ以外のユーザのレコードを付け足す。
-    alluser_df = dataset.cid
+    alluser_df = dataset.df_sub[['customer_id_short']]
     print(alluser_df.columns)
     print(val_df.columns)
     # val_dfに検証用weekでtransactionを発生させていないユーザのレコードを付け足す。
