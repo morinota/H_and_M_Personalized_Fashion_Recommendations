@@ -1,8 +1,13 @@
 class Config:
-    # クラス変数として、設定を記述していく.
+    # 以下、クラス変数として、設定を記述していく.
+    # 基本設定
     num_recommend_item = 12
+
+    # 本番レコメンドか、検証用レコメンドか
+    run_for_submittion = False
+
     # 5%サンプリングを使うか、フルサンプリングを使うか。
-    use_full_sampling = False
+    use_full_sampling = True
 
     # ランク学習用のCandidate
     # 訓練用のCandidateの数
@@ -12,9 +17,9 @@ class Config:
     # lightGBMハイパラ
     # 以下が良く調整されるらしい...(深さはあんまり??)
     boosting_type = 'dart' # 多くは'gbdt'. たまに 'dart' or 'goss'
-    n_estimators=300
+    n_estimators=300 # 最後らへんに増やす。それまではいじらない。
     num_leaves = 63 # かなり多様だが、中央値だと63らしい。
-    learning_rate = 0.1
+    learning_rate = 0.1 # 最後らへんに減らす。それまではいじらない。
     feature_fraction = 0.8
     bagging_freq = 1
     bagging_fraction = 0.8
