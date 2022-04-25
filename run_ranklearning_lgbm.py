@@ -75,8 +75,8 @@ def run_create_sub():
     # DataSetオブジェクトの読み込み
     dataset = DataSet()
     # DataFrameとしてデータ読み込み
-    dataset.read_data()
-    # dataset.read_data_sampled()
+    # dataset.read_data()
+    dataset.read_data_sampled()
     # レコメンド結果を生成
     model = RankLearningLgbm(transaction_train=pd.DataFrame(), dataset=dataset, val_week_id=105)
     model.preprocessing()

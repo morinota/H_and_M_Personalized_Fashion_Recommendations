@@ -24,6 +24,8 @@ class RankLearningLgbm:
         self.val_week_id = val_week_id
 
     def _create_df_1w_to4w(self):
+        """予測期間に対して、過去i week (i=1,...,4)のトランザクションログを抽出して、DataFrameとして保存。
+        """
         self.date_minus = timedelta(days=7*(105 - self.val_week_id))
         # トランザクション
         df = self.dataset.df.copy()
@@ -77,16 +79,10 @@ class RankLearningLgbm:
         """Matrix Factrizationの為の前処理を実行するメソッド.
         """
         self._create_df_1w_to4w()
-        print("g")
         self._load_feature_data()
-        print("g")
-
         self._preprocessing_user_feature()
-        print("g")
         self._merge_user_item_feature_to_transactions()
-        print("g")
         self._create_train_and_valid()
-        print("g")
 
     def _create_purchased_dict(self):
         """過去の各ユーザのトランザクション情報をまとめる。
@@ -326,6 +322,9 @@ class RankLearningLgbm:
             verbose=10,
             ndcg_eval_at=[3, 5]
         )
+        # 一応、学習用データの最終日を取得し、出力
+        print(f'last date of training data is...{self.train['t_dat'].max()}')
+
         # 特徴量とターゲットを分割
         X_train = self.train.drop(
             columns=['t_dat', 'customer_id', 'customer_id_short', 'article_id', 'label', 'week'])
