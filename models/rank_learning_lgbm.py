@@ -363,7 +363,8 @@ class RankLearningLgbm:
         )
 
     def _predict_using_batches(self):
-        """Predict using batches, otherwise doesn't fit into memory.
+        """実際に予測を実行するメソッド。メモリの関係からbatch_size数ずつ入力していく.
+        Predict using batches, otherwise doesn't fit into memory.
         """
         # 予測値のリストをInitialize
         self.preds = []

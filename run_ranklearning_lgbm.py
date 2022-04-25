@@ -5,6 +5,7 @@ from models.rank_learning_lgbm import RankLearningLgbm
 from tqdm import tqdm
 from datetime import datetime
 from my_class.dataset import DataSet
+from utils.just_offline_validation import offline_validation
 from utils.partitioned_validation import partitioned_validation, user_grouping_online_and_offline
 from utils.oneweek_holdout_validation import get_train_oneweek_holdout_validation, get_valid_oneweek_holdout_validation
 
@@ -51,14 +52,10 @@ def run_validation(val_week_id=104):
     df_sub = model.create_reccomendation()
 
     # One-week hold-out validationのオフライン評価
-    score_df = partitioned_validation(val_df=val_df,
-                                      pred_df=df_sub,
-                                      grouping=grouping_df['group'],
-                                      approach_name=VERSION
-                                      )
+    map_k = offline_validation(val_df=val_df, pred_df=df_sub)
     # スコアをロギング
     get_logger(VERSION).info(f'va_week_id is {val_week_id}')
-    get_logger(VERSION).info('\t' + score_df.to_string().replace('\n', '\n\t'))
+    get_logger(VERSION).info(f'map_k of {VERSION} is ...{map_k}')
 
     # レコメンド結果を保存
 
