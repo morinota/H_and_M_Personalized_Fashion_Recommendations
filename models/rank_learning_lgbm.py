@@ -46,10 +46,14 @@ class RankLearningLgbm:
             pd.to_datetime('2020-08-24') - self.date_minus)].copy()
 
         # 一応、リークがないか確認
-        print(f'df_1w is from {self.df_1w['t_dat'].max()} to {self.df_1w['t_dat'].min()}')
-        print(f'df_2w is from {self.df_2w['t_dat'].max()} to {self.df_2w['t_dat'].min()}')
-        print(f'df_3w is from {self.df_3w['t_dat'].max()} to {self.df_3w['t_dat'].min()}')
-        print(f'df_4w is from {self.df_4w['t_dat'].max()} to {self.df_4w['t_dat'].min()}')
+        print('df_1w is from {} to {}'.format(
+            self.df_1w['t_dat'].max(), self.df_1w['t_dat'].min()))
+        print('df_2w is from {} to {}'.format(
+            self.df_2w['t_dat'].max(), self.df_2w['t_dat'].min()))
+        print('df_3w is from {} to {}'.format(
+            self.df_3w['t_dat'].max(), self.df_3w['t_dat'].min()))
+        print('df_4w is from {} to {}'.format(
+            self.df_4w['t_dat'].max(), self.df_4w['t_dat'].min()))
 
     def _load_feature_data(self):
         self.item_features = pd.read_parquet(os.path.join(
