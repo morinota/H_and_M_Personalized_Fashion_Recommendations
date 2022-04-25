@@ -14,7 +14,7 @@ from logs.base_log import create_logger, get_logger, stop_watch
 
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 
-VERSION = "rankLearning_train_20depth"
+VERSION = "rankLearning_train_20depth_20candidate"
 
 
 @stop_watch(VERSION)
