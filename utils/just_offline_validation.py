@@ -1,5 +1,4 @@
-from multiprocessing.spawn import import_main_path
-from calculate_MAP12 import apk, mapk
+from utils.calculate_MAP12 import apk, mapk
 from typing import List
 import pandas as pd
 from config import Config
