@@ -14,7 +14,7 @@ from logs.base_log import create_logger, get_logger, stop_watch
 
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 
-VERSION = "rankLearning_train"
+VERSION = "rankLearning_train_5p"
 
 
 @stop_watch(VERSION)
@@ -64,26 +64,26 @@ def run_validation(val_week_id=104):
 
     if val_week_id == 105:
         sub_result_dir = os.path.join(DRIVE_DIR, 'submission_csv')
-        df_sub.to_csv(os.path.join(sub_result_dir, f'sub_{VERSION}.csv'))
+        df_sub.to_csv(os.path.join(sub_result_dir, f'sub_{VERSION}.csv'), index=False)
 
     else:
         val_result_dir = os.path.join(
             DRIVE_DIR, f'val_results_{val_week_id}_csv')
-        df_sub.to_csv(os.path.join(val_result_dir, f'val_{VERSION}.csv'))
+        df_sub.to_csv(os.path.join(val_result_dir, f'val_{VERSION}.csv'), index=False)
 
 def run_create_sub():
     # DataSetオブジェクトの読み込み
     dataset = DataSet()
     # DataFrameとしてデータ読み込み
-    dataset.read_data()
-    # dataset.read_data_sampled()
+    # dataset.read_data()
+    dataset.read_data_sampled()
     # レコメンド結果を生成
     model = RankLearningLgbm(transaction_train=pd.DataFrame(), dataset=dataset, val_week_id=105)
     model.preprocessing()
     model.fit()
     df_sub = model.create_reccomendation()
     sub_result_dir = os.path.join(DRIVE_DIR, 'submission_csv')
-    df_sub.to_csv(os.path.join(sub_result_dir, f'sub_{VERSION}.csv'))
+    df_sub.to_csv(os.path.join(sub_result_dir, f'sub_{VERSION}.csv'), index=False)
 
 if __name__ == '__main__':
     create_logger(VERSION)

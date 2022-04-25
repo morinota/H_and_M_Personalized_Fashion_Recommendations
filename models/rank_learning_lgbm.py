@@ -388,7 +388,7 @@ class RankLearningLgbm:
         self._predict_using_batches()
         self._prepare_submission()
 
-        return self.preds
+        return self.preds[['customer_id', 'prediction']]
 
 
 if __name__ == '__main__':
