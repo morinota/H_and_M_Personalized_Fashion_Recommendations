@@ -18,7 +18,7 @@ class RankLearningLgbm:
     def __init__(self, transaction_train: pd.DataFrame, dataset: DataSet, val_week_id: int) -> None:
         # インスタンス変数(属性の初期化)
         self.dataset = dataset
-        self.transaction_train = transaction_train
+        self.df = transaction_train
         self.ALL_ITEMS = []
         self.ALL_USERS = []
         self.hyper_params = {}
@@ -27,20 +27,29 @@ class RankLearningLgbm:
     def _create_df_1w_to4w(self):
         """予測期間に対して、過去i week (i=1,...,4)のトランザクションログを抽出して、DataFrameとして保存。
         """
+        # val_week_idによって日付をずらす為の変数を用意しておく.
         self.date_minus = timedelta(days=7*(105 - self.val_week_id))
-        # トランザクション
-        df = self.dataset.df.copy()
-        df['article_id'] = df['article_id'].astype('int')
-        self.df = df
+        # 一応、トランザクションデータのカラムのデータ型を調整為ておく
+        self.df['article_id'] = self.df['article_id'].astype('int')
 
-        self.df_1w = df[df['t_dat'] >= (
+        # 直近一週間のトランザクションログ
+        self.df_1w = self.df[self.df['t_dat'] >= (
             pd.to_datetime('2020-09-15') - self.date_minus)].copy()
-        self.df_2w = df[df['t_dat'] >= (
+        # 直近2週間のトランザクションログ
+        self.df_2w = self.df[self.df['t_dat'] >= (
             pd.to_datetime('2020-09-07') - self.date_minus)].copy()
-        self.df_3w = df[df['t_dat'] >= (
+        # 直近3週間のトランザクションログ
+        self.df_3w = self.df[self.df['t_dat'] >= (
             pd.to_datetime('2020-08-31') - self.date_minus)].copy()
-        self.df_4w = df[df['t_dat'] >= (
+        # 直近4週間のトランザクションログ
+        self.df_4w = self.df[self.df['t_dat'] >= (
             pd.to_datetime('2020-08-24') - self.date_minus)].copy()
+
+        # 一応、リークがないか確認
+        print(f'df_1w is from {self.df_1w['t_dat'].max()} to {self.df_1w['t_dat'].min()}')
+        print(f'df_2w is from {self.df_2w['t_dat'].max()} to {self.df_2w['t_dat'].min()}')
+        print(f'df_3w is from {self.df_3w['t_dat'].max()} to {self.df_3w['t_dat'].min()}')
+        print(f'df_4w is from {self.df_4w['t_dat'].max()} to {self.df_4w['t_dat'].min()}')
 
     def _load_feature_data(self):
         self.item_features = pd.read_parquet(os.path.join(
@@ -212,7 +221,6 @@ class RankLearningLgbm:
         その後、各レコードにlabel=1(すなわち、購入あり)を付与する
         """
         self.train: pd.DataFrame
-        
 
         # まずトランザクションログ(=新しい順)に、0~len(train)の通し番号を付ける。
         self.train['rank'] = range(len(self.train))
@@ -239,7 +247,6 @@ class RankLearningLgbm:
 
         # 検証用データに対しても同様(ユーザ毎に直近15件っていう制限はなくていいや)
         self.valid['label'] = 1
-        
 
     def _append_negatives_to_positives_using_lastDate_fromTrain(self):
         # 各ユーザに対して、学習データ期間の最終購入日を取得する。
@@ -252,7 +259,7 @@ class RankLearningLgbm:
 
         # 各ユーザに対して、「候補」アイテムをn個取得する。(transaction_dfっぽい形式になってる!)
         self.negatives_df = self.__prepare_candidates(
-            customers_id=self.train['customer_id_short'].unique(), 
+            customers_id=self.train['customer_id_short'].unique(),
             n_candidates=Config.num_candidate_train)
         # negativeなレコードのt_datは、last_dates(使うのここだけ?)で穴埋めする。
         self.negatives_df['t_dat'] = self.negatives_df['customer_id_short'].map(
@@ -270,7 +277,6 @@ class RankLearningLgbm:
         self.negatives_df['label'] = 0
 
         # 検証用データも同様の手順で、negativeを作る?
-        
 
     def _merge_train_and_negatives(self):
 
@@ -401,7 +407,8 @@ class RankLearningLgbm:
                 ['article_id']].aggregate(lambda x: x.tolist())
         )
         # 上位12個のみ残す。
-        self.preds['article_id'] = self.preds['article_id'].apply(lambda x: x[:Config.num_recommend_item])
+        self.preds['article_id'] = self.preds['article_id'].apply(
+            lambda x: x[:Config.num_recommend_item])
         # 提出用にレコメンドアイテムの体裁を整える。
         self.preds['article_id'] = self.preds['article_id'].apply(
             lambda x: ' '.join(['0'+str(k) for k in x]))
