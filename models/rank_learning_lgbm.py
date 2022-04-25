@@ -8,6 +8,7 @@ from tqdm import tqdm
 import os
 from lightgbm.sklearn import LGBMRanker
 from pathlib import Path
+from config import Config
 
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 
@@ -251,7 +252,8 @@ class RankLearningLgbm:
 
         # 各ユーザに対して、「候補」アイテムをn個取得する。(transaction_dfっぽい形式になってる!)
         self.negatives_df = self.__prepare_candidates(
-            customers_id=self.train['customer_id_short'].unique(), n_candidates=15)
+            customers_id=self.train['customer_id_short'].unique(), 
+            n_candidates=Config.num_candidate_train)
         # negativeなレコードのt_datは、last_dates(使うのここだけ?)で穴埋めする。
         self.negatives_df['t_dat'] = self.negatives_df['customer_id_short'].map(
             last_dates)
@@ -316,8 +318,8 @@ class RankLearningLgbm:
             objective="lambdarank",
             metric="ndcg",
             boosting_type="dart",
-            max_depth=20,
-            n_estimators=300,
+            max_depth=Config.max_depth,
+            n_estimators=Config.n_estimators,
             importance_type='gain',
             verbose=10,
             ndcg_eval_at=[3, 5]
@@ -353,7 +355,7 @@ class RankLearningLgbm:
         self.sample_sub = self.dataset.df_sub.copy()
 
         self.candidates = self.__prepare_candidates(
-            self.sample_sub['customer_id_short'].unique(), 12)
+            self.sample_sub['customer_id_short'].unique(), Config.num_candidate_predict)
         self.candidates['article_id'] = self.candidates['article_id'].astype(
             'int')
         self.candidates = (
@@ -376,21 +378,30 @@ class RankLearningLgbm:
                                           batch_size][self.feature_names]
             # モデルに特徴量を入力して、出力値を取得
             outputs = self.ranker.predict(X=X_pred)
-            # 予測値のリストに追加
+            # -> (ユニークユーザ × num_candidate_predict)個のうち、バッチサイズ分のトランザクションの発生確率を返す?
+            # 予測値のリストにndarrayを追加
             self.preds.append(outputs)
 
     def _prepare_submission(self):
+        # 各バッチ毎の予測結果(ndarrayのリスト)を縦に結合
+        # ->(ユニークユーザ × num_candidate_predict)個のレコードの発生確率y
         self.preds = np.concatenate(self.preds)
-
+        # 候補アイテムのdf(長さ=(ユニークユーザ × num_candidate_predict))に、予測結果を格納.
         self.candidates['preds'] = self.preds
+
+        # 提出用のカラムのみ抽出.
         self.preds = self.candidates[[
             'customer_id_short', 'article_id', 'preds']]
+        # 各ユニークユーザ毎で、発生確率の高いアイテム順にソート
         self.preds.sort_values(
             ['customer_id_short', 'preds'], ascending=False, inplace=True)
+        # 「行=ユニークユーザ」「列=レコメンドアイテムのリスト」のDfに変換
         self.preds = (
             self.preds.groupby('customer_id_short')[
                 ['article_id']].aggregate(lambda x: x.tolist())
         )
+        # 上位12個のみ残す。
+        self.preds['article_id'] = self.preds['article_id'].apply(lambda x: x[:Config.num_recommend_item])
         # 提出用にレコメンドアイテムの体裁を整える。
         self.preds['article_id'] = self.preds['article_id'].apply(
             lambda x: ' '.join(['0'+str(k) for k in x]))
