@@ -1,3 +1,4 @@
+from config import Config
 from idna import valid_contextj
 import numpy as np
 import pandas as pd
@@ -24,8 +25,10 @@ def run_validation(val_week_id=104):
     # DataSetオブジェクトの読み込み
     dataset = DataSet()
     # DataFrameとしてデータ読み込み
-    # dataset.read_data()
-    dataset.read_data_sampled()
+    if Config.use_full_sampling:
+        dataset.read_data()
+    else:
+        dataset.read_data_sampled()
 
     print("1")
 
@@ -72,8 +75,10 @@ def run_create_sub():
     # DataSetオブジェクトの読み込み
     dataset = DataSet()
     # DataFrameとしてデータ読み込み
-    dataset.read_data()
-    # dataset.read_data_sampled()
+    if Config.use_full_sampling:
+        dataset.read_data()
+    else:
+        dataset.read_data_sampled()
     # レコメンド結果を生成
     model = RankLearningLgbm(transaction_train=pd.DataFrame(), dataset=dataset, val_week_id=105)
     model.preprocessing()
