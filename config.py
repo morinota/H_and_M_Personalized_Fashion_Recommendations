@@ -7,7 +7,7 @@ class Config:
     # ランク学習用のCandidate
     # 訓練用のCandidateの数
     num_candidate_train = 15
-    num_candidate_predict = 50
+    num_candidate_predict = 30
 
     # lightGBMハイパラ
     # lgbmのtreeの深さ
