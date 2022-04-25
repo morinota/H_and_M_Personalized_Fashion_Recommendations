@@ -59,7 +59,7 @@ class RankLearningLgbm:
     def _merge_user_item_feature_to_transactions(self):
         self.df = self.df.merge(self.user_features, on=('customer_id_short'))
         self.df = self.df.merge(self.item_features, on=('article_id'))
-        # 降順で並び変え
+        # 降順(新しい順)で並び変え
         self.df.sort_values(['t_dat', 'customer_id'],
                             inplace=True, ascending=False)
 
@@ -211,17 +211,24 @@ class RankLearningLgbm:
         return negatives_df
 
     def _create_label_column(self):
+        """ユーザ毎に# take only last 15 transactions。
+        その後、各レコードにlabel=1(すなわち、購入あり)を付与する
+        """
         self.train: pd.DataFrame
-        # take only last 15 transactions
+        
 
-        # まずトランザクションログに、0~len(train)の通し番号を付ける。
+        # まずトランザクションログ(=新しい順)に、0~len(train)の通し番号を付ける。
         self.train['rank'] = range(len(self.train))
         # assign()メソッドで新規カラムを追加or既存カラムに値を代入
         # ここでは、rmカラムを新規に追加してる。
         self.train = self.train.assign(
+            # 各ユーザ毎のrank Seriesに対して、rankメソッドで順位づけする。
+            # 降順でソート.
+            # method引数で、同一値の処理を指定(通し番号だから問題なくない?)
+            # method='first'とすると同一値（重複値）は登場順に順位付け
             rn=self.train.groupby(['customer_id_short'])['rank']
             .rank(method='first', ascending=False))
-        # rn が15以下のレコードだけ残す。
+        # rn が15以下( =ユーザ毎に直近15件)のレコードだけ残す。
         self.train = self.train.query("rn <= 15")
         self.train.drop(columns=['price', 'sales_channel_id'], inplace=True)
         self.train.sort_values(['t_dat', 'customer_id_short'], inplace=True)
@@ -232,6 +239,10 @@ class RankLearningLgbm:
         del self.train['rn']
 
         self.train.sort_values(['t_dat', 'customer_id_short'], inplace=True)
+
+        # 検証用データに対しても同様(ユーザ毎に直近15件っていう制限はなくていいや)
+        self.valid['label'] = 1
+        
 
     def _append_negatives_to_positives_using_lastDate_fromTrain(self):
         # 各ユーザに対して、学習データ期間の最終購入日を取得する。
@@ -245,7 +256,7 @@ class RankLearningLgbm:
         # 各ユーザに対して、「候補」アイテムをn個取得する。(transaction_dfっぽい形式になってる!)
         self.negatives_df = self.__prepare_candidates(
             customers_id=self.train['customer_id_short'].unique(), n_candidates=15)
-        # negativeなレコードのt_datは、last_datesで穴埋めする。
+        # negativeなレコードのt_datは、last_dates(使うのここだけ?)で穴埋めする。
         self.negatives_df['t_dat'] = self.negatives_df['customer_id_short'].map(
             last_dates)
         # データ型を一応変換しておく。
@@ -260,7 +271,8 @@ class RankLearningLgbm:
         # negatives_dfのLabelカラムを0にする。(重複ない??)
         self.negatives_df['label'] = 0
 
-        # 検証用データも同様の手順で、
+        # 検証用データも同様の手順で、negativeを作る?
+        
 
     def _merge_train_and_negatives(self):
 
@@ -308,7 +320,7 @@ class RankLearningLgbm:
             objective="lambdarank",
             metric="ndcg",
             boosting_type="dart",
-            max_depth=7,
+            max_depth=20,
             n_estimators=300,
             importance_type='gain',
             verbose=10,
