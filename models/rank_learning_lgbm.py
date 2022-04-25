@@ -313,23 +313,16 @@ class RankLearningLgbm:
         self._create_query_data()
 
         # データセットを用意
-
-        self.params = {
-            'objective': 'lambdarank',
-            'metric': 'ndcg',
-            'ndcg_eval_at': [3, 5],
-            'boosting_type': 'gbdt',
-            'max_depth': 15,
-            'n_estimators': 1000,
-            'verbose': 10,
-            'importance_type': 'gain'
-        }
         self.ranker = LGBMRanker(
             objective="lambdarank",
             metric="ndcg",
-            boosting_type="dart",
+            boosting_type=Config.boosting_type,
+            num_leaves=Config.num_leaves,
             max_depth=Config.max_depth,
             n_estimators=Config.n_estimators,
+            bagging_freq=Config.bagging_freq,
+            bagging_fraction=Config.bagging_fraction,
+            feature_fraction=Config.feature_fraction,
             importance_type='gain',
             verbose=10,
             ndcg_eval_at=[3, 5]
