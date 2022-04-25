@@ -35,6 +35,11 @@ def get_valid_oneweek_holdout_validation(dataset: DataSet, val_week_id: int = 10
     val_mask = (dataset.df['week'] == val_week_id)
     transaction_df_val = dataset.df[val_mask]
 
+    # 最初の日付と最後の日付を確認
+    start_day_val = transaction_df_val['t_dat'].min()
+    end_day_val = transaction_df_val['t_dat'].max()
+    print(f'valid week is start from {start_day_val} to {end_day_val}')
+
     # 検証用weekのtransactionデータから、検証用データ(レコメンドの答え側)を作成する。
     val_df: pd.DataFrame
     val_df = transaction_df_val.groupby(
@@ -46,13 +51,9 @@ def get_valid_oneweek_holdout_validation(dataset: DataSet, val_week_id: int = 10
     print(alluser_df.columns)
     print(val_df.columns)
     # val_dfに検証用weekでtransactionを発生させていないユーザのレコードを付け足す。
-    val_df = pd.merge(val_df, alluser_df, how="right", 
-    left_on='customer_id_short', 
-    right_on='customer_id_short')
-
-    # List[List]でも返値を作成しておく?
-    actual = val_df['article_id'].apply(
-        lambda s: [] if pd.isna(s) else s.split())
+    val_df = pd.merge(val_df, alluser_df, how="right",
+                      left_on='customer_id_short',
+                      right_on='customer_id_short')
 
     return val_df
 
@@ -94,8 +95,9 @@ def get_train_oneweek_holdout_validation(dataset: DataSet, week_column_exist: bo
             train_mask_2019 = (dataset.df["t_dat"] >= init_date_2019) & (
                 dataset.df["t_dat"] <= last_date_2019)
             # 学習用データを作成
-            transaction_df_train: pd.DataFrame 
-            transaction_df_train = dataset.df[train_mask_2020 |train_mask_2019]
+            transaction_df_train: pd.DataFrame
+            transaction_df_train = dataset.df[train_mask_2020 |
+                                              train_mask_2019]
 
     # トランザクションにweekカラムがない場合
     else:
