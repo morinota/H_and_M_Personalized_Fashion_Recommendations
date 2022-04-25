@@ -92,3 +92,9 @@
   - Non-personalized、Semi-personalized、Personalizedの3段階。
   - 今は、Non-personalizedとPersonalizedをベースにしてる。
   - コンテンツベースフィルタリングで、Semi-Personalizedを試して見る?
+
+# 2022/04/25
+- ランク学習のCandidateを、他のPopularityベースのレコメンドアイテムで作成する？？
+- ^Cの解決法があれば、Candidateの合成とか色々できそう?
+- もしくはユーザ特徴量、アイテム特徴量を増やす？？
+- とりあえず候補数20までなら、OK

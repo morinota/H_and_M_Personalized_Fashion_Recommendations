@@ -255,7 +255,7 @@ class RankLearningLgbm:
 
         # 各ユーザに対して、「候補」アイテムをn個取得する。(transaction_dfっぽい形式になってる!)
         self.negatives_df = self.__prepare_candidates(
-            customers_id=self.train['customer_id_short'].unique(), n_candidates=20)
+            customers_id=self.train['customer_id_short'].unique(), n_candidates=15)
         # negativeなレコードのt_datは、last_dates(使うのここだけ?)で穴埋めする。
         self.negatives_df['t_dat'] = self.negatives_df['customer_id_short'].map(
             last_dates)
