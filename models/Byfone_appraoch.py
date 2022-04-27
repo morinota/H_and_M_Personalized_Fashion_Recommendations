@@ -12,13 +12,15 @@ DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized
 
 class ByfoneModel:
 
-    def __init__(self, transaction_train: pd.DataFrame, dataset: DataSet) -> None:
+    def __init__(self, transaction_train: pd.DataFrame, dataset: DataSet, val_week_id: int, k: int = 12) -> None:
         # インスタンス変数(属性の初期化)
         self.dataset = dataset
         self.transaction_train = transaction_train
         self.ALL_ITEMS = []
         self.ALL_USERS = []
         self.hyper_params = {}
+        self.val_week_id = val_week_id
+        self.k = k
 
     def _calculate_ldbw(self):
         """各トランザクションに対して、最終日との日数差を計算する処理
@@ -66,13 +68,12 @@ class ByfoneModel:
         self._calculate_quotient()
 
     def _recommend_approach_1(self):
-        """quotientの各アイテム毎の合計値を算出し、上位12個をgeneral_predとする。
+        """quotientの各アイテム毎の合計値を算出し、上位k個をgeneral_predとする。
         """
-        self.N = 12
         self.target_sales = self.transaction_train.drop(
             ['customer_id_short', 'price', 'sales_channel_id', 'week'], axis=1
         ).groupby('article_id')['quotient'].sum()
-        self.general_pred = self.target_sales.nlargest(N).index.tolist()
+        self.general_pred = self.target_sales.nlargest(self.k).index.tolist()
 
     def _recommend_approach_2(self):
         """同じアイテムを再度レコメンドする戦略
@@ -102,16 +103,16 @@ class ByfoneModel:
         self._recommend_approach_1()
         self._recommend_approach_2()
 
-        self.df_sub = self.dataset.df_sub
+        self.df_sub = self.dataset.df_sub[['customer_id_short', 'customer_id']]
         # 両者のレコメンド結果を結合
         pred_list = []
         for cust_id in tqdm(self.df_sub['customer_id_short']):
             if cust_id in self.purchase_dict:
                 series = pd.Series(self.purchase_dict[cust_id])
                 series = series[series > 0]
-                l = series.nlargest(self.N).index.tolist()
-                if len(l) < self.N:
-                    l = l + self.general_pred[:(self.N-len(l))]
+                l = series.nlargest(self.k).index.tolist()
+                if len(l) < self.k:
+                    l = l + self.general_pred[:(self.k-len(l))]
             else:
                 l = self.general_pred
 
@@ -120,6 +121,10 @@ class ByfoneModel:
 
         # 提出用に整形
         self.df_sub['prediction'] = pred_list
+
+        # 最終的には3つのカラムにする.
+        self.df_sub = self.df_sub[['customer_id_short', 'customer_id', 'prediction']]
+        
         return self.df_sub
 
 
