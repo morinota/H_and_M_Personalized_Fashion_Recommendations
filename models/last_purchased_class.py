@@ -231,6 +231,10 @@ class LastPurchasedItrems:
         """
         self.df_sub_unioned = self.dataset.df_sub[[
             'customer_id', 'customer_id_short']].copy()
+        print(len(self.df_sub_unioned))
+        print(len(self.df_sub_last_purchased_items))
+        print(len(self.df_sub_other_colors))
+        print(len(self.df_sub_popular_items_each_group))
         self.df_sub_unioned = pd.merge(
             left=self.df_sub_unioned,
             right=self.df_sub_last_purchased_items[['customer_id_short', 'prediction']].rename(
