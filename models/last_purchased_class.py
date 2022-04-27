@@ -266,8 +266,9 @@ class LastPurchasedItrems:
             preds = []
             for i in range(len(w)):
                 # print(dt[i])
-                if type(dt[i]) == 'float':
+                if type(dt[i]) != 'str':
                     print(dt[i])
+                    print(type(dt[i]))
                 
                 preds.append(dt[i].split())
             res = {}
