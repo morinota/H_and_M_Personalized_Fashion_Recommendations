@@ -291,7 +291,7 @@ class LastPurchasedItrems:
             return ' '.join(res[:k])
 
         # innor function 2
-        def prune(pred, ok_set, k=12):
+        def prune(pred, ok_set, k=Config.num_candidate_predict):
             pred = pred.split()
             post = []
             for item in pred:
