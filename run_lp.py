@@ -87,8 +87,8 @@ def run_create_sub():
                                 val_week_id=105,
                                 k=Config.num_candidate_predict
                                 )
-    df_sub = model._create_recommend_candidates_based_on_last_purchased_items()
-
+    # df_sub = model._create_recommend_candidates_based_on_last_purchased_items()
+    df_sub = model._create_recommend_candidates_based_on_other_colors_of_purchased_item()
     sub_result_dir = os.path.join(DRIVE_DIR, 'submission_csv')
     df_sub.to_csv(os.path.join(sub_result_dir,
                   f'sub_{VERSION}.csv'), index=False)
