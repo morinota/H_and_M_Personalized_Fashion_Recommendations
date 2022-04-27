@@ -141,7 +141,7 @@ class RankLearningLgbm:
 
         del self.df_1w, self.df_3w, self.df_4w
 
-    def __prepare_candidates(self, customers_id, n_candidates: int = 100):
+    def __prepare_candidates_original(self, customers_id, n_candidates: int = 100):
         """各ユーザ毎に、各ユーザの過去の購買記録に基づいて、全アイテムの中から購入しそうなアイテムn(=ex. 1000)個を抽出し、候補として渡す。
         その「候補」をランク付けする事でレコメンドを達成する。
         過去の購買記録にないユーザに対しては、代替の方法で「候補」n個を用意する。(学習時には不要。推論時には必要)
@@ -220,6 +220,27 @@ class RankLearningLgbm:
 
         return negatives_df
 
+    def _load_candidate_from_other_recommendation(self):
+        approach_name = Config.predict_candidate_way_name
+        candidate_path:str = ''
+        # 候補データのファイルパスを取得する。
+        if Config.run_for_submittion:
+            candidate_path = os.path.join(DRIVE_DIR, f'submission_csv/submission_{approach_name}.csv')
+        elif Config.run_for_submittion == False:
+            candidate_path = os.path.join(
+                DRIVE_DIR, 
+                'val_results_{}_csv/val_{}.csv'.format(self.val_week_id, approach_name)
+                )
+
+        # 読み込み(レコード：ユニークユーザ数、predictionカラムにレコメンド結果が入ってる。)
+        candidates_df = pd.read_csv(candidate_path)
+
+        # 辞書型に変換(key:'customer_id_short', value:'prediction')
+        # candidates_dict_approach = dict(zip(candidates_df['customer_id_short'], candidates_df['prediction']))
+
+        # 後はコレをオリジナルとくっつければいいだけだけど...。
+        return candidates_df
+
     def _create_label_column(self):
         """ユーザ毎に# take only last 15 transactions。
         その後、各レコードにlabel=1(すなわち、購入あり)を付与する
@@ -262,7 +283,7 @@ class RankLearningLgbm:
         )
 
         # 各ユーザに対して、「候補」アイテムをn個取得する。(transaction_dfっぽい形式になってる!)
-        self.negatives_df = self.__prepare_candidates(
+        self.negatives_df = self.__prepare_candidates_original(
             customers_id=self.train['customer_id_short'].unique(),
             n_candidates=Config.num_candidate_train)
         # negativeなレコードのt_datは、last_dates(使うのここだけ?)で穴埋めする。
@@ -357,7 +378,7 @@ class RankLearningLgbm:
         """
         self.sample_sub = self.dataset.df_sub.copy()
 
-        self.candidates = self.__prepare_candidates(
+        self.candidates = self.__prepare_candidates_original(
             self.sample_sub['customer_id_short'].unique(), Config.num_candidate_predict)
         self.candidates['article_id'] = self.candidates['article_id'].astype(
             'int')

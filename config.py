@@ -4,15 +4,18 @@ class Config:
     num_recommend_item = 12
 
     # 本番レコメンドか、検証用レコメンドか
-    run_for_submittion = False
+    run_for_submittion = False # bool
 
     # 5%サンプリングを使うか、フルサンプリングを使うか。
-    use_full_sampling = True
+    use_full_sampling = False # bool
 
     # ランク学習用のCandidate
-    # 訓練用のCandidateの数
-    num_candidate_train = 15
-    num_candidate_predict = 15
+    num_candidate_train = 15 # 訓練用のCandidateの数
+    num_candidate_predict = 15 # 予測用のCandidateの数
+    # 予測用のCandidateを、オリジナルの手法を使うか、もしくはどの手法から読み込むか。
+    predict_candidate_original = True
+    predict_candidate_way_name = 'last_purchased'
+
 
     # lightGBMハイパラ
     # 以下が良く調整されるらしい...(深さはあんまり??)

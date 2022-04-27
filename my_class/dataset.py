@@ -52,8 +52,12 @@ class DataSet:
             self.dfi = pd.read_csv(
                 csv_items, dtype={'article_id': str})  # 各商品の情報(メタデータ)
 
+        # price カラムを×10^3しておく...その方が、小数点以下と整数で分けやすい??
+        self.df['price'] = self.df['price'] * (10 **3)
+
         # 提出用のサンプル
         self.df_sub = pd.read_csv(csv_sub)
+        
 
         # customer_idカラムのみのpd.DataFrameを作っておく(たぶん色々便利なので)
         self.df_sub["customer_id_short"] = pd.DataFrame(
@@ -75,6 +79,8 @@ class DataSet:
                               dtype={'article_id': str},
                               parse_dates=['t_dat']  # datetime型で読み込み
                               )
+        # price カラムを×10^3しておく...その方が、小数点以下と整数で分けやすい??
+        self.df['price'] = self.df['price'] * (10 **3)
         self.dfi = pd.read_csv(path_article, dtype={'article_id': str})
         self.dfu = pd.read_csv(path_customers)
         # df_subはそのまま
