@@ -194,7 +194,8 @@ class LastPurchasedItrems:
         # 各ユーザに対して、「グループ別の人気アイテム」を取得。レコメンド結果を保存
         self.df_sub_popular_items_each_group['prediction'] = self.grouping_df["group"].map(
             self.items)
-        # 各ユーザに対して、「グループ別の人気アイテム」を取得。レコメンド結果を保存
+        # 欠損値は''で補完
+        self.df_sub_other_colors['prediction'].fillna('', inplace=True)
 
     def _create_recommend_candidates_based_on_popular_items_for_each_group(self, grouping_df):
         self.grouping_df = grouping_df
