@@ -238,6 +238,7 @@ class LastPurchasedItrems:
         print(len(self.df_sub_last_purchased_items))
         print(len(self.df_sub_other_colors))
         print(len(self.df_sub_popular_items_each_group))
+
         self.df_sub_unioned = pd.merge(
             left=self.df_sub_unioned,
             right=self.df_sub_last_purchased_items[['customer_id_short', 'prediction']].rename(
@@ -259,6 +260,8 @@ class LastPurchasedItrems:
             on='customer_id_short',
             how='left'
         )
+
+        print(self.df_sub_unioned.isna().sum())
 
     def _union_three_recommendation_candidates(self):
         """各レコメンド手法の予測結果を合体させる。
