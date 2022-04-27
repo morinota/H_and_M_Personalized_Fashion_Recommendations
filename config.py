@@ -7,7 +7,7 @@ class Config:
     run_for_submittion = False # bool
 
     # 5%サンプリングを使うか、フルサンプリングを使うか。
-    use_full_sampling = False # bool
+    use_full_sampling = True # bool
 
     # ランク学習用のCandidate
     num_candidate_train = 15 # 訓練用のCandidateの数
