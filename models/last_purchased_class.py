@@ -266,8 +266,9 @@ class LastPurchasedItrems:
             preds = []
             for i in range(len(w)):
                 # print(dt[i])
-                # print(type(dt[i]))
-
+                if type(dt[i]) == 'float':
+                    print(dt[i])
+                
                 preds.append(dt[i].split())
             res = {}
             for i in range(len(preds)):
@@ -292,6 +293,8 @@ class LastPurchasedItrems:
             return " ".join(post[:k])
 
         # まずは、blend()で合体させる。
+        self.df_sub_unioned[[
+            'last_purchase', 'other_colors', 'popular_items']]
         self.df_sub_unioned['prediction'] = self.df_sub_unioned[[
             'last_purchase', 'other_colors', 'popular_items']].apply(blend,
                                                                      w=[100, 10, 1], axis=1, k=32)
@@ -303,9 +306,12 @@ class LastPurchasedItrems:
     def create_recommendation(self, grouping_df):
         # まず3種類のレコメンド結果を生成
         self._create_recommend_candidates_based_on_last_purchased_items()
+        print(self._create_recommend_candidates_based_on_last_purchased_items)
         self._create_recommend_candidates_based_on_other_colors_of_purchased_item()
+        print(self._create_recommend_candidates_based_on_other_colors_of_purchased_item)
         self._create_recommend_candidates_based_on_popular_items_for_each_group(
             grouping_df)
+        print(self._create_recommend_candidates_based_on_popular_items_for_each_group)
 
         # 以下、ユニオンする処理
         self._generate_set_recent_sold()
