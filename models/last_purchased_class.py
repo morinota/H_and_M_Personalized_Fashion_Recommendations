@@ -265,6 +265,9 @@ class LastPurchasedItrems:
                 w = [1] * (len(dt))
             preds = []
             for i in range(len(w)):
+                print(dt[i])
+                print(type(dt[i]))
+
                 preds.append(dt[i].split())
             res = {}
             for i in range(len(preds)):
@@ -290,10 +293,12 @@ class LastPurchasedItrems:
 
         # まずは、blend()で合体させる。
         self.df_sub_unioned['prediction'] = self.df_sub_unioned[[
-            'last_purchase', 'other_colors', 'popular_items']].apply(blend, w=[100, 10, 1], axis=1, k=32)
+            'last_purchase', 'other_colors', 'popular_items']].apply(blend,
+                                                                     w=[100, 10, 1], axis=1, k=32)
 
-        ## 次に、prune()で切り取る。
-        self.df_sub_unioned['prediction'].apply(prune, ok_set=self.df_sub_unioned)
+        # 次に、prune()で切り取る。
+        self.df_sub_unioned['prediction'].apply(
+            prune, ok_set=self.df_sub_unioned)
 
     def create_recommendation(self, grouping_df):
         # まず3種類のレコメンド結果を生成
