@@ -27,8 +27,8 @@ class ByfoneModel:
         """
         # 学習の最終日を取得
         self.last_ts = self.transaction_train['t_dat'].max()
-        # 最終日との日数差を計算
-        self.transaction_train['ldbw'] = self.transaction_train.apply(
+        # 最終日との日数差を計算し、'ldbw'カラムを格納
+        self.transaction_train['ldbw'] = self.transaction_train['t_dat'].apply(
             lambda d: self.last_ts - (self.last_ts - d).floor('7D')
         )
 
@@ -124,7 +124,7 @@ class ByfoneModel:
 
         # 最終的には3つのカラムにする.
         self.df_sub = self.df_sub[['customer_id_short', 'customer_id', 'prediction']]
-        
+
         return self.df_sub
 
 
