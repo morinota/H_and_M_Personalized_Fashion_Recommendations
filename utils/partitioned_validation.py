@@ -120,7 +120,7 @@ def user_grouping_online_and_offline(dataset: DataSet) -> pd.DataFrame:
     grouping_column: str = "sales_channel_id"
 
     # ユーザレコードの補完用にcustomer_id_dfを使う.
-    alluser_df = dataset.cid
+    alluser_df = dataset.df_sub[['customer_id', 'customer_id_short']]
 
     if 'customer_id_short' in dataset.df.columns:
         # defaultでは、各ユーザが「オンライン販売かオフライン販売」のどちらで多く購入する週間があるかでグルーピングしてる。
