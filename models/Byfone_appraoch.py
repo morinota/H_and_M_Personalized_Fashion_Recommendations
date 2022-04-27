@@ -63,9 +63,13 @@ class ByfoneModel:
 
     def preprocessing(self):
         self._calculate_ldbw()
+        print(self._calculate_ldbw)
         self._calculate_weekly_sales()
+        print(self._calculate_weekly_sales)
         self._calculate_count_targ()
+        print(self._calculate_count_targ)
         self._calculate_quotient()
+        print(self._calculate_quotient)
 
     def _recommend_approach_1(self):
         """quotientの各アイテム毎の合計値を算出し、上位k個をgeneral_predとする。
@@ -101,7 +105,9 @@ class ByfoneModel:
 
     def create_reccomendation(self):
         self._recommend_approach_1()
+        print(self._recommend_approach_1)
         self._recommend_approach_2()
+        print(self._recommend_approach_2)
 
         self.df_sub = self.dataset.df_sub[['customer_id_short', 'customer_id']]
         # 両者のレコメンド結果を結合
