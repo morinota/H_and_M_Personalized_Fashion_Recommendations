@@ -52,9 +52,7 @@ def run_validation(val_week_id=104):
                                 dataset=dataset,
                                 val_week_id=val_week_id, k=Config.num_candidate_predict
                                 )
-    model._create_recommend_candidates_based_on_last_purchased_items()
-    model._create_recommend_candidates_based_on_other_colors_of_purchased_item()
-    df_sub = model._create_recommend_candidates_based_on_popular_items_for_each_group(grouping_df=grouping_df)
+    df_sub = model.create_recommendation(grouping_df)
 
     # One-week hold-out validationのオフライン評価
     map_k = offline_validation(val_df=val_df, pred_df=df_sub)
@@ -83,14 +81,17 @@ def run_create_sub():
         dataset.read_data()
     else:
         dataset.read_data_sampled()
+
+    # 全ユーザをグルーピング
+    grouping_df = user_grouping_online_and_offline(dataset=dataset)
     # レコメンド結果を生成
     model = LastPurchasedItrems(transaction_train=pd.DataFrame(),
                                 dataset=dataset,
                                 val_week_id=105,
                                 k=Config.num_candidate_predict
                                 )
-    # df_sub = model._create_recommend_candidates_based_on_last_purchased_items()
-    df_sub = model._create_recommend_candidates_based_on_other_colors_of_purchased_item()
+    df_sub = model.create_recommendation(grouping_df)
+
     sub_result_dir = os.path.join(DRIVE_DIR, 'submission_csv')
     df_sub.to_csv(os.path.join(sub_result_dir,
                   f'sub_{VERSION}.csv'), index=False)
