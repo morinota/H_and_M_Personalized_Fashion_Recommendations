@@ -115,10 +115,8 @@ class LastPurchasedItrems:
         """
         # dictを詳しく定義できる関数?(collectionsモジュール)
         self.map_to_col = defaultdict(list)
-        print(self.popular_item_ranking.dtypes)
         # 各アイテム毎に繰り返し処理：
         for article_id in self.popular_item_ranking['article_id'].tolist():
-            print(type(article_id))
             # product_codeカラムは、article_id(9桁)を粗くしたモノ(上6桁)。(＝＞同種のアイテムの違う色とかっぽい！)
             alike_product_code_mask = self.popular_item_ranking['product_code'] == (
                 int(article_id) // 1000) # 	「a // b」aをbで割った商の整数値
