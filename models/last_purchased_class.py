@@ -269,10 +269,6 @@ class LastPurchasedItrems:
                 w = [1] * (len(dt))
             preds = []
             for i in range(len(w)):
-                # print(dt[i])
-                if type(dt[i]) != 'str':
-                    print(dt[i])
-                    print(type(dt[i]))
                 
                 preds.append(dt[i].split())
             res = {}
