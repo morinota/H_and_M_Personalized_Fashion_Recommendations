@@ -52,7 +52,8 @@ def run_validation(val_week_id=104):
                                 dataset=dataset,
                                 val_week_id=val_week_id, k=Config.num_candidate_predict
                                 )
-    df_sub = model._create_recommend_candidates_based_on_last_purchased_items()
+    # df_sub = model._create_recommend_candidates_based_on_last_purchased_items()
+    df_sub = model._create_recommend_candidates_based_on_other_colors_of_purchased_item()
 
     # One-week hold-out validationのオフライン評価
     map_k = offline_validation(val_df=val_df, pred_df=df_sub)
