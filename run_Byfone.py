@@ -59,7 +59,7 @@ def run_validation(val_week_id=104):
     map_k = offline_validation(val_df=val_df, pred_df=df_sub)
     # スコアをロギング
     get_logger(VERSION).info(f'va_week_id is {val_week_id}')
-    get_logger(VERSION).info(f'map_k of {VERSION} is ...{map_k}')
+    get_logger(VERSION).info(f'map_{Config.num_recommend_item} of {VERSION} is ...{map_k}')
 
     # レコメンド結果を保存
     if val_week_id == 105:
@@ -90,7 +90,7 @@ def run_create_sub():
                                 )
     model.preprocessing()
     df_sub = model.create_reccomendation()
-    
+
     sub_result_dir = os.path.join(DRIVE_DIR, 'submission_csv')
     df_sub.to_csv(os.path.join(sub_result_dir,
                   f'sub_{VERSION}.csv'), index=False)

@@ -6,6 +6,7 @@ from my_class.dataset import DataSet
 from utils.useful_func import iter_to_str
 from collections import defaultdict
 from config import Config
+from datetime import timedelta
 
 
 class LastPurchasedItrems:
@@ -119,7 +120,7 @@ class LastPurchasedItrems:
         for article_id in self.popular_item_ranking['article_id'].tolist():
             # product_codeカラムは、article_id(9桁)を粗くしたモノ(上6桁)。(＝＞同種のアイテムの違う色とかっぽい！)
             alike_product_code_mask = self.popular_item_ranking['product_code'] == (
-                int(article_id) // 1000) # 	「a // b」aをbで割った商の整数値
+                int(article_id) // 1000)  # 「a // b」aをbで割った商の整数値
             # 直近一週間に購入された各商品に対して、類似商品のarticle_idを1つだけ、List型として、Dictに保存
             self.map_to_col[article_id] = list(filter(
                 lambda x: x != article_id, self.popular_item_ranking[alike_product_code_mask]["article_id"].tolist()))[:1]
@@ -209,3 +210,104 @@ class LastPurchasedItrems:
     3つのCandidatesを結合する。
     ------------------------------------------------------------------------------------
     '''
+
+    def _generate_set_recent_sold(self):
+        """ 直近の一定期間内(ex. 直近12日)に一度でも購入された、アイテムidの集合を生成
+        """
+        interval_days = 11
+        self.last_date = self.df['t_dat'].max()
+        self.init_date = self.last_date - timedelta(days=interval_days)
+        # 直近の一定期間内のトランザクションログを抽出
+        df_sold_more_than_onetime_recently = self.df.loc[
+            (self.df['t_dat'] >= self.init_date) &
+            (self.df['t_dat'] <= self.last_date)
+        ]
+        # 直近の一定期間内に一度でも購入された、アイテムidの集合を生成
+        self.sold_set = set(
+            df_sold_more_than_onetime_recently['article_id'].to_list())
+
+    def _merge_three_recommendation_candidates(self):
+        """各レコメンド手法の予測結果のDataFrameをマージする。
+        """
+        self.df_sub_unioned = self.dataset.df_sub[[
+            'customer_id', 'customer_id_short']].copy()
+        self.df_sub_unioned = pd.merge(
+            left=self.df_sub_unioned,
+            right=self.df_sub_last_purchased_items[['customer_id_short', 'prediction']].rename(
+                columns={'prediction': 'last_purchase'}),
+            on='customer_id_short',
+            how='left'
+        )
+        self.df_sub_unioned = pd.merge(
+            left=self.df_sub_unioned,
+            right=self.df_sub_other_colors[['customer_id_short', 'prediction']].rename(
+                columns={'prediction': 'other_colors'}),
+            on='customer_id_short',
+            how='left'
+        )
+        self.df_sub_unioned = pd.merge(
+            left=self.df_sub_unioned,
+            right=self.df_sub_popular_items_each_group[['customer_id_short', 'prediction']].rename(
+                columns={'prediction': 'popular_items'}),
+            on='customer_id_short',
+            how='left'
+        )
+
+    def _union_three_recommendation_candidates(self):
+        """各レコメンド手法の予測結果を合体させる。
+        """
+        # innor function 1
+        def blend(dt, w=[], k=12):
+            '''
+            dt:datatimeの事.
+            '''
+            if len(w) == 0:
+                w = [1] * (len(dt))
+            preds = []
+            for i in range(len(w)):
+                preds.append(dt[i].split())
+            res = {}
+            for i in range(len(preds)):
+                if w[i] < 0:
+                    continue
+                for n, v in enumerate(preds[i]):
+                    if v in res:
+                        res[v] += (w[i] / (n + 1))
+                    else:
+                        res[v] = (w[i] / (n + 1))
+            res = list(
+                dict(sorted(res.items(), key=lambda item: -item[1])).keys())
+            return ' '.join(res[:k])
+
+        # innor function 2
+        def prune(pred, ok_set, k=12):
+            pred = pred.split()
+            post = []
+            for item in pred:
+                if int(item) in ok_set and not item in post:
+                    post.append(item)
+            return " ".join(post[:k])
+
+        # まずは、blend()で合体させる。
+        self.df_sub_unioned['prediction'] = self.df_sub_unioned[[
+            'last_purchase', 'other_colors', 'popular_items']].apply(blend, w=[100, 10, 1], axis=1, k=32)
+
+        ## 次に、prune()で切り取る。
+        self.df_sub_unioned['prediction'].apply(prune, ok_set=self.df_sub_unioned)
+
+    def create_recommendation(self, grouping_df):
+        # まず3種類のレコメンド結果を生成
+        self._create_recommend_candidates_based_on_last_purchased_items()
+        self._create_recommend_candidates_based_on_other_colors_of_purchased_item()
+        self._create_recommend_candidates_based_on_popular_items_for_each_group(
+            grouping_df)
+
+        # 以下、ユニオンする処理
+        self._generate_set_recent_sold()
+        self._merge_three_recommendation_candidates()
+        self._union_three_recommendation_candidates()
+
+        # 最終的なカラムは3つのみにしておく
+        self.df_sub_unioned = self.df_sub_unioned[[
+            'customer_id_short', 'customer_id', 'prediction']]
+        return self.df_sub_unioned
