@@ -142,6 +142,8 @@ class LastPurchasedItrems:
             'customer_id', 'customer_id_short']].copy()
         self.df_sub_other_colors['prediction'] = self.df_sub_last_purchased_items['prediction'].fillna(
             '').apply(__map_to_variation)
+        # 欠損値は''で補完
+        self.df_sub_other_colors['prediction'].fillna('', inplace=True)
 
     def _create_recommend_candidates_based_on_other_colors_of_purchased_item(self):
         self.__summarize_sales_count_each_item()
