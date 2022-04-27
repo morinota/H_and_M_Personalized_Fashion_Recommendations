@@ -139,7 +139,7 @@ class LastPurchasedItrems:
         # 上記関数の処理をapplyで適用。other_colorsのレコメンド結果を生成。
         self.df_sub_other_colors = self.dataset.df_sub[[
             'customer_id', 'customer_id_short']].copy()
-        self.df_sub_other_colors['prediction'] = self.df_sub_last_purchased_items['last_purchased_items'].fillna(
+        self.df_sub_other_colors['prediction'] = self.df_sub_last_purchased_items['prediction'].fillna(
             '').apply(__map_to_variation)
 
     def _create_recommend_candidates_based_on_other_colors_of_purchased_item(self):
