@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
 import pandas as pd
+from sympy import Li
 from my_class.dataset import DataSet
 from utils.useful_func import iter_to_str
 import numpy as np
@@ -103,7 +104,20 @@ class RankLearningLgbm:
         この情報を元に、各ユーザに対するレコメンド「候補」n個を生成する。
         """
 
-        def __create_purchased_dict(df_iw: pd.DataFrame):
+        def __create_purchased_dict(df_iw: pd.DataFrame)->Tuple[Dict, List]:
+            """一定期間のトランザクションログを受け取り、{ユーザid: {購入したアイテムid:購入回数}}を生成？？
+            また、対象期間内で、最もよく売れたアイテム、上位12個も生成する。
+
+            Parameters
+            ----------
+            df_iw : pd.DataFrame
+                _description_
+
+            Returns
+            -------
+            Tuple[Dict, List]
+                ({ユーザid: {購入したアイテムid:購入回数}}, 最もよく売れたアイテムのリスト)
+            """
             # 一定期間のトランザクションログを受け取り、{ユーザid: {購入したアイテムid:購入回数}}を生成？？
             # 結果格納用のDictをInitialize
             purchase_dict_iw = {}
@@ -235,8 +249,10 @@ class RankLearningLgbm:
         # 読み込み(レコード：ユニークユーザ数、predictionカラムにレコメンド結果が入ってる。)
         candidates_df = pd.read_csv(candidate_path)
 
-        # 辞書型に変換(key:'customer_id_short', value:'prediction')
-        # candidates_dict_approach = dict(zip(candidates_df['customer_id_short'], candidates_df['prediction']))
+        # explodeカラムで、[候補アイテムのリスト]をレコードに展開する！他のカラムの要素は複製される。
+        candidates_df = candidates_df.explode('prediction')
+        # 「候補」アイテムのカラムをRename
+        candidates_df.rename(columns={'prediction': 'article_id'}, inplace=True)
 
         # 後はコレをオリジナルとくっつければいいだけだけど...。
         return candidates_df
@@ -376,12 +392,16 @@ class RankLearningLgbm:
         - 作成されたDataFrame(レコード数= len(unique ser) * n_candidate)に対して、
         アイテム特徴量とユーザ特徴量をマージ
         """
-        self.sample_sub = self.dataset.df_sub.copy()
+        self.sample_sub = self.dataset.df_sub[['customer_id_short', 'customer_id']].copy()
 
-        self.candidates = self.__prepare_candidates_original(
-            self.sample_sub['customer_id_short'].unique(), Config.num_candidate_predict)
+        # self.candidates = self.__prepare_candidates_original(
+        #     self.sample_sub['customer_id_short'].unique(), Config.num_candidate_predict)
+        self.candidates = self._load_candidate_from_other_recommendation()
+        # article_idのデータ型をindに
         self.candidates['article_id'] = self.candidates['article_id'].astype(
             'int')
+
+        # ユーザ特徴量＆アイテム特徴量を結合
         self.candidates = (
             self.candidates
             .merge(self.user_features, on=('customer_id_short'))

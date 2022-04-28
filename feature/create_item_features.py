@@ -12,12 +12,11 @@ from typing import List, Dict, Any, Union
 
 # 特徴量生成のベースとなるクラス
 
-
-class UserFeatures(ABC):
+class ItemFeatures(ABC):
     @abstractmethod
-    def get(self) -> pd.DataFrame:
+    def get(self, *args, **kwargs) -> pd.DataFrame:
         """
-        customer_id -> features
+        article_id -> features
         """
         pass
 
