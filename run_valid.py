@@ -1,3 +1,4 @@
+from config import Config
 from my_class.dataset import DataSet
 from my_class.results_class import Results
 import pandas as pd
@@ -59,8 +60,10 @@ def main(val_week_id):
     val_results.join_results_all_approaches()
 
    # 全ユーザをグルーピング
-    # grouping_df = user_grouping_online_and_offline(dataset=dataset)
-    grouping_df = user_grouping_age_bin(dataset=dataset)
+    if Config.grouping_column == 'online_and_offline':
+        grouping_df = user_grouping_online_and_offline(dataset=dataset)
+    elif Config.grouping_column == 'age_bin':
+        grouping_df = user_grouping_age_bin(dataset=dataset)
 
 
     # オフラインスコアを検証
