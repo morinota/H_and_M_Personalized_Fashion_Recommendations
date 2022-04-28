@@ -255,6 +255,9 @@ class RankLearningLgbm:
         # 「候補」アイテムのカラムをRename
         candidates_df.rename(columns={'prediction': 'article_id'}, inplace=True)
 
+        # customer_idカラムを落としておく
+        candidates_df.drop(labels='cutsomer_id', inplace=True)
+
         # 後はコレをオリジナルとくっつければいいだけだけど...。
         return candidates_df
 
@@ -306,7 +309,7 @@ class RankLearningLgbm:
                 n_candidates=Config.num_candidate_train)
         else:
             self.negatives_df = self._load_candidate_from_other_recommendation()
-            
+
         # negativeなレコードのt_datは、last_dates(使うのここだけ?)で穴埋めする。
         self.negatives_df['t_dat'] = self.negatives_df['customer_id_short'].map(
             last_dates)
