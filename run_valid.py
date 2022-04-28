@@ -7,7 +7,7 @@ import os
 from logs.base_log import create_logger, get_logger, stop_watch
 # from logs.time_keeper import stop_watch
 
-val_week_id = 104
+val_week_id = 103
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 # VERSION = "partationed_validation_models_onlineOrOffline"
 VERSION = f"partationed_validation_models_{val_week_id}_ageBin"
