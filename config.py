@@ -30,3 +30,5 @@ class Config:
     # その他調整されてる事が多いパラメータ
     max_depth = 20 # lgbmのtreeの深さ
 
+    # validation
+    grouping_column = 'online_and_offline' # or 'age_bin'
