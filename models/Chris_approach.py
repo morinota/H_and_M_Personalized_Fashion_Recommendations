@@ -64,7 +64,7 @@ class ChrisModel:
         temp_df = self.df.groupby(['customer_id_short', 'article_id'])[
             't_dat'].agg('count')
         # index化したcustomer_idとarticle_idをカラムに戻す
-        temp_df.reset_index(inplace=True)
+        temp_df = temp_df.reset_index()
         temp_df.columns = ['customer_id_short', 'article_id', 'ct']
 
         # ログとマージ
