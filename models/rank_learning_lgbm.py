@@ -256,7 +256,8 @@ class RankLearningLgbm:
         candidates_df.rename(columns={'prediction': 'article_id'}, inplace=True)
 
         # customer_idカラムを落としておく
-        candidates_df.drop(labels='customer_id', inplace=True)
+        print(candidates_df.columns)
+        candidates_df.drop(columns='customer_id', inplace=True)
 
         # 後はコレをオリジナルとくっつければいいだけだけど...。
         return candidates_df
