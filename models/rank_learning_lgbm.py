@@ -329,9 +329,11 @@ class RankLearningLgbm:
         # 検証用データも同様の手順で、negativeを作る?
 
     def _merge_train_and_negatives(self):
+        print(len(self.train))
+        print(len(self.negatives_df))
 
         # 縦にくっつける...重複ない??
-        self.train = pd.concat([self.train, self.negatives_df])
+        self.train = pd.concat([self.train, self.negatives_df], axis=0)
 
     def _create_query_data(self):
         """
