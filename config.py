@@ -14,13 +14,13 @@ class Config:
     num_candidate_predict = 15 # 予測用のCandidateの数
     # 予測用のCandidateを、オリジナルの手法を使うか、もしくはどの手法から読み込むか。
     predict_candidate_original = True
-    predict_candidate_way_name = 'last_purchased_fullTrue_15Candidates'
+    predict_candidate_way_name = 'last_purchased_fullTrue_15Candidates' # Noneだったらオリジナル?
 
 
     # lightGBMハイパラ
     # 以下が良く調整されるらしい...(深さはあんまり??)
     boosting_type = 'dart' # 多くは'gbdt'. たまに 'dart' or 'goss'
-    n_estimators=300 # 最後らへんに増やす。それまではいじらない。
+    n_estimators=200 # 最後らへんに増やす。それまではいじらない。
     num_leaves = 63 # かなり多様だが、中央値だと63らしい。
     learning_rate = 0.1 # 最後らへんに減らす。それまではいじらない。
     feature_fraction = 0.8
