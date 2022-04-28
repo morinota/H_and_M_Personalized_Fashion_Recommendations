@@ -84,6 +84,7 @@ class RankLearningLgbm:
         N_ROWS = 1_000_000
         self.train = self.df.loc[self.df.t_dat <= (
             pd.to_datetime('2020-09-15') - self.date_minus)].iloc[:N_ROWS]
+        print(len(self.train))
         self.valid = self.df.loc[self.df.t_dat >= (
             pd.to_datetime('2020-09-16') - self.date_minus)]
 
