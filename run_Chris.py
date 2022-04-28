@@ -3,7 +3,7 @@ import pandas as pd
 from tqdm import tqdm
 from datetime import datetime
 from my_class.dataset import DataSet
-from models.last_purchased_class import LastPurchasedItrems
+from models.Chris_approach import ChrisModel
 from utils.partitioned_validation import partitioned_validation, user_grouping_online_and_offline
 from utils.oneweek_holdout_validation import get_train_oneweek_holdout_validation, get_valid_oneweek_holdout_validation
 from utils.recommend_emsemble import recommend_emsemble
@@ -15,7 +15,7 @@ from config import Config
 
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 
-VERSION = f"last_purchased_full{Config.use_full_sampling}_{Config.num_candidate_predict}Candidates"
+VERSION = f"ChrisModel_full{Config.use_full_sampling}_{Config.num_candidate_predict}Candidates"
 
 
 @stop_watch(VERSION)
@@ -48,18 +48,18 @@ def run_validation(val_week_id=104):
     grouping_df = user_grouping_online_and_offline(dataset=dataset)
 
     # Last Purchased Itemによるレコメンド結果を生成
-    model = LastPurchasedItrems(transaction_train=train_df,
+    model = ChrisModel(transaction_train=train_df,
                                 dataset=dataset,
                                 val_week_id=val_week_id, k=Config.num_candidate_predict
                                 )
-    df_sub = model.create_recommendation(grouping_df)
+    model.preprocessing()
+    df_sub = model.create_recommendation()
 
     # One-week hold-out validationのオフライン評価
     map_k = offline_validation(val_df=val_df, pred_df=df_sub)
     # スコアをロギング
     get_logger(VERSION).info(f'va_week_id is {val_week_id}')
     get_logger(VERSION).info(f'map_{Config.num_recommend_item} of {VERSION} is ...{map_k}')
-
 
     # レコメンド結果を保存
     if val_week_id == 105:
@@ -82,16 +82,14 @@ def run_create_sub():
         dataset.read_data()
     else:
         dataset.read_data_sampled()
-
-    # 全ユーザをグルーピング
-    grouping_df = user_grouping_online_and_offline(dataset=dataset)
     # レコメンド結果を生成
-    model = LastPurchasedItrems(transaction_train=pd.DataFrame(),
+    model = ChrisModel(transaction_train=pd.DataFrame(),
                                 dataset=dataset,
                                 val_week_id=105,
                                 k=Config.num_candidate_predict
                                 )
-    df_sub = model.create_recommendation(grouping_df)
+    model.preprocessing()
+    df_sub = model.create_recommendation()
 
     sub_result_dir = os.path.join(DRIVE_DIR, 'submission_csv')
     df_sub.to_csv(os.path.join(sub_result_dir,
