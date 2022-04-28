@@ -376,6 +376,7 @@ class RankLearningLgbm:
         # 一応、学習用データの最終日を取得し、出力
         last_date_train_data = self.train['t_dat'].max()
         print(f'last date of training data is...{last_date_train_data}aaa')
+        print(f'len of train data is {len(self.train)}')
 
         # 特徴量とターゲットを分割
         X_train = self.train.drop(
