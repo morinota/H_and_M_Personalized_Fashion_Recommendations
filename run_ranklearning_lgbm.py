@@ -27,6 +27,9 @@ def run_validation(val_week_id=104):
     # DataFrameとしてデータ読み込み
     if Config.use_full_sampling:
         dataset.read_data()
+        print(len(dataset.df))
+        print(len(dataset.df_sub))
+
     else:
         dataset.read_data_sampled()
 
