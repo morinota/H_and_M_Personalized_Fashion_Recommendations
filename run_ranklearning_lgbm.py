@@ -47,6 +47,7 @@ def run_validation(val_week_id=104):
         training_days=31,
         # how="use_same_season_in_past"
     )
+    print(len(train_df))
 
     # 全ユーザをグルーピング
     grouping_df = user_grouping_online_and_offline(dataset=dataset)
