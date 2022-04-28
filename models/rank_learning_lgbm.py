@@ -19,7 +19,8 @@ class RankLearningLgbm:
     def __init__(self, transaction_train: pd.DataFrame, dataset: DataSet, val_week_id: int) -> None:
         # インスタンス変数(属性の初期化)
         self.dataset = dataset
-        self.df = transaction_train
+        # self.df = transaction_train
+        self.df = dataset.df
         self.ALL_ITEMS = []
         self.ALL_USERS = []
         self.hyper_params = {}
