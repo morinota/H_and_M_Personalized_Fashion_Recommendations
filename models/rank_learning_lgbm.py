@@ -248,7 +248,8 @@ class RankLearningLgbm:
 
         # 読み込み(レコード：ユニークユーザ数、predictionカラムにレコメンド結果が入ってる。)
         candidates_df = pd.read_csv(candidate_path)
-
+        # 'prediction'カラムを変換(str=>List[str]に)
+        candidates_df['prediction'] = candidates_df['prediction'].apply(lambda x: x.split(' '))
         # explodeカラムで、[候補アイテムのリスト]をレコードに展開する！他のカラムの要素は複製される。
         candidates_df = candidates_df.explode('prediction')
         # 「候補」アイテムのカラムをRename
