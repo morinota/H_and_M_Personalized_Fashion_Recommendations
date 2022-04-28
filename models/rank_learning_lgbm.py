@@ -394,9 +394,14 @@ class RankLearningLgbm:
         """
         self.sample_sub = self.dataset.df_sub[['customer_id_short', 'customer_id']].copy()
 
-        # self.candidates = self.__prepare_candidates_original(
-        #     self.sample_sub['customer_id_short'].unique(), Config.num_candidate_predict)
-        self.candidates = self._load_candidate_from_other_recommendation()
+        # レコメンド候補を用意
+        if Config.predict_candidate_way_name == None:
+            # NoneだったらオリジナルのCandidate
+            self.candidates = self.__prepare_candidates_original(
+            self.sample_sub['customer_id_short'].unique(), Config.num_candidate_predict)
+        else:
+            self.candidates = self._load_candidate_from_other_recommendation()
+
         # article_idのデータ型をindに
         self.candidates['article_id'] = self.candidates['article_id'].astype(
             'int')
