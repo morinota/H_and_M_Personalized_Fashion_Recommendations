@@ -58,7 +58,7 @@ class Results:
         for name, df in self.results_dict.items():
             df = df[['customer_id_short', 'prediction']].rename(columns={'prediction':f'{name}'})
             sub_df = pd.merge(sub_df, df, how='left',
-                              on='customer_id')
+                              on='customer_id_short')
         
         self.df_sub = sub_df
         print(self.df_sub.columns)
