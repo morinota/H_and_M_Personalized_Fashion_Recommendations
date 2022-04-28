@@ -24,7 +24,7 @@ class RankLearningLgbm:
         self.ALL_USERS = []
         self.hyper_params = {}
         self.val_week_id = val_week_id
-
+        print(len(self.df))
     def _create_df_1w_to4w(self):
         """予測期間に対して、過去i week (i=1,...,4)のトランザクションログを抽出して、DataFrameとして保存。
         """
