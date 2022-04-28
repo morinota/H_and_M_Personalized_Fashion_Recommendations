@@ -14,7 +14,7 @@ class Config:
     num_candidate_predict = 12 # 予測用のCandidateの数
     # 予測用のCandidateを、オリジナルの手法を使うか、もしくはどの手法から読み込むか。
     predict_candidate_original = True
-    predict_candidate_way_name = 'last_purchased_fullTrue_15Candidates' # Noneだったらオリジナル?
+    predict_candidate_way_name = f'last_purchased_fullTrue_{num_candidate_predict}Candidates' # Noneだったらオリジナル?
 
 
     # lightGBMハイパラ
