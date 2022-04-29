@@ -36,7 +36,7 @@ def get_valid_oneweek_holdout_validation(dataset: DataSet, val_week_id: int = 10
         val_mask = (dataset.df['week'] == val_week_id)
         transaction_df_val = dataset.df[val_mask]
     else:
-        last_date_val = pd.to_datetime('2020-09-22') - datetime.timedelta(days=(105-val_week_id)*7)
+        last_date_val = pd.to_datetime('2020-09-22') - datetime.timedelta(days=(104-val_week_id)*7)
         init_date_val = pd.to_datetime(last_date_val) - datetime.timedelta(days=6)
         val_mask = (dataset.df['t_dat'] <= last_date_val) & (dataset.df['t_dat'] >= init_date_val)
         transaction_df_val = dataset.df[val_mask]
