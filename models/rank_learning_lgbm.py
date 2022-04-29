@@ -25,6 +25,10 @@ class RankLearningLgbm:
         self.hyper_params = {}
         self.val_week_id = val_week_id
         print(len(self.df))
+        print('unique user of self.df is {}'.format(
+            len(self.df['customer_id_short'].unique())
+        ))
+
     def _create_df_1w_to4w(self):
         """予測期間に対して、過去i week (i=1,...,4)のトランザクションログを抽出して、DataFrameとして保存。
         """
@@ -79,9 +83,9 @@ class RankLearningLgbm:
         # 降順(新しい順)で並び変え
         self.df.sort_values(['t_dat', 'customer_id_short'],
                             inplace=True, ascending=False)
-        print('unique user of self.train is {}'.format(
+        print('unique user of self.df is {}'.format(
             len(self.df['customer_id_short'].unique())
-            ))
+        ))
 
     def _create_train_and_valid(self):
         N_ROWS = 1_000_000
@@ -89,7 +93,7 @@ class RankLearningLgbm:
             pd.to_datetime('2020-09-15') - self.date_minus)]
         print('unique user of self.train is {}'.format(
             len(self.train['customer_id_short'].unique())
-            ))
+        ))
         self.valid = self.df.loc[self.df.t_dat >= (
             pd.to_datetime('2020-09-16') - self.date_minus)]
 
@@ -110,7 +114,7 @@ class RankLearningLgbm:
         この情報を元に、各ユーザに対するレコメンド「候補」n個を生成する。
         """
 
-        def __create_purchased_dict(df_iw: pd.DataFrame)->Tuple[Dict, List]:
+        def __create_purchased_dict(df_iw: pd.DataFrame) -> Tuple[Dict, List]:
             """一定期間のトランザクションログを受け取り、{ユーザid: {購入したアイテムid:購入回数}}を生成？？
             また、対象期間内で、最もよく売れたアイテム、上位12個も生成する。
 
@@ -242,24 +246,28 @@ class RankLearningLgbm:
 
     def _load_candidate_from_other_recommendation(self):
         approach_name = Config.predict_candidate_way_name
-        candidate_path:str = ''
+        candidate_path: str = ''
         # 候補データのファイルパスを取得する。
         if Config.run_for_submittion:
-            candidate_path = os.path.join(DRIVE_DIR, f'submission_csv/submission_{approach_name}.csv')
+            candidate_path = os.path.join(
+                DRIVE_DIR, f'submission_csv/submission_{approach_name}.csv')
         elif Config.run_for_submittion == False:
             candidate_path = os.path.join(
-                DRIVE_DIR, 
-                'val_results_{}_csv/val_{}.csv'.format(self.val_week_id, approach_name)
-                )
+                DRIVE_DIR,
+                'val_results_{}_csv/val_{}.csv'.format(
+                    self.val_week_id, approach_name)
+            )
 
         # 読み込み(レコード：ユニークユーザ数、predictionカラムにレコメンド結果が入ってる。)
         candidates_df = pd.read_csv(candidate_path)
         # 'prediction'カラムを変換(str=>List[str]に)
-        candidates_df['prediction'] = candidates_df['prediction'].apply(lambda x: x.split(' '))
+        candidates_df['prediction'] = candidates_df['prediction'].apply(
+            lambda x: x.split(' '))
         # explodeカラムで、[候補アイテムのリスト]をレコードに展開する！他のカラムの要素は複製される。
         candidates_df = candidates_df.explode('prediction')
         # 「候補」アイテムのカラムをRename
-        candidates_df.rename(columns={'prediction': 'article_id'}, inplace=True)
+        candidates_df.rename(
+            columns={'prediction': 'article_id'}, inplace=True)
 
         # customer_idカラムを落としておく
         print(candidates_df.columns)
@@ -311,7 +319,7 @@ class RankLearningLgbm:
         )
 
         # 各ユーザに対して、「候補」アイテム(negative)をn個取得する。(transaction_dfっぽい形式になってる!)
-        if Config.predict_candidate_way_name==None:
+        if Config.predict_candidate_way_name == None:
             self.negatives_df = self.__prepare_candidates_original(
                 customers_id=self.train['customer_id_short'].unique(),
                 n_candidates=Config.num_candidate_train)
@@ -332,7 +340,6 @@ class RankLearningLgbm:
         )
         # negatives_dfのLabelカラムを0にする。(重複ない??)
         self.negatives_df['label'] = 0
-
 
         # 検証用データも同様の手順で、negativeを作る?
 
@@ -411,13 +418,14 @@ class RankLearningLgbm:
         - 作成されたDataFrame(レコード数= len(unique ser) * n_candidate)に対して、
         アイテム特徴量とユーザ特徴量をマージ
         """
-        self.sample_sub = self.dataset.df_sub[['customer_id_short', 'customer_id']].copy()
+        self.sample_sub = self.dataset.df_sub[[
+            'customer_id_short', 'customer_id']].copy()
 
         # レコメンド候補を用意
         if Config.predict_candidate_way_name == None:
             # NoneだったらオリジナルのCandidate
             self.candidates = self.__prepare_candidates_original(
-            self.sample_sub['customer_id_short'].unique(), Config.num_candidate_predict)
+                self.sample_sub['customer_id_short'].unique(), Config.num_candidate_predict)
         else:
             self.candidates = self._load_candidate_from_other_recommendation()
 
