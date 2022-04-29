@@ -83,8 +83,8 @@ class RankLearningLgbm:
     def _create_train_and_valid(self):
         N_ROWS = 1_000_000
         self.train = self.df.loc[self.df.t_dat <= (
-            pd.to_datetime('2020-09-15') - self.date_minus)].iloc[:N_ROWS]
-        print(len(self.train))
+            pd.to_datetime('2020-09-15') - self.date_minus)]
+        print('unique user of self.train is {}'.format(self.train['customer_id_short'].unique()))
         self.valid = self.df.loc[self.df.t_dat >= (
             pd.to_datetime('2020-09-16') - self.date_minus)]
 
@@ -92,7 +92,7 @@ class RankLearningLgbm:
         del self.df
 
     def preprocessing(self):
-        """Matrix Factrizationの為の前処理を実行するメソッド.
+        """前処理を実行するメソッド.
         """
         self._create_df_1w_to4w()
         self._load_feature_data()
@@ -291,6 +291,7 @@ class RankLearningLgbm:
         del self.train['rn']
 
         self.train.sort_values(['t_dat', 'customer_id_short'], inplace=True)
+        print(f'length of positve train data is {len(self.train)}')
 
         # 検証用データに対しても同様(ユーザ毎に直近15件っていう制限はなくていいや)
         self.valid['label'] = 1
@@ -304,7 +305,7 @@ class RankLearningLgbm:
             .to_dict()
         )
 
-        # 各ユーザに対して、「候補」アイテムをn個取得する。(transaction_dfっぽい形式になってる!)
+        # 各ユーザに対して、「候補」アイテム(negative)をn個取得する。(transaction_dfっぽい形式になってる!)
         if Config.predict_candidate_way_name==None:
             self.negatives_df = self.__prepare_candidates_original(
                 customers_id=self.train['customer_id_short'].unique(),
@@ -327,11 +328,12 @@ class RankLearningLgbm:
         # negatives_dfのLabelカラムを0にする。(重複ない??)
         self.negatives_df['label'] = 0
 
+
         # 検証用データも同様の手順で、negativeを作る?
 
     def _merge_train_and_negatives(self):
-        print(len(self.train))
-        print(len(self.negatives_df))
+        print(f'length of positive in train is {len(self.train)}')
+        print(f'length of positive in train is {len(self.negatives_df)}')
 
         # 縦にくっつける...重複ない??
         self.train = pd.concat([self.train, self.negatives_df], axis=0)
