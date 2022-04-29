@@ -1,3 +1,6 @@
+from numpy import negative
+
+
 class Config:
     # 以下、クラス変数として、設定を記述していく.
 
@@ -20,6 +23,8 @@ class Config:
     predict_candidate_way_name = f'last_purchased_fullTrue_{num_candidate_predict}Candidates' # Noneだったらオリジナル?
     # predict_candidate_way_name = None
 
+    # メモリ調整用のNegative Candidate数
+    num_negative_candidate = 7
     # ===========================================================================
     # lightGBMハイパラ
     # 以下が良く調整されるらしい...(深さはあんまり??)
