@@ -5,102 +5,98 @@ from tqdm.auto import tqdm
 from typing import List, Dict
 
 
-def calculate_apk(actual_items, predicted_items: List, k: int = 10) -> float:
-    '''
-    AP@Kを計算する関数。
-    Computes the average precision at k.
-    This function computes the average prescision at k between two lists of
-    items.
+def p_k(actual: List[str], predicted: List[str], k=12) -> float:
+    """ある一人のユーザに対するレコメンドのPrecision@Kを出力する関数
+
     Parameters
     ----------
-    actual : list
-             A list of elements that are to be predicted (order doesn't matter)
-    predicted : list
-                A list of predicted elements (order does matter)
+    actual : List[str]
+        _description_
+    predicted : List[str]
+        _description_
     k : int, optional
-        The maximum number of predicted elements
+        _description_, by default 12
+
     Returns
     -------
-    score : float
-            The average precision at k over the input lists
-    '''
-    # もし予測アイテムがkより多ければ、レコメンドアイテム数の調節。
-    if len(predicted_items) > k:
-        predicted_items = predicted_items[:k]
-
-    # 初期値を設定
-    score = 0.0
-    num_hits = 0.0
-
-    # レコメンドアイテム1つ毎に、当たってるかチェック
-    for i, predicted_item in enumerate(predicted_items):
-        # もし当たっていれば、カウント
-        if (predicted_item in actual_items) and (predicted_item not in predicted_items[:i]):
-            num_hits += 1.0
-            score += num_hits / (i+1.0)
-    # AP@Kの算出
-    # もし実測値がなければ、AP@Kは0.0
-    if len(actual_items) == 0:
-        return 0.0
-    ap_at_k = score / min(len(actual_items), k)
-
-    return ap_at_k
-
-
-def calculate_mapk(actual, predicted: List[List], k: int = 10) -> float64:
+    float
+        ある一人のユーザに対するレコメンドのPrecision@K
     """
-    Computes the mean average precision at k.
-    This function computes the mean average prescision at k between two lists
-    of lists of items.
-    Parameters
-    ----------
-    actual : list
-             A list of lists of elements that are to be predicted 
-             (order doesn't matter in the lists)
-    predicted : list
-                A list of lists of predicted elements
-                (order matters in the lists)
-    k : int, optional
-        The maximum number of predicted elements
-    Returns
-    -------
-    score : double
-            The mean average precision at k over the input lists
-    """
-    # 各ユーザのAP@kを保存するListをInitialize
-    list_ap_k = []
-
-    for a, p in zip(actual, predicted):
-
-        ap_k = calculate_apk(a, p, k)
-        list_ap_k.append(ap_k)
-    # MAP@kを算出
-    map_k = np.mean(list_ap_k)
-
-    # 上記の処理をリスト内包表記で書くと、
-    # map_k = np.mean([calculate_apk(a, p, k) for a, p in zip(actual, predicted)])
-
-    return map_k
-
-def apk(actual, predicted, k=12):
+    # もしレコメンドアイテム数が多かったら削る.
     if len(predicted) > k:
         predicted = predicted[:k]
-    score, nhits = 0.0, 0.0
+
+    nhits = 0.0
+    # 各レコメンドアイテムについて的中しているかチェック。
     for i, p in enumerate(predicted):
+        # i番目のpが的中してるなら...
         if p in actual and p not in predicted[:i]:
+            # Precision_kを算出。
             nhits += 1.0
-            score += nhits / (i + 1.0)
+
+    # precison@Kを算出
+    precision_at_k = nhits/k
+
+    return precision_at_k
+
+
+def apk(actual, predicted, k=12):
+    """ある一人のユーザに対するレコメンドのAP@Kを出力する関数。
+
+    Parameters
+    ----------
+    actual : _type_
+        _description_
+    predicted : _type_
+        _description_
+    k : int, optional
+        _description_, by default 12
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
+    # もしレコメンドアイテム数が多かったら削る.
+    if len(predicted) > k:
+        predicted = predicted[:k]
+    # スコアの初期値(0~kで足し合わせていく)
+    score, nhits = 0.0, 0.0
+
+    # 各レコメンドアイテムについて
+    for i, p in enumerate(predicted):
+        # i番目のpが的中してる場合のみ、k=iとしてPrecision_kを算出。
+        if p in actual and p not in predicted[:i]:
+            # Precision_kを算出。
+            nhits += 1.0
+            precision_at_k = nhits / (i + 1.0)
+            # precision_kを足し合わせる。
+            score += precision_at_k
+
+    # そもそも実測値がなかったら=ユーザのトランザクションがゼロなら。
     if not actual:
         return 0.0
-    return score / min(len(actual), k)
-    
 
-def mapk(actual, predicted, k=12, return_apks=False):
+    # 最終的には、min(k, N(actual))で割った値を返す(MAP@Kの為)
+    return score / min(len(actual), k)
+
+
+def mapk(actual: List[List[str]], predicted: List[List[str]], k: int = 12, return_apks: bool = False):
     assert len(actual) == len(predicted)
+    # 各ユーザ毎(actualが1以上の全ユーザ)にAP@Kを算出し、リストに格納。
     apks = [apk(ac, pr, k) for ac, pr in zip(actual, predicted) if 0 < len(ac)]
     if return_apks:
         return apks
     return np.mean(apks)
+
+
+def mean_precision_k(actual: List[List[str]], predicted: List[List[str]], k: int = 12, return_pks: bool = False):
+    assert len(actual) == len(predicted)
+    # 各ユーザ毎(actualが少なくとも1以上の全ユーザ)にP@Kを算出し、リストに格納。
+    pks = [p_k(ac, pr, k) for ac, pr in zip(actual, predicted) if 0 < len(ac)]
+    if return_pks:
+        return pks
+    return np.mean(pks)
 
 
 def main():

@@ -59,10 +59,12 @@ def run_validation(val_week_id=104):
     df_sub = model.create_reccomendation()
 
     # One-week hold-out validationのオフライン評価
-    map_k = offline_validation(val_df=val_df, pred_df=df_sub)
+    map_k, mp_k = offline_validation(val_df=val_df, pred_df=df_sub)
     # スコアをロギング
     get_logger(VERSION).info(f'va_week_id is {val_week_id}')
     get_logger(VERSION).info(f'map_k of {VERSION} is ...{map_k}')
+    get_logger(VERSION).info(f'mean_precision_k of {VERSION} is ...{mp_k}')
+    
 
     # レコメンド結果を保存
 
