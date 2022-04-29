@@ -77,8 +77,11 @@ class RankLearningLgbm:
         self.df = self.df.merge(self.user_features, on=('customer_id_short'))
         self.df = self.df.merge(self.item_features, on=('article_id'))
         # 降順(新しい順)で並び変え
-        self.df.sort_values(['t_dat', 'customer_id'],
+        self.df.sort_values(['t_dat', 'customer_id_short'],
                             inplace=True, ascending=False)
+        print('unique user of self.train is {}'.format(
+            len(self.df['customer_id_short'].unique())
+            ))
 
     def _create_train_and_valid(self):
         N_ROWS = 1_000_000
