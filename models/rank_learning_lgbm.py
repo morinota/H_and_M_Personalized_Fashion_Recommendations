@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from re import sub
 from typing import Dict, List, Tuple
 import pandas as pd
 from sympy import Li
@@ -357,6 +358,11 @@ class RankLearningLgbm:
 
         # 縦にくっつける...重複ない??
         self.train = pd.concat([self.train, self.negatives_df], axis=0)
+
+        # 重複を取り除く
+        self.train.drop_duplicates(
+            subset=['customer_id_short', 'article_id'], 
+            inplace=True)
 
     def _create_query_data(self):
         """
