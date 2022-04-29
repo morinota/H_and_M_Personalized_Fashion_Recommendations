@@ -25,7 +25,9 @@ def run_validation(val_week_id=104):
     dataset = DataSet()
     # DataFrameとしてデータ読み込み
     if Config.use_full_sampling:
-        dataset.read_data(c_id_short = False)
+        dataset.read_data(
+            # c_id_short=False
+            )
     else:
         dataset.read_data_sampled()
 
@@ -49,9 +51,9 @@ def run_validation(val_week_id=104):
 
     # Last Purchased Itemによるレコメンド結果を生成
     model = ChrisModel(transaction_train=train_df,
-                                dataset=dataset,
-                                val_week_id=val_week_id, k=Config.num_candidate_predict
-                                )
+                       dataset=dataset,
+                       val_week_id=val_week_id, k=Config.num_candidate_predict
+                       )
     model.preprocessing()
     df_sub = model.create_recommendation()
 
@@ -59,7 +61,8 @@ def run_validation(val_week_id=104):
     map_k = offline_validation(val_df=val_df, pred_df=df_sub)
     # スコアをロギング
     get_logger(VERSION).info(f'va_week_id is {val_week_id}')
-    get_logger(VERSION).info(f'map_{Config.num_recommend_item} of {VERSION} is ...{map_k}')
+    get_logger(VERSION).info(
+        f'map_{Config.num_recommend_item} of {VERSION} is ...{map_k}')
 
     # レコメンド結果を保存
     if val_week_id == 105:
@@ -84,10 +87,10 @@ def run_create_sub():
         dataset.read_data_sampled()
     # レコメンド結果を生成
     model = ChrisModel(transaction_train=pd.DataFrame(),
-                                dataset=dataset,
-                                val_week_id=105,
-                                k=Config.num_candidate_predict
-                                )
+                       dataset=dataset,
+                       val_week_id=105,
+                       k=Config.num_candidate_predict
+                       )
     model.preprocessing()
     df_sub = model.create_recommendation()
 
@@ -100,11 +103,11 @@ if __name__ == '__main__':
     create_logger(VERSION)
     create_logger(VERSION)
     get_logger(VERSION).info("メッセージ")
-    
+
     # 実行
     if Config.run_for_submittion:
         run_create_sub()
-    elif Config.run_for_submittion==False:
+    elif Config.run_for_submittion == False:
         val_week_ids = [104, 103, 102]
         for val_week_id in val_week_ids:
             run_validation(val_week_id=val_week_id)
