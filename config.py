@@ -10,7 +10,7 @@ class Config:
     use_full_sampling = True # bool
 
     # ランク学習用のCandidate
-    num_candidate_train = 20 # 訓練用のCandidateの数
+    num_candidate_train = 15 # 訓練用のCandidateの数
     num_candidate_predict = 15 # 予測用のCandidateの数
     # 予測用のCandidateを、オリジナルの手法(==None)を使うか、もしくはどの手法から読み込むか。
     # predict_candidate_way_name = f'last_purchased_fullTrue_{num_candidate_predict}Candidates' # Noneだったらオリジナル?
