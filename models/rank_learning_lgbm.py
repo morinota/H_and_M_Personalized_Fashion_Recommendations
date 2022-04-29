@@ -91,9 +91,9 @@ class RankLearningLgbm:
         ))
 
     def _create_train_and_valid(self):
-        N_ROWS = 1000000
+        N_ROWS = 1_000_000
         self.train = self.df.loc[self.df.t_dat <= (
-            pd.to_datetime('2020-09-15') - self.date_minus)]
+            pd.to_datetime('2020-09-15') - self.date_minus)].iloc[:N_ROWS]
         print('unique user of self.train is {}'.format(
             len(self.train['customer_id_short'].unique())
         ))
@@ -353,7 +353,7 @@ class RankLearningLgbm:
 
     def _merge_train_and_negatives(self):
         print(f'length of positive in train is {len(self.train)}')
-        print(f'length of positive in train is {len(self.negatives_df)}')
+        print(f'length of negative in train is {len(self.negatives_df)}')
 
         # 縦にくっつける...重複ない??
         self.train = pd.concat([self.train, self.negatives_df], axis=0)
