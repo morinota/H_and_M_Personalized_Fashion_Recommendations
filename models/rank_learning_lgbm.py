@@ -84,7 +84,9 @@ class RankLearningLgbm:
         N_ROWS = 1_000_000
         self.train = self.df.loc[self.df.t_dat <= (
             pd.to_datetime('2020-09-15') - self.date_minus)]
-        print('unique user of self.train is {}'.format(self.train['customer_id_short'].unique()))
+        print('unique user of self.train is {}'.format(
+            len(self.train['customer_id_short'].unique())
+            ))
         self.valid = self.df.loc[self.df.t_dat >= (
             pd.to_datetime('2020-09-16') - self.date_minus)]
 
