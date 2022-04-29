@@ -340,7 +340,6 @@ class RankLearningLgbm:
     def _create_query_data(self):
         """
         学習データにクエリID列を持たせるメソッド。
-
         """
         # まずクエリIDを持たせる為に、customer_idでソートして、その中でt_datでソート
         self.train.sort_values(['customer_id_short', 't_dat'], inplace=True)
