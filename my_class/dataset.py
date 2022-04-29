@@ -52,6 +52,10 @@ class DataSet:
             self.dfi = pd.read_csv(
                 csv_items, dtype={'article_id': str})  # 各商品の情報(メタデータ)
 
+            # customer_id_shortカラムを生成
+            self.df['customer_id_short'] = self.df["customer_id"].apply(lambda s: int(s[-16:], 16)).astype("uint64")
+            self.dfu['customer_id_short'] =self.dfu["customer_id"].apply(lambda s: int(s[-16:], 16)).astype("uint64")
+
         # price カラムを×10^3しておく...その方が、小数点以下と整数で分けやすい??
         self.df['price'] = self.df['price'] * (10 **3)
 
