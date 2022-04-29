@@ -91,7 +91,7 @@ class RankLearningLgbm:
         ))
 
     def _create_train_and_valid(self):
-        N_ROWS = 1_000_000
+        N_ROWS = 1000000
         self.train = self.df.loc[self.df.t_dat <= (
             pd.to_datetime('2020-09-15') - self.date_minus)]
         print('unique user of self.train is {}'.format(
