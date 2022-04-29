@@ -1,7 +1,10 @@
 class Config:
     # 以下、クラス変数として、設定を記述していく.
+
+    # =========================================================================
     # 基本設定
     num_recommend_item = 12
+    # 
 
     # 本番レコメンドか、検証用レコメンドか
     run_for_submittion = False # bool
@@ -9,6 +12,7 @@ class Config:
     # 5%サンプリングを使うか、フルサンプリングを使うか。
     use_full_sampling = True # bool
 
+    #==========================================================================
     # ランク学習用のCandidate
     num_candidate_train = 15 # 訓練用のCandidateの数
     num_candidate_predict = 15 # 予測用のCandidateの数
@@ -16,6 +20,7 @@ class Config:
     # predict_candidate_way_name = f'last_purchased_fullTrue_{num_candidate_predict}Candidates' # Noneだったらオリジナル?
     predict_candidate_way_name = None
 
+    # ===========================================================================
     # lightGBMハイパラ
     # 以下が良く調整されるらしい...(深さはあんまり??)
     boosting_type = 'dart' # 多くは'gbdt'. たまに 'dart' or 'goss'
@@ -29,5 +34,7 @@ class Config:
     # その他調整されてる事が多いパラメータ
     max_depth = 20 # lgbmのtreeの深さ
 
+    #===================================================---===================
     # validation
+    training_days_one_week_holdout_validation = 31
     grouping_column = 'online_and_offline' # or 'age_bin'
