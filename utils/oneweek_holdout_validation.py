@@ -3,7 +3,7 @@ from utils.useful_func import iter_to_str
 from multiprocessing.spawn import import_main_path
 import os
 from logging import lastResort
-from utils.calculate_MAP12 import calculate_mapk, calculate_apk
+
 from collections import defaultdict
 import seaborn as sns
 from typing import Dict, List, Set, Tuple
