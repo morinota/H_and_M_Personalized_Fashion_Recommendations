@@ -65,6 +65,8 @@ class RankLearningLgbm:
             DRIVE_DIR, 'input/item_features.parquet')).reset_index()
         self.user_features = pd.read_parquet(os.path.join(
             DRIVE_DIR, 'input/user_features.parquet')).reset_index()
+
+        print(f'length of user_features is {len(self.user_features)}')
         # customer_id_shortカラムを作成
         print('a')
         self.user_features["customer_id_short"] = self.user_features["customer_id"].apply(
@@ -78,6 +80,7 @@ class RankLearningLgbm:
             .apply(lambda x: pd.factorize(x)[0])).astype("uint64")
 
     def _merge_user_item_feature_to_transactions(self):
+        # ここのマージが原因??
         self.df = self.df.merge(self.user_features, on=('customer_id_short'), how='left')
         self.df = self.df.merge(self.item_features, on=('article_id'), how='left')
         # 降順(新しい順)で並び変え
