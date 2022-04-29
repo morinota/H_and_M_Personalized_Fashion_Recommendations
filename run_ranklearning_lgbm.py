@@ -44,7 +44,7 @@ def run_validation(val_week_id=104):
         dataset=dataset,
         week_column_exist=False,
         val_week_id=val_week_id,
-        training_days=9999,
+        training_days=Config.training_days_one_week_holdout_validation,
         # how="use_same_season_in_past"
     )
     print(len(train_df))
