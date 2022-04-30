@@ -490,9 +490,12 @@ class RankLearningLgbm:
         y_train = self.train['label']
         # 特徴量のカラム名を保存
         self.feature_names = X_train.columns
+        print(len(X_train.columns))
         X_valid = self.valid.drop(
             columns=['t_dat', 'customer_id', 'customer_id_short', 'article_id', 'label', 'week'])
         y_valid = self.valid['label']
+        print(len(X_valid.columns))
+
         # 学習
         self.ranker = self.ranker.fit(
             X=X_train,
