@@ -329,8 +329,9 @@ class RankLearningLgbm:
         # 検証用データに対しても同様(ユーザ毎に直近15件っていう制限はなくていいや)
         self.valid['label'] = 1
 
-    def _append_negatives_to_positives_using_lastDate_fromTrain(self):
-        # 各ユーザに対して、学習データ期間の最終購入日を取得する。
+    def _append_negatives_for_train_using_lastDate_fromTrain(self):
+        # 各ユーザに対して、学習データ期間の最終購入日を取得する
+        # ＝＞重複を取り除く時に重要！
         last_dates = (
             self.train
             .groupby('customer_id_short')['t_dat']
@@ -361,9 +362,28 @@ class RankLearningLgbm:
         # negatives_dfのLabelカラムを0にする。(重複ない??)
         self.negatives_df['label'] = 0
 
-        # 検証用データも同様の手順で、negativeを作る?
+    def _append_negatives_for_valid_using_lastDate_fromTrain(self):
+        """検証用データも同様の手順で、negativeを作る?
+        """
+        # 各ユーザに対して、学習データ期間の最終購入日を取得する。
+        last_dates = (
+            self.valid
+            .groupby('customer_id_short')['t_dat']
+            .max()
+            .to_dict()
+        )
+        # 各ユーザに対して、「候補」アイテム(negative)をn個取得する。(transaction_dfっぽい形式になってる!)
+        if Config.predict_candidate_way_name == None:
+            self.negatives_df_valid = self.__prepare_candidates_original(
+                customers_id=self.train['customer_id_short'].unique(),
+                n_candidates=Config.num_candidate_valid)
+        else:
+            self.negatives_df_valid = self._load_candidate_from_other_recommendation()
+
 
     def _merge_train_and_negatives(self):
+        """学習データのPositiveレコードとNegativeレコードを縦にくっつける。
+        """
         print(f'length of positive in train is {len(self.train)}')
         print(f'length of negative in train is {len(self.negatives_df)}')
 
@@ -375,7 +395,25 @@ class RankLearningLgbm:
             subset=['customer_id_short', 'article_id'],
             inplace=True)
 
-    def _create_query_data(self):
+        del self.negatives_df
+
+    def _merge_valid_and_negatives(self):
+        """同様に、検証データのPositiveレコードとNegativeレコードを縦にくっつける。
+        """
+        print(f'length of positive in train is {len(self.valid)}')
+        print(f'length of negative in train is {len(self.negatives_df_valid)}')
+
+        # 縦にくっつける...重複ない??
+        self.valid = pd.concat([self.valid, self.negatives_df], axis=0)
+
+        # 重複を取り除く
+        self.valid.drop_duplicates(
+            subset=['customer_id_short', 'article_id'],
+            inplace=True)
+
+        del self.negatives_df_valid
+
+    def _create_query_data_train(self):
         """
         学習データにクエリID列を持たせるメソッド。
         """
@@ -385,6 +423,7 @@ class RankLearningLgbm:
         self.train_baskets = self.train.groupby(['customer_id_short'])[
             'article_id'].count().values
 
+    def _create_query_data_valid(self)
         # 検証用データに対しても同様に、クエリデータを生成する。
         self.valid.sort_values(['customer_id_short', 't_dat'], inplace=True)
         self.valid_baskets = self.valid.groupby(['customer_id_short'])[
@@ -416,9 +455,14 @@ class RankLearningLgbm:
         """
         self._create_purchased_dict()
         self._create_label_column()
-        self._append_negatives_to_positives_using_lastDate_fromTrain()
+        self._append_negatives_for_train_using_lastDate_fromTrain()
         self._merge_train_and_negatives()
-        self._create_query_data()
+        self._create_query_data_train()
+
+        # 検証用データも同様に準備
+        self._append_negatives_for_valid_using_lastDate_fromTrain()
+        self._merge_valid_and_negatives()
+        self._create_query_data_valid()
 
         # データセットを用意
         self.ranker = LGBMRanker(
@@ -446,18 +490,24 @@ class RankLearningLgbm:
         y_train = self.train['label']
         # 特徴量のカラム名を保存
         self.feature_names = X_train.columns
-        # X_valid = self.valid.drop(
-        #     columns=['t_dat', 'customer_id', 'customer_id_short', 'article_id', 'label', 'week'])
-        # y_valid = self.valid['label']
+        X_valid = self.valid.drop(
+            columns=['t_dat', 'customer_id', 'customer_id_short', 'article_id', 'label', 'week'])
+        y_valid = self.valid['label']
         # 学習
         self.ranker = self.ranker.fit(
             X=X_train,
             y=y_train,
             group=self.train_baskets,
+            eval_set=[(X_valid, y_valid)],
+            eval_group=[list(self.valid_baskets)]
+            
         )
 
         # Feature Importanceを取得
         self._save_feature_importance()
+
+        # Saving memoryの為、学習用と検証用のデータセットを削除
+        del self.train, self.valid
 
     def _prepare_prediction(self):
         """予測の準備をするメソッド。

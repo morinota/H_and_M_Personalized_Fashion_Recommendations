@@ -19,6 +19,7 @@ class Config:
     # ランク学習用のCandidate
     num_candidate_train = 15 # 訓練用のCandidateの数
     num_candidate_predict = 12 # 予測用のCandidateの数
+    num_candidate_valid = 7
 
     # ==================================================================================
     # 予測用のCandidateを、オリジナルの手法(==None)を使うか、もしくはどの手法から読み込むか。
