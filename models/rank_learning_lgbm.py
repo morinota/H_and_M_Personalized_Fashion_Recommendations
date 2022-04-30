@@ -405,7 +405,7 @@ class RankLearningLgbm:
         df_plt.to_csv(os.path.join(DRIVE_DIR, f'feature/feature_importance_{self.val_week_id}.csv'))
 
         # 描画
-        sns.barplot(x="feature_importance", y="feature_name", data=df_plt.)
+        sns.barplot(x="feature_importance", y="feature_name", data=df_plt)
         plt.title('feature importance')
         # 保存
         plt.savefig(os.path.join(DRIVE_DIR, f'feature/feature_importance_{self.val_week_id}.png'))
