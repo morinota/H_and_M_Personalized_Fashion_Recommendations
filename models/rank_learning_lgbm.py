@@ -404,7 +404,7 @@ class RankLearningLgbm:
         print(f'length of negative in train is {len(self.negatives_df_valid)}')
 
         # 縦にくっつける...重複ない??
-        self.valid = pd.concat([self.valid, self.negatives_df], axis=0)
+        self.valid = pd.concat([self.valid, self.negatives_df_valid], axis=0)
 
         # 重複を取り除く
         self.valid.drop_duplicates(
