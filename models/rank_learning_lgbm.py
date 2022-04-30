@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from inspect import CO_ASYNC_GENERATOR
 from re import sub
 from typing import Dict, List, Tuple
 import pandas as pd
@@ -62,10 +63,18 @@ class RankLearningLgbm:
             self.df_4w['t_dat'].max(), self.df_4w['t_dat'].min()))
 
     def _load_feature_data(self):
-        self.item_features = pd.read_parquet(os.path.join(
-            DRIVE_DIR, 'input/item_features.parquet')).reset_index()
-        self.user_features = pd.read_parquet(os.path.join(
-            DRIVE_DIR, 'input/user_features.parquet')).reset_index()
+        """特徴量データを読み込むメソッド。
+        """
+        if Config.use_which_item_features == 'original':
+            self.item_features = pd.read_parquet(os.path.join(
+                DRIVE_DIR, 'input/item_features.parquet')).reset_index()
+        else:
+            self.item_features = pd.read_parquet(os.path.join(
+                DRIVE_DIR, f'input/item_features_{Config.use_which_item_features}.parquet')).reset_index()
+        
+        if Config.use_which_item_features == 'original':
+            self.user_features = pd.read_parquet(os.path.join(
+                DRIVE_DIR, f'input/user_features_{Config.use_which_user_features}.parquet')).reset_index()
 
         print(f'length of user_features is {len(self.user_features)}')
         # customer_id_shortカラムを作成
