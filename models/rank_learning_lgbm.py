@@ -423,7 +423,7 @@ class RankLearningLgbm:
         self.train_baskets = self.train.groupby(['customer_id_short'])[
             'article_id'].count().values
 
-    def _create_query_data_valid(self)
+    def _create_query_data_valid(self):
         # 検証用データに対しても同様に、クエリデータを生成する。
         self.valid.sort_values(['customer_id_short', 't_dat'], inplace=True)
         self.valid_baskets = self.valid.groupby(['customer_id_short'])[
