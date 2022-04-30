@@ -384,7 +384,7 @@ class RankLearningLgbm:
         self.negatives_df_valid['t_dat'] = self.negatives_df_valid['customer_id_short'].map(
             last_dates)
         # データ型を一応変換しておく。
-        self.negatives_df_valid['article_id'] = self.negatives_df['article_id'].astype(
+        self.negatives_df_valid['article_id'] = self.negatives_df_valid['article_id'].astype(
             'int')
         # negatives_df(<=候補アイテム)にユーザ特徴量＆アイテム特徴量を結合する。
         self.negatives_df_valid = (
