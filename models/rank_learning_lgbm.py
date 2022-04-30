@@ -63,7 +63,7 @@ class RankLearningLgbm:
             self.df_4w['t_dat'].max(), self.df_4w['t_dat'].min()))
 
     def _load_feature_data(self):
-        """特徴量データを読み込むメソッド。
+        """
         """
         if Config.use_which_item_features == 'original':
             self.item_features = pd.read_parquet(os.path.join(
@@ -71,7 +71,7 @@ class RankLearningLgbm:
         else:
             self.item_features = pd.read_parquet(os.path.join(
                 DRIVE_DIR, f'input/item_features_{Config.use_which_item_features}.parquet')).reset_index()
-        
+
         if Config.use_which_item_features == 'original':
             self.user_features = pd.read_parquet(os.path.join(
                 DRIVE_DIR, f'input/user_features_{Config.use_which_user_features}.parquet')).reset_index()
@@ -91,8 +91,10 @@ class RankLearningLgbm:
 
     def _merge_user_item_feature_to_transactions(self):
         # ここのマージが原因??
-        self.df = self.df.merge(self.user_features, on=('customer_id_short'), how='left')
-        self.df = self.df.merge(self.item_features, on=('article_id'), how='left')
+        self.df = self.df.merge(self.user_features, on=(
+            'customer_id_short'), how='left')
+        self.df = self.df.merge(
+            self.item_features, on=('article_id'), how='left')
         # 降順(新しい順)で並び変え
         self.df.sort_values(['t_dat', 'customer_id_short'],
                             inplace=True, ascending=False)
@@ -370,7 +372,7 @@ class RankLearningLgbm:
 
         # 重複を取り除く
         self.train.drop_duplicates(
-            subset=['customer_id_short', 'article_id'], 
+            subset=['customer_id_short', 'article_id'],
             inplace=True)
 
     def _create_query_data(self):
@@ -387,6 +389,27 @@ class RankLearningLgbm:
         self.valid.sort_values(['customer_id_short', 't_dat'], inplace=True)
         self.valid_baskets = self.valid.groupby(['customer_id_short'])[
             'article_id'].count().values
+
+    def _save_feature_importance(self):
+        # 特徴量重要度を保存する関数
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+
+        plt.figure(figsize=(20, 10))
+        df_plt = pd.DataFrame({'feature_name': self.feature_names,
+                               'feature_importance': self.ranker.feature_importances_}
+                              )
+        # 降順でソート
+        df_plt.sort_values('feature_importance', ascending=False, inplace=True)
+        # 保存
+        df_plt.to_csv(os.path.join(DRIVE_DIR, f'feature/feature_importance_{self.val_week_id}.csv'))
+
+        # 描画
+        sns.barplot(x="feature_importance", y="feature_name", data=df_plt.)
+        plt.title('feature importance')
+        # 保存
+        plt.savefig(os.path.join(DRIVE_DIR, f'feature/feature_importance_{self.val_week_id}.png'))
+
 
     def fit(self):
         """Fit lightgbm ranker model
@@ -432,6 +455,9 @@ class RankLearningLgbm:
             y=y_train,
             group=self.train_baskets,
         )
+
+        # Feature Importanceを取得
+        self._save_feature_importance()
 
     def _prepare_prediction(self):
         """予測の準備をするメソッド。
