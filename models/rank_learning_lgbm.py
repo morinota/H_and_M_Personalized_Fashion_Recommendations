@@ -380,6 +380,21 @@ class RankLearningLgbm:
         else:
             self.negatives_df_valid = self._load_candidate_from_other_recommendation()
 
+        # negativeなレコードのt_datは、last_dates(使うのここだけ?)で穴埋めする。
+        self.negatives_df_valid['t_dat'] = self.negatives_df_valid['customer_id_short'].map(
+            last_dates)
+        # データ型を一応変換しておく。
+        self.negatives_df_valid['article_id'] = self.negatives_df['article_id'].astype(
+            'int')
+        # negatives_df(<=候補アイテム)にユーザ特徴量＆アイテム特徴量を結合する。
+        self.negatives_df_valid = (
+            self.negatives_df_valid
+            .merge(self.user_features, on=('customer_id_short'))
+            .merge(self.item_features, on=('article_id'))
+        )
+        # negatives_dfのLabelカラムを0にする。(重複ない??)
+        self.negatives_df_valid['label'] = 0
+
 
     def _merge_train_and_negatives(self):
         """学習データのPositiveレコードとNegativeレコードを縦にくっつける。
