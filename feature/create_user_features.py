@@ -9,10 +9,11 @@ from tqdm import tqdm
 import pickle
 from collections import defaultdict
 from typing import List, Dict, Any, Union
+import os
+
+DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 
 # 特徴量生成のベースとなるクラス
-
-
 class UserFeatures(ABC):
     @abstractmethod
     def get(self) -> pd.DataFrame:
@@ -35,7 +36,7 @@ class AggrFeatures(UserFeatures):
             'customer_id_short', as_index=False)
 
     def get(self):
-        # トランザクション価格に対して、たくさん特徴量を作成。
+        # ユーザ毎のトランザクション価格に対して、たくさん特徴量を作成。
         output_df_price = (
             self.groupby_df['price']
             .agg({
@@ -52,7 +53,7 @@ class AggrFeatures(UserFeatures):
                 'max_minus_mean_transaction_price': lambda x: x.max()-x.mean(),
                 # minとmeanの差
                 'mean_minus_min_transaction_price': lambda x: x.mean()-x.min(),
-                # sum/mean = count (トランザクション回数)
+                # sum/mean = count (ユーザのトランザクション回数)
                 'count_transaction_price': lambda x: x.sum() / x.mean(),
 
                 # 小数点以下だけ取り出した要素
@@ -97,7 +98,7 @@ class AggrFeatures(UserFeatures):
 
 class CountFeatures(UserFeatures):
     """
-    トランザクションログをベースに、
+    トランザクションログをベースに、各ユーザの特徴量を生成
     basic features connected with transactions
     """
 
@@ -171,7 +172,7 @@ class CustomerFeatures(UserFeatures):
     def __init__(self, customers_df):
         self.customers_df = customers_df
 
-    def _completion_isMissing_value(self):
+    def _completion_Missing_value(self):
         """欠損値を補完するメソッド
         """
 
@@ -202,6 +203,7 @@ class CustomerFeatures(UserFeatures):
             self.customers_df[f'{column_name}_is_null'] = (
                 self.customers_df[f'{column_name}_is_null'] * 1
             )
+            
         columns_list = ['FN', 'Active', 'club_member_status',
                         'fashion_news_frequency', 'age']
         for column_name in columns_list:
@@ -247,7 +249,7 @@ class ArticlesFeatures(UserFeatures):
                         intermediate_out, on=('customer_id'))
         return output_df
 
-    def _return_value_counts(self, df:pd.DataFrame, column_name:str, k:int)->List[int]:
+    def _return_value_counts(self, df: pd.DataFrame, column_name: str, k: int) -> List[int]:
         """カラムを指定して、データの値の頻度を計算し、上位アイテムk個の、出現頻度のリストを返す??
 
         Parameters
@@ -269,7 +271,7 @@ class ArticlesFeatures(UserFeatures):
         value_counts = list(map(lambda x: x[1], value_counts))
         return value_counts
 
-    def _aggregate_topk(self, merged_df:pd.DataFrame, column_name:str, k:int):
+    def _aggregate_topk(self, merged_df: pd.DataFrame, column_name: str, k: int):
         # トランザクションログをユーザidでグルーピング(グループラベルをIndexにする)
         grouped_df_indx = merged_df.groupby('customer_id_short')
         # グループラベルをIndexにしないVer.
@@ -293,30 +295,6 @@ class ArticlesFeatures(UserFeatures):
         return n_top_k
 
 
-class UserFeaturesCollector:
-    """最終的に全てのユーザ特徴量をくっつける為のクラス。
-    collect all features and aggregate them
-    """
-    @staticmethod
-    def collect(features: Union[List[UserFeatures], List[str]], **kwargs) -> pd.DataFrame:
-        output_df = None
-
-        for feature in tqdm(features):
-            if isinstance(feature, UserFeatures):
-                feature_out = feature.get(**kwargs)
-            if isinstance(feature, str):
-                try:
-                    feature_out = pd.read_csv(feature)
-                except:
-                    feature_out = pd.read_parquet(feature)
-
-            if output_df is None:
-                output_df = feature_out
-            else:
-                output_df = output_df.merge(feature_out, on=('customer_id'))
-        return output_df
-
-
 if __name__ == '__main__':
     # DataSetオブジェクトの読み込み
     dataset = DataSet()
@@ -329,10 +307,23 @@ if __name__ == '__main__':
     df_customers = dataset.dfu  # 各顧客の情報(メタデータ)
     df_articles = dataset.dfi  # 各商品の情報(メタデータ)
 
-    #
-    user_features = UserFeaturesCollector.collect([
-        AggrFeatures(transactions_train.iloc[:10_000]),
-        CountFeatures(transactions_train.iloc[:10_000], 3),
-        CustomerFeatures(customers_df),
-        ArticlesFeatures(transactions_train.iloc[:10_000], articles_df, 3),
-    ])
+    # トランザクションログのNumericalデータから特徴量生成
+    a = AggrFeatures(transactions_df=df_transaction).get().reset_index()
+
+    b = CountFeatures(df_transaction).get().reset_index()
+    c = CustomerFeatures(df_customers).get().reset_index()
+
+    user_features = dataset.df_sub[['customer_id', 'customer_id_short']]
+    for df_feature in [a, b, c]:
+        print(len(df_feature))
+        user_features = pd.merge(
+            left=user_features,
+            right=df_feature,
+            on='customer_id_short',
+            how='left'
+        )
+
+    print(len(user_features))
+    feature_dir = os.path.join(DRIVE_DIR, 'input')
+    # user_features.to_parquet(os.path.join(
+    #     feature_dir, 'user_features_my_fullT.parquet'), index=False)
