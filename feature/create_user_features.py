@@ -1,11 +1,13 @@
+import sys
+sys.path.append('../')
+
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
 import math
-from ..my_class.dataset import DataSet
+from my_class.dataset import DataSet
 from abc import ABC, abstractmethod
 from pathlib import Path
-from tqdm import tqdm
 import pickle
 from collections import defaultdict
 from typing import List, Dict, Any, Union
@@ -295,7 +297,7 @@ class ArticlesFeatures(UserFeatures):
         return n_top_k
 
 
-if __name__ == '__main__':
+def create_user_features():
     # DataSetオブジェクトの読み込み
     dataset = DataSet()
     # DataFrameとしてデータ読み込み
