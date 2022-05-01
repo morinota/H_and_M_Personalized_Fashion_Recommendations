@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 import math
-from my_class.dataset import DataSet
+from ..my_class.dataset import DataSet
 from abc import ABC, abstractmethod
 from pathlib import Path
 from tqdm import tqdm
