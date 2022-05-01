@@ -303,18 +303,22 @@ def create_user_features():
     # DataFrameとしてデータ読み込み
     dataset.read_data(c_id_short=True)
 
+
     # データをDataFrame型で読み込み
     df_transaction = dataset.df
     df_sub = dataset.df_sub  # 提出用のサンプル
     df_customers = dataset.dfu  # 各顧客の情報(メタデータ)
     df_articles = dataset.dfi  # 各商品の情報(メタデータ)
 
+    print('a')
     # トランザクションログのNumericalデータから特徴量生成
     a = AggrFeatures(transactions_df=df_transaction).get().reset_index()
 
     b = CountFeatures(df_transaction).get().reset_index()
     c = CustomerFeatures(df_customers).get().reset_index()
 
+    print('b')
+    
     user_features = dataset.df_sub[['customer_id', 'customer_id_short']]
     for df_feature in [a, b, c]:
         print(len(df_feature))

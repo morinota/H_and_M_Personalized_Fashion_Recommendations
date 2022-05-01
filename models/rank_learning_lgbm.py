@@ -496,7 +496,9 @@ class RankLearningLgbm:
         )
         # 一応、学習用データの最終日を取得し、出力
         last_date_train_data = self.train['t_dat'].max()
-        print(f'last date of training data is...{last_date_train_data}aaa')
+        init_date_train_data = self.train['t_dat'].min()
+        print(f'dates of training data is..from{init_date_train_data}')
+        print(f'dates of training data is..to{last_date_train_data}')
         print(f'len of train data is {len(self.train)}')
 
         # 特徴量とターゲットを分割
@@ -504,20 +506,23 @@ class RankLearningLgbm:
             columns=['t_dat', 'customer_id', 'customer_id_short', 'article_id', 'label', 'week'])
         y_train = self.train['label']
         # 特徴量のカラム名を保存
-        self.feature_names = X_train.columns
+        self.feature_names = list(X_train.columns)
+        print(X_train.dtypes)
         print(len(X_train.columns))
         X_valid = self.valid[self.feature_names]
         y_valid = self.valid['label']
         print(len(X_valid.columns))
-        
+        # Categorical Featureの指定
+        self.categorical_feature_names = list(X_train.select_dtypes('int').columns)
         # 学習
         self.ranker = self.ranker.fit(
             X=X_train,
             y=y_train,
             group=self.train_baskets,
             eval_set=[(X_valid, y_valid)],
-            eval_group=[list(self.valid_baskets)]
-            
+            eval_group=[list(self.valid_baskets)],
+            feature_name=self.feature_names,
+            categorical_feature=self.categorical_feature_names
         )
 
         # Feature Importanceを取得
