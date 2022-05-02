@@ -10,7 +10,7 @@ from utils.just_offline_validation import offline_validation
 import os
 from logs.base_log import create_logger, get_logger, stop_watch
 from config import Config
-from feature import create_user_features
+from feature import create_user_features, create_item_features
 # from logs.time_keeper import stop_watch
 
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
@@ -18,8 +18,8 @@ DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized
 
 def main():
 
-    create_user_features.create_user_features()
-
+    # create_user_features.create_user_features()
+    create_item_features.create_items_features()
 
 
 if __name__ == '__main__':

@@ -14,7 +14,9 @@ from collections import defaultdict
 from typing import List, Dict, Any, Union
 from datetime import timedelta
 from utils_feature_eng.datetime_feature import DatetimeFeature
+import os
 
+DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 
 OBJECT_COLUMNS = ['article_id', 'prod_name', 'product_type_name', 'product_group_name',
                   'graphical_appearance_name', 'colour_group_name',
@@ -71,11 +73,15 @@ class SalesLagFeatures(ItemFeatures):
     def get(self) -> pd.DataFrame:
 
         self.item_feature = pd.DataFrame()
-        self._get_sales_time_series_each_item()
+        self._get_sales_time_series_each_item_subcategory()
+        self._create_lag_feature()
+        self._create_rolling_window_features()
+        self._create_expanding_window_features()
+        self._export_each_timeseries_features()
 
         return self.item_feature
 
-    def _get_sales_time_series_each_item(self) -> Dict:
+    def _get_sales_time_series_each_item_subcategory(self) -> Dict:
         """各アイテム毎(or各アイテムサブカテゴリ)の時系列の売上個数のDataFrameを作る。
         (ラグ特徴量を作る為の準備)
         イメージ：レコードが各アイテム(or各アイテムサブカテゴリ)、
@@ -92,7 +98,8 @@ class SalesLagFeatures(ItemFeatures):
         for target_column in ITEM_CATEGORICAL_COLUMNS:
             print(target_column)
             df_sales_timeseries = self.transaction_df.groupby(
-                by=[target_column, pd.Grouper(key='t_dat', freq="W")]  # type: ignore
+                by=[target_column, pd.Grouper(
+                    key='t_dat', freq="W")]  # type: ignore
             )['customer_id_short'].count()
             # unstacking
             df_sales_timeseries = df_sales_timeseries.unstack(fill_value=0)
@@ -100,6 +107,96 @@ class SalesLagFeatures(ItemFeatures):
             self.time_series_sales_count_dict[target_column] = df_sales_timeseries
 
         return self.time_series_sales_count_dict
+
+    def _create_lag_feature(self):
+        self.time_series_lag_sales_count_dict = {}
+        # 各アイテム(or各アイテムサブカテゴリ)毎に繰り返し処理
+        for target_column in ITEM_CATEGORICAL_COLUMNS:
+            print(f'create lag features of {target_column}')
+            df_sample: pd.DataFrame = self.time_series_sales_count_dict[target_column]
+
+            # ラグ特徴量の生成
+            lag1 = df_sample.shift(1, axis=1)
+            lag2 = df_sample.shift(2, axis=1)
+
+            # 結合用にstacking
+            lag1 = lag1.stack().reset_index().rename(
+                columns={0: f'lag1_salescount_{target_column}'})
+            lag2 = lag2.stack().reset_index().rename(
+                columns={0: f'lag2_salescount_{target_column}'})
+            # 結合
+            lag_item_feature = pd.merge(
+                left=lag1, right=lag2, on=[target_column, 't_dat'], how='left'
+            )
+            # dictに格納
+            self.time_series_lag_sales_count_dict[target_column] = lag_item_feature
+
+            del lag1, lag2, lag_item_feature
+
+    def _create_rolling_window_features(self):
+        self.time_series_rolling_sales_count_dict = {}
+        # 各アイテム(or各アイテムサブカテゴリ)毎に繰り返し処理
+        for target_column in ITEM_CATEGORICAL_COLUMNS:
+            print(f'create rolling window features of {target_column}')
+            df_sample: pd.DataFrame = self.time_series_sales_count_dict[target_column]
+
+            # Rolling特徴量の生成
+            roll_mean_5 = df_sample.shift(1, axis=1).rolling(window=5, axis=1).mean()
+            roll_mean_10 = df_sample.shift(1, axis=1).rolling(window=10, axis=1).mean()
+            roll_var_5 = df_sample.shift(1, axis=1).rolling(window=5, axis=1).var()
+            roll_var_10 = df_sample.shift(1, axis=1).rolling(window=10, axis=1).var()
+
+            # 結合用にstacking
+            roll_mean_5 = roll_mean_5.stack().reset_index().rename(
+                columns={0: f'rollmean_5week_salescount_{target_column}'})
+            roll_mean_10 = roll_mean_10.stack().reset_index().rename(
+                columns={0: f'rollmean_10week_salescount_{target_column}'})
+            roll_var_5 = roll_var_5.stack().reset_index().rename(
+                columns={0: f'rollvar_5week_salescount_{target_column}'})
+            roll_var_10 = roll_var_10.stack().reset_index().rename(
+                columns={0: f'rollvar_10week_salescount_{target_column}'})
+
+            # 結合
+            rolling_item_feature = pd.DataFrame()
+            for i, df_feature in enumerate([roll_mean_5, roll_mean_10, roll_var_5, roll_var_10]):
+                if i == 0:
+                    rolling_item_feature = df_feature
+                else:
+                    rolling_item_feature = pd.merge(
+                        left=rolling_item_feature, right=df_feature,
+                        on=[target_column, 't_dat'], how='left'
+                    )
+            # dictに格納
+            self.time_series_lag_sales_count_dict[target_column] = rolling_item_feature
+
+            del roll_mean_5, roll_mean_10, roll_var_5, roll_var_10, rolling_item_feature
+
+    def _create_expanding_window_features(self):
+        pass
+
+    def _export_each_timeseries_features(self):
+
+        for target_column in ITEM_CATEGORICAL_COLUMNS:
+            lag_features = self.time_series_lag_sales_count_dict[target_column]
+            rolling_features = self.time_series_rolling_sales_count_dict[target_column]
+
+            # 結合
+            time_series_item_features = pd.DataFrame()
+            for i, df_feature in enumerate([lag_features, rolling_features]):
+                if i == 0:
+                    time_series_item_features = df_feature
+                else:
+                    time_series_item_features= pd.merge(
+                        left=time_series_item_features, right=df_feature,
+                        on=[target_column, 't_dat'], how='left'
+                    )
+
+            # とりあえずアイテムの各サブカテゴリ毎の時系列特徴量をexportしておく
+            file_path = os.path.join(DRIVE_DIR, f'feature/time_series_item_feature_{target_column}.csv')
+            time_series_item_features.to_csv(file_path, index=False)
+            pass
+
+
 
 class NumericalFeature(ItemFeatures):
     def get_item_feature_numerical(self):
@@ -184,35 +281,35 @@ class NumericalFeature(ItemFeatures):
 
         return self.item_feature_numerical_from_transaction
 
-    # def get_item_feature_categorical(self):
+    def get_item_feature_categorical(self):
 
-    #     dfi_categorical = self.dfi[ITEM_CATEGORICAL_COLUMNS]
+        dfi_categorical = self.dfi[ITEM_CATEGORICAL_COLUMNS]
 
-    #     def _extract_recent_transaction():
-    #         """最近(直近三週間)のトランザクションのみを抽出。
-    #         """
-    #         # 最近(直近三週間)のトランザクションのみを抽出。
-    #         last_date = self.transaction_with_itemmeta['t_dat'].max()
-    #         init_date = pd.to_datetime(last_date) - timedelta(days=21)
+        def _extract_recent_transaction():
+            """最近(直近三週間)のトランザクションのみを抽出。
+            """
+            # 最近(直近三週間)のトランザクションのみを抽出。
+            last_date = self.transaction_with_itemmeta['t_dat'].max()
+            init_date = pd.to_datetime(last_date) - timedelta(days=21)
 
-    #         df_recent_t = self.transaction_with_itemmeta.loc[
-    #             self.transaction_with_itemmeta['t_dat'] >= init_date
-    #         ]
-    #         return df_recent_t
+            df_recent_t = self.transaction_with_itemmeta.loc[
+                self.transaction_with_itemmeta['t_dat'] >= init_date
+            ]
+            return df_recent_t
 
-    #     self.transaction_with_itemmeta_recent = _extract_recent_transaction()
+        self.transaction_with_itemmeta_recent = _extract_recent_transaction()
 
-    #     # これらの各カラムについて、人気ランキング的なモノを取得していく？
-    #     def _create_popular_ranking_recently_with_each_category():
-    #         df_popular_target = feature_eng.create_popular_ranking_in_transaction_log(
-    #             df_transaction=self.transaction_with_itemmeta_recent,
-    #             target_column='product_type_name',
-    #         )
+        # これらの各カラムについて、人気ランキング的なモノを取得していく？
+        def _create_popular_ranking_recently_with_each_category():
+            df_popular_target = feature_eng.create_popular_ranking_in_transaction_log(
+                df_transaction=self.transaction_with_itemmeta_recent,
+                target_column='product_type_name',
+            )
 
-    #     self.dfi_popular = _create_popular_ranking_recently_with_each_category()
+        self.dfi_popular = _create_popular_ranking_recently_with_each_category()
 
-    #     self.item_feature_categorical = pd.DataFrame()
-    #     return self.item_feature_categorical
+        self.item_feature_categorical = pd.DataFrame()
+        return self.item_feature_categorical
 
 
 def create_items_features():
@@ -225,5 +322,4 @@ def create_items_features():
     # データをDataFrame型で読み込み
     df_transaction = dataset.df
 
-    item_feature = SalesLagFeatures(
-        dataset=dataset, transaction_df=dataset.df).get()
+    SalesLagFeatures(dataset=dataset, transaction_df=dataset.df).get()
