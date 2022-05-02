@@ -1,6 +1,8 @@
 from re import S
+from textwrap import fill
 import pandas as pd
 import numpy as np
+from pytest import Item
 from tqdm import tqdm
 import math
 from my_class.dataset import DataSet
@@ -21,7 +23,7 @@ OBJECT_COLUMNS = ['article_id', 'prod_name', 'product_type_name', 'product_group
                   'section_name', 'garment_group_name', 'detail_desc'
                   ]
 
-ITEM_CATEGORICAL_COLUMNS = ['prod_name', 'product_type_name', 'product_group_name',
+ITEM_CATEGORICAL_COLUMNS = ['article_id', 'prod_name', 'product_type_name', 'product_group_name',
                             'graphical_appearance_name', 'colour_group_name',
                             'perceived_colour_value_name', 'perceived_colour_master_name',
                             'department_name', 'index_code', 'index_name', 'index_group_name',
@@ -73,27 +75,33 @@ class SalesLagFeatures(ItemFeatures):
 
         return self.item_feature
 
-    def _get_sales_time_series_each_item(self) -> pd.DataFrame:
+    def _get_sales_time_series_each_item(self) -> Dict:
         """各アイテム毎(or各アイテムサブカテゴリ)の時系列の売上個数のDataFrameを作る。
         (ラグ特徴量を作る為の準備)
         イメージ：レコードが各アイテム(or各アイテムサブカテゴリ)、
         各カラムが各週の売上個数を示すDataFrame
         """
-        self.df_sales_time_series = self.dataset.dfi.copy()
         # まず日付のカラムから日・月・年のカラムを生成
         self.transaction_df['t_day'] = self.transaction_df['t_dat'].dt.day
         self.transaction_df['t_month'] = self.transaction_df['t_dat'].dt.month
         self.transaction_df['t_year'] = self.transaction_df['t_dat'].dt.year
 
+        self.time_series_sales_count_dict = {}
+
         # 各アイテム(or各アイテムサブカテゴリ)毎に繰り返し処理
-        target_column = 'article_id'
-
-        df_sales_timeseries = self.transaction_df.groupby(
-            by=[target_column, pd.Grouper(key='t_dat', freq="W")]
+        for target_column in ITEM_CATEGORICAL_COLUMNS:
+            print(target_column)
+            df_sales_timeseries = self.transaction_df.groupby(
+                by=[target_column, pd.Grouper(key='t_dat', freq="W")]  # type: ignore
             )['customer_id_short'].count()
+            # unstacking
+            df_sales_timeseries = df_sales_timeseries.unstack(fill_value=0)
+            # dictに保存
+            self.time_series_sales_count_dict[target_column] = df_sales_timeseries
 
-        return df_sales_timeseries
+        return self.time_series_sales_count_dict
 
+class NumericalFeature(ItemFeatures):
     def get_item_feature_numerical(self):
 
         def _merge_transaction_with_item_meta():
