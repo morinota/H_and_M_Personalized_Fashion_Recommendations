@@ -113,7 +113,7 @@ class RuleBaseByCustomerAge:
             left=self.transaction_train,
             right=self.df_u_each_age_bin,
             on='customer_id_short',
-            how='innor'
+            how='inner'
         )
         print(
             f'The shape of scope transaction for {unique_age_bin} is {self.df_t_each_agebin.shape}. \n')
