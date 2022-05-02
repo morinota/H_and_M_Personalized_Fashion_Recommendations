@@ -247,7 +247,7 @@ class RuleBaseByCustomerAge:
 
         # 各年齢bin毎の結果を結合
         for i, unique_age_bin in enumerate(self.list_UniBins):
-            df_temp = pd.read_csv(f'submission_' + str(uniBin) + '.csv')
+            df_temp = pd.read_csv(f'submission_' + str(unique_age_bin) + '.csv')
             if i == 0:
                 self.df_sub = df_temp
             else:
