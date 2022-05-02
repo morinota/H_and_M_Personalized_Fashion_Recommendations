@@ -62,20 +62,14 @@ class SalesLagFeatures(ItemFeatures):
 
     def get(self) -> pd.DataFrame:
         # トランザクションログに、アイテムメタデータとユーザメタデータを付与する
-        self.transactions_df = pd.merge(
+        self.transactions_df_merge = pd.merge(
             left=self.transaction_df,
             right=self.dataset.dfi,
             on='article_id',
             how='left'
         )
-        self.transactions_df = pd.merge(
-            left=self.transaction_df,
-            right=self.dataset.dfu,
-            on='customer_id_short',
-            how='left'
-        )
-        
-        print(self.dataset.dfi.columns)
+        print(self.transactions_df_merge.columns)
+
         self.item_feature = pd.DataFrame()
         self._get_sales_time_series_each_item_subcategory()
         self._create_lag_feature()
@@ -97,7 +91,7 @@ class SalesLagFeatures(ItemFeatures):
         self.transaction_df['t_year'] = self.transaction_df['t_dat'].dt.year
 
         self.time_series_sales_count_dict = {}
-        print(self.transaction_df.columns)
+
         # 各アイテム(or各アイテムサブカテゴリ)毎に繰り返し処理
         for target_column in ITEM_CATEGORICAL_COLUMNS:
             print(target_column)
