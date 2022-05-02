@@ -214,7 +214,7 @@ class RuleBaseByCustomerAge:
 
         sub = pd.merge(
             left=sub, right=self.df_u_each_age_bin[['customer_id_short', 'age']],
-            on='customer_id_short', how='innor',
+            on='customer_id_short', how='inner',
         )
 
         sub = pd.merge(
