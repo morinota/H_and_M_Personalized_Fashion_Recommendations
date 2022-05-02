@@ -13,7 +13,7 @@ import pickle
 from collections import defaultdict
 from typing import List, Dict, Any, Union
 from datetime import timedelta
-from utils_feature_eng.datetime_feature import DatetimeFeature
+
 import os
 
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
