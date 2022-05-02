@@ -328,4 +328,6 @@ def create_items_features():
     # データをDataFrame型で読み込み
     df_transaction = dataset.df
 
-    SalesLagFeatures(dataset=dataset, transaction_df=dataset.df).get()
+    sales_lag_features = SalesLagFeatures(dataset=dataset, transaction_df=dataset.df)
+    print('create sales lag feature instance')
+    sales_lag_features.get()
