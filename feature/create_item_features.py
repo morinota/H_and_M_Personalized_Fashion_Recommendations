@@ -25,11 +25,12 @@ OBJECT_COLUMNS = ['article_id', 'prod_name', 'product_type_name', 'product_group
                   'section_name', 'garment_group_name', 'detail_desc'
                   ]
 
-ITEM_CATEGORICAL_COLUMNS = ['article_id', 'prod_name', 'product_type_name', 'product_group_name',
-                            'graphical_appearance_name', 'colour_group_name',
-                            'perceived_colour_value_name', 'perceived_colour_master_name',
-                            'department_name', 'index_code', 'index_name', 'index_group_name',
-                            'section_name', 'garment_group_name'
+ITEM_CATEGORICAL_COLUMNS = ['article_id',
+                            # 'prod_name', 'product_type_name', 'product_group_name',
+                            # 'graphical_appearance_name', 'colour_group_name',
+                            # 'perceived_colour_value_name', 'perceived_colour_master_name',
+                            # 'department_name', 'index_code', 'index_name', 'index_group_name',
+                            # 'section_name', 'garment_group_name'
                             ]
 
 
@@ -71,7 +72,7 @@ class SalesLagFeatures(ItemFeatures):
         )
 
     def get(self) -> pd.DataFrame:
-
+        print(self.dataset.dfi.columns)
         self.item_feature = pd.DataFrame()
         self._get_sales_time_series_each_item_subcategory()
         self._create_lag_feature()
@@ -141,10 +142,14 @@ class SalesLagFeatures(ItemFeatures):
             df_sample: pd.DataFrame = self.time_series_sales_count_dict[target_column]
 
             # Rolling特徴量の生成
-            roll_mean_5 = df_sample.shift(1, axis=1).rolling(window=5, axis=1).mean()
-            roll_mean_10 = df_sample.shift(1, axis=1).rolling(window=10, axis=1).mean()
-            roll_var_5 = df_sample.shift(1, axis=1).rolling(window=5, axis=1).var()
-            roll_var_10 = df_sample.shift(1, axis=1).rolling(window=10, axis=1).var()
+            roll_mean_5 = df_sample.shift(
+                1, axis=1).rolling(window=5, axis=1).mean()
+            roll_mean_10 = df_sample.shift(
+                1, axis=1).rolling(window=10, axis=1).mean()
+            roll_var_5 = df_sample.shift(
+                1, axis=1).rolling(window=5, axis=1).var()
+            roll_var_10 = df_sample.shift(
+                1, axis=1).rolling(window=10, axis=1).var()
 
             # 結合用にstacking
             roll_mean_5 = roll_mean_5.stack().reset_index().rename(
@@ -186,16 +191,16 @@ class SalesLagFeatures(ItemFeatures):
                 if i == 0:
                     time_series_item_features = df_feature
                 else:
-                    time_series_item_features= pd.merge(
+                    time_series_item_features = pd.merge(
                         left=time_series_item_features, right=df_feature,
                         on=[target_column, 't_dat'], how='left'
                     )
 
             # とりあえずアイテムの各サブカテゴリ毎の時系列特徴量をexportしておく
-            file_path = os.path.join(DRIVE_DIR, f'feature/time_series_item_feature_{target_column}.csv')
+            file_path = os.path.join(
+                DRIVE_DIR, f'feature/time_series_item_feature_{target_column}.csv')
             time_series_item_features.to_csv(file_path, index=False)
             pass
-
 
 
 class NumericalFeature(ItemFeatures):
