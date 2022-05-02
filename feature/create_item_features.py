@@ -61,14 +61,8 @@ class SalesLagFeatures(ItemFeatures):
 
 
     def get(self) -> pd.DataFrame:
-        # トランザクションログに、アイテムメタデータとユーザメタデータを付与する
-        self.transactions_df_merge = pd.merge(
-            left=self.transaction_df,
-            right=self.dataset.dfi,
-            on='article_id',
-            how='left'
-        )
-        print(self.transactions_df_merge.columns)
+
+        print(self.transaction_df.columns)
 
         self.item_feature = pd.DataFrame()
         self._get_sales_time_series_each_item_subcategory()
@@ -85,13 +79,21 @@ class SalesLagFeatures(ItemFeatures):
         イメージ：レコードが各アイテム(or各アイテムサブカテゴリ)、
         各カラムが各週の売上個数を示すDataFrame
         """
+        # トランザクションログに、アイテムメタデータとユーザメタデータを付与する
+        self.transaction_df = pd.merge(
+            left=self.transaction_df,
+            right=self.dataset.dfi,
+            on='article_id',
+            how='left'
+        )
+
         # まず日付のカラムから日・月・年のカラムを生成
         self.transaction_df['t_day'] = self.transaction_df['t_dat'].dt.day
         self.transaction_df['t_month'] = self.transaction_df['t_dat'].dt.month
         self.transaction_df['t_year'] = self.transaction_df['t_dat'].dt.year
 
         self.time_series_sales_count_dict = {}
-
+        print(self.transaction_df.columns)
         # 各アイテム(or各アイテムサブカテゴリ)毎に繰り返し処理
         for target_column in ITEM_CATEGORICAL_COLUMNS:
             print(target_column)
