@@ -58,6 +58,9 @@ class SalesLagFeatures(ItemFeatures):
         self.dataset.dfi['article_id'] = self.dataset.dfi['article_id'].astype(
             'int')
 
+
+
+    def get(self) -> pd.DataFrame:
         # トランザクションログに、アイテムメタデータとユーザメタデータを付与する
         self.transactions_df = pd.merge(
             left=self.transaction_df,
@@ -71,8 +74,7 @@ class SalesLagFeatures(ItemFeatures):
             on='customer_id_short',
             how='left'
         )
-
-    def get(self) -> pd.DataFrame:
+        
         print(self.dataset.dfi.columns)
         self.item_feature = pd.DataFrame()
         self._get_sales_time_series_each_item_subcategory()
