@@ -102,7 +102,7 @@ class RuleBaseByCustomerAge:
         self.df_u_each_age_bin.drop(['age_bins'], axis=1, inplace=True)
 
     def _f2_merge_transaction_df_and_df_u_each_age_bin(self, unique_age_bin: str):
-        """
+        """対象Agebinユーザのトランザクションのみを取り出す
 
         Parameters
         ----------
@@ -253,9 +253,8 @@ class RuleBaseByCustomerAge:
             else:
                 self.df_sub = pd.concat([self.df_sub, df_temp], axis=0)
 
-        
-        assert self.df_sub.shape[0] == self.numCustomers, f'The number of dfSub rows is not correct. {self.df_sub.shape[0]} vs {self.numCustomers}.'  
-
+        # エラーメッセージ(もしレコメンド結果の長さが違ったら)
+        # assert self.df_sub.shape[0] == self.numCustomers, f'The number of dfSub rows is not correct. {self.df_sub.shape[0]} vs {self.numCustomers}.'  
 
         # 最終的には3つのカラムにする.
         self.df_sub = self.df_sub[[
