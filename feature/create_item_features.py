@@ -1,3 +1,4 @@
+from re import S
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
@@ -27,24 +28,92 @@ ITEM_CATEGORICAL_COLUMNS = ['prod_name', 'product_type_name', 'product_group_nam
                   'section_name', 'garment_group_name'
                   ]
 
+
 # 特徴量生成のベースとなるクラス
+class ItemFeatures(ABC):
+    @abstractmethod
+    def get(self) -> pd.DataFrame:
+        """
+        customer_id -> features
+        """
+        pass
 
 
-class ItemFeatures():
-    def __init__(self, dataset: DataSet, transaction_train: pd.DataFrame) -> None:
-        self.dfi = dataset.dfi
-        self.dfu = dataset.dfu
-        self.transaction_train = transaction_train
+class SalesLagFeatures(ItemFeatures):
+    """各アイテム(or各アイテムサブカテゴリ)毎の時系列の売上個数のラグを生成する関数
+    """
+    def __init__(self, dataset: DataSet, transaction_df: pd.DataFrame) -> None:
+        self.transaction_df = transaction_df
+        self.dataset = dataset
         # article_idのデータ型を統一しておく
-        self.transaction_train['article_id'] = self.transaction_train['article_id'].astype(
+        self.transaction_df['article_id'] = self.transaction_df['article_id'].astype(
             'int')
-        self.dfi['article_id'] = self.dfi['article_id'].astype('int')
+        self.dataset.dfi['article_id'] = self.dataset.dfi['article_id'].astype('int')
+
+        # トランザクションログに、アイテムメタデータとユーザメタデータを付与する
+        self.transactions_df = pd.merge(
+            left=self.transaction_df,
+            right=self.dataset.dfi,
+            on='article_id',
+            how='left'
+        )
+        self.transactions_df = pd.merge(
+            left=self.transaction_df,
+            right=self.dataset.dfu,
+            on='customer_id_short',
+            how='left'
+        )
 
     def get(self) -> pd.DataFrame:
 
         self.item_feature = pd.DataFrame()
+        self._get_sales_time_series_each_item()
 
         return self.item_feature
+
+    def _get_sales_time_series_each_item(self)->pd.DataFrame:
+        """各アイテム毎(or各アイテムサブカテゴリ)の時系列の売上個数のDataFrameを作る。
+        (ラグ特徴量を作る為の準備)
+        イメージ：レコードが各アイテム(or各アイテムサブカテゴリ)、
+        各カラムが各週の売上個数を示すDataFrame
+        """
+        self.df_sales_time_series = self.dataset.dfi.copy()
+        # まず日付のカラムから日・月・年のカラムを生成
+        self.transaction_df['t_day'] = self.transaction_df['t_dat'].dt.day
+        self.transaction_df['t_month'] = self.transaction_df['t_dat'].dt.month
+        self.transaction_df['t_year'] = self.transaction_df['t_dat'].dt.year
+
+        # 日付カラムをindexにセット
+        self.transaction_df.set_index(keys='t_dat', inplace=True)
+
+        # 各アイテム(or各アイテムサブカテゴリ)毎に繰り返し処理
+        target_column = 'article_id'
+        # まずトランザクションに対して各アイテム、各週毎のトランザクションログをgroupby
+        df_groupby = self.transaction_df.groupby(
+            by=[target_column, 't_month'])
+        # 対象カテゴリ毎の時系列の売上個数を取得
+        df_sales_time_series = df_groupby['customer_id_short'].count().reset_index()
+        df_sales_time_series.rename(columns={'customer_id_short', 'sales_counts'})
+        # =>ここまでで必要は情報は取得できてる。後はこれを整形する。
+
+        # 各アイテムカテゴリの結果用のDataFrame
+        df_sales_time_series_each_category = pd.DataFrame()
+        for each_category in self.transaction_df[target_column].unique():
+            # 対象カテゴリのあるユニーク値のレコードのみを抽出
+            df_temp = df_sales_time_series.loc[
+                df_sales_time_series[target_column] == each_category
+            ][['t_month', 'sales_counts']]
+
+            # 結果出力用のdfに、Seriesを新規レコードとして追加していく
+            df_sales_time_series_each_category.append(df_temp['sales_counts']) 
+
+            
+            
+
+            
+
+        return self.df_sales_time_series
+
 
     def get_item_feature_numerical(self):
 
@@ -129,41 +198,43 @@ class ItemFeatures():
         return self.item_feature_numerical_from_transaction
 
 
-    def get_item_feature_categorical(self):
+    # def get_item_feature_categorical(self):
 
-        dfi_categorical = self.dfi[ITEM_CATEGORICAL_COLUMNS]
+    #     dfi_categorical = self.dfi[ITEM_CATEGORICAL_COLUMNS]
 
-        def _extract_recent_transaction():
-            """最近(直近三週間)のトランザクションのみを抽出。
-            """
-            # 最近(直近三週間)のトランザクションのみを抽出。
-            last_date = self.transaction_with_itemmeta['t_dat'].max()
-            init_date = pd.to_datetime(last_date) - timedelta(days=21)
+    #     def _extract_recent_transaction():
+    #         """最近(直近三週間)のトランザクションのみを抽出。
+    #         """
+    #         # 最近(直近三週間)のトランザクションのみを抽出。
+    #         last_date = self.transaction_with_itemmeta['t_dat'].max()
+    #         init_date = pd.to_datetime(last_date) - timedelta(days=21)
 
-            df_recent_t = self.transaction_with_itemmeta.loc[
-                self.transaction_with_itemmeta['t_dat'] >= init_date
-            ]
-            return df_recent_t
+    #         df_recent_t = self.transaction_with_itemmeta.loc[
+    #             self.transaction_with_itemmeta['t_dat'] >= init_date
+    #         ]
+    #         return df_recent_t
 
-        self.transaction_with_itemmeta_recent = _extract_recent_transaction()
+    #     self.transaction_with_itemmeta_recent = _extract_recent_transaction()
 
-        # これらの各カラムについて、人気ランキング的なモノを取得していく？
-        def _create_popular_ranking_recently_with_each_category():
-            df_popular_target = feature_eng.create_popular_ranking_in_transaction_log(
-                df_transaction=self.transaction_with_itemmeta_recent,
-                target_column='product_type_name',
-            )
+    #     # これらの各カラムについて、人気ランキング的なモノを取得していく？
+    #     def _create_popular_ranking_recently_with_each_category():
+    #         df_popular_target = feature_eng.create_popular_ranking_in_transaction_log(
+    #             df_transaction=self.transaction_with_itemmeta_recent,
+    #             target_column='product_type_name',
+    #         )
             
-        self.dfi_popular = _create_popular_ranking_recently_with_each_category()
+    #     self.dfi_popular = _create_popular_ranking_recently_with_each_category()
 
 
 
 
-        self.item_feature_categorical = pd.DataFrame()
-        return self.item_feature_categorical
+    #     self.item_feature_categorical = pd.DataFrame()
+    #     return self.item_feature_categorical
 
 
-if __name__ == '__main__':
+def create_items_features():
+
+
     # DataSetオブジェクトの読み込み
     dataset = DataSet()
     # DataFrameとしてデータ読み込み
@@ -171,12 +242,8 @@ if __name__ == '__main__':
 
     # データをDataFrame型で読み込み
     df_transaction = dataset.df
-    df_sub = dataset.df_sub  # 提出用のサンプル
-    df_customers = dataset.dfu  # 各顧客の情報(メタデータ)
-    df_articles = dataset.dfi  # 各商品の情報(メタデータ)
 
-    item_feature_class = ItemFeatures(dataset=dataset, transaction_train=df_transaction)
-    item_feature = item_feature_class.get_item_feature_numerical()
+    item_feature =SalesLagFeatures(dataset=dataset, transaction_df=dataset.df).get()
 
 
 

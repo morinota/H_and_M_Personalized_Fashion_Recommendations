@@ -1,12 +1,40 @@
-from my_class.dataset import DataSet
-from 
-class FeatureEngineering_item_and_user:
-    def __init__(self, dataset:DataSet, transaction_train) -> None:
-        self.dataset = dataset
-        self.df_train = transaction_train
-        
-    def _create_
+import sys
 
+import pandas as pd
+import numpy as np
+from tqdm import tqdm
+import math
+from my_class.dataset import DataSet
+from abc import ABC, abstractmethod
+from pathlib import Path
+import pickle
+from collections import defaultdict
+from typing import List, Dict, Any, Union
+import os
+
+DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
+
+# 特徴量生成のベースとなるクラス
+class User_and_itemFeatures(ABC):
+    @abstractmethod
+    def get(self) -> pd.DataFrame:
+        """
+        customer_id -> features
+        """
+        pass
+
+class AggrFeatures(User_and_itemFeatures):
+    """
+    トランザクションログをベースに、ユーザ毎のNumericalデータの特徴量作成。
+    Numericalデータとして使えそうなカラムはPriceと
+    basic aggregation features(min, max, mean and etc...)
+    """
+
+    def __init__(self, dataset:DataSet, transactions_df: pd.DataFrame):
+        self.dataset = dataset
+        
+
+    def get(self):
 if __name__ == '__main__':
     # DataSetオブジェクトの読み込み
     dataset = DataSet()

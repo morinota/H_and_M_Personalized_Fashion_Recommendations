@@ -1,5 +1,5 @@
 import sys
-sys.path.append('../')
+
 
 import pandas as pd
 import numpy as np
@@ -211,7 +211,18 @@ class CustomerFeatures(UserFeatures):
         for column_name in columns_list:
             __create_isnull_column(column_name)
 
+    def _create_age_bin_column(self):
+        """ユーザを年齢層毎にグルーピング
+        """
+        self.ageBin = [-1, 19, 29, 39, 49, 59, 69, 119]
+        self.customers_df['age_bins'] = pd.cut(
+            x=self.customers_df['age'],
+            bins=self.ageBin
+        )
+
     def get(self):
+        self._create_isnull_column()
+        self._create_age_bin_column()
         output = (
             self.customers_df[filter(
                 lambda x: x != 'postal_code', self.customers_df.columns)]
@@ -220,35 +231,31 @@ class CustomerFeatures(UserFeatures):
         return output
 
 
-class ArticlesFeatures(UserFeatures):
+class TargetEncodingFeatures(UserFeatures):
     """
-    トランザクションログとアイテムメタデータをベースに、ユーザ毎のNumericalデータの特徴量作成。
-    returns article features: whether category appears in top categories
+    トランザクションログとアイテムメタデータ、ユーザメタデータをベースに、ユーザ特徴量を生成
     """
-
-    def __init__(self, transactions_df, articles, topk=10):
-        # トランザクションログに、アイテムメタデータを付与したもの
-        self.transactions_merged_df = transactions_df.merge(
-            articles, on=('article_id'))
-        # アイテムメタ
-        self.articles = articles
+    def __init__(self, transaction_df:pd.DataFrame, dataset:DataSet, topk:int=10):
+        self.transaction_df = transaction_df
+        self.dataset = dataset
         self.topk = topk
+        # トランザクションログに、アイテムメタデータとユーザメタデータを付与する
+        self.transactions_df = pd.merge(
+            left=self.transaction_df,
+            right=self.dataset.dfi,
+            on='article_id',
+            how='left'
+        )
+        self.transactions_df = pd.merge(
+            left=self.transaction_df,
+            right=self.dataset.dfu,
+            on='customer_id_short',
+            how='left'
+        )
 
     def get(self):
         output_df = None
 
-        # アイテムメタの各カラム毎に繰り返し処理
-        for col in tqdm(self.articles.columns, desc='extracting features'):
-            # もしカラム名に'name'が含まれている=カテゴリ変数ならば...
-            if 'name' in col:
-                if output_df is None:
-                    output_df = self._aggregate_topk(
-                        self.transactions_merged_df, col, self.topk)
-                else:
-                    intermediate_out = self._aggregate_topk(
-                        self.transactions_merged_df, col, self.topk)
-                    output_df = output_df.merge(
-                        intermediate_out, on=('customer_id'))
         return output_df
 
     def _return_value_counts(self, df: pd.DataFrame, column_name: str, k: int) -> List[int]:
@@ -296,12 +303,23 @@ class ArticlesFeatures(UserFeatures):
         )
         return n_top_k
 
+    def _target_encoding(self):
+        """S_i = n_{iy}/n_i を計算する。
+        ここでni はクラスタi に所属しているデータの数、
+        niy はクラスタiに所属していて目的変数が1の数を表している。
+        ex)あるアイテムに対して、クラスタ=20代ユーザのトランザクションに占める、あるアイテムの購入割合
+        """
+
+class SalesLagFeatures(UserFeatures):
+    """各ユーザ(or各ユーザサブカテゴリ)毎の時系列の購入回数のラグを生成する関数
+    """
+
 
 def create_user_features():
     # DataSetオブジェクトの読み込み
     dataset = DataSet()
     # DataFrameとしてデータ読み込み
-    dataset.read_data(c_id_short=True)
+    dataset.read_data(c_id_short=False)
 
 
     # データをDataFrame型で読み込み
@@ -319,6 +337,7 @@ def create_user_features():
 
     print('b')
 
+    # finally join
     user_features = dataset.df_sub[['customer_id', 'customer_id_short']]
     for df_feature in [a, b, c]:
         print(len(df_feature))
@@ -330,6 +349,8 @@ def create_user_features():
         )
 
     print(len(user_features))
+
+    # エクスポート
     feature_dir = os.path.join(DRIVE_DIR, 'input')
     user_features.to_parquet(os.path.join(
         feature_dir, 'user_features_my_fullT.parquet'), index=False)

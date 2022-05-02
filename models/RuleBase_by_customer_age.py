@@ -1,6 +1,7 @@
 from datetime import timedelta
 from msilib import init_database
 from typing import Dict, List, Tuple
+from flask import Config
 import pandas as pd
 from more_itertools import last
 from my_class.dataset import DataSet
@@ -134,7 +135,7 @@ class RuleBaseByCustomerAge:
 
         self.df_t_each_agebin['ldbw'] = tmp['ldbw'].values
 
-    def _f4_add_weekly_sales(self):
+    def _f4_add_quotient_columns(self):
 
         weekly_sales = self.df_t_each_agebin.drop('customer_id_short', axis=1).groupby(
             ['ldbw', 'article_id']).count().reset_index()
@@ -150,7 +151,8 @@ class RuleBaseByCustomerAge:
 
         self.df_t_each_agebin = pd.merge(
             left=self.df_t_each_agebin,
-            right=weekly_sales.loc[weekly_sales['ldbw'] == self.last_ts, ['count']],
+            right=weekly_sales.loc[weekly_sales['ldbw']
+                                   == self.last_ts, ['count']],
             on='article_id',
             suffixes=("", "_targ")
         )
@@ -158,16 +160,103 @@ class RuleBaseByCustomerAge:
         self.df_t_each_agebin['count_targ'].fillna(0, inplace=True)
         del weekly_sales
 
+        self.df_t_each_agebin['quotient'] = (
+            self.df_t_each_agebin['count_targ']/self.df_t_each_agebin['count']
+        )
+
+    def _f5_create_general_pred(self):
+        target_sales = self.df_t_each_agebin.drop(
+            'customer_id_short', axis=1).groupby('article_id')['quotient'].sum()
+        # quotientの合計値の大きい、上位12商品のarticle_idを取得
+        self.general_pred = target_sales.nlargest(n=12).index.tolist()
+
+        # article_idを提出用に整形
+        self.general_pred = ['0' + str(article_id)
+                             for article_id in self.general_pred]
+        self.general_pred_str = ' '.join(self.general_pred)
+        del target_sales
+
+    def _f6_conduct_byfone_2(self):
+        purchase_dict = {}
+
+        # Byfone戦略2つ目
+        tmp = self.df_t_each_agebin.copy()
+        tmp['x'] = ((self.last_ts - tmp['t_dat']) /
+                    np.timedelta64(1, 'D')).astype(int)
+        tmp['dummy_1'] = 1
+        tmp['x'] = tmp[["x", "dummy_1"]].max(axis=1)
+
+        a, b, c, d = 2.5e4, 1.5e5, 2e-1, 1e3
+        tmp['y'] = a / np.sqrt(tmp['x']) + b * np.exp(-c*tmp['x']) - d
+
+        tmp['dummy_0'] = 0
+        tmp['y'] = tmp[["y", "dummy_0"]].max(axis=1)
+        tmp['value'] = tmp['quotient'] * tmp['y']
+
+        tmp = tmp.groupby(['customer_id_short', 'article_id']
+                          ).agg({'value': 'sum'})
+        tmp = tmp.reset_index()
+        tmp = tmp.loc[tmp['value'] > 0]
+        tmp['rank'] = tmp.groupby("customer_id_short")[
+            "value"].rank("dense", ascending=False)
+        tmp = tmp.loc[tmp['rank'] <= 12]
+
+        self.purchase_df = tmp.sort_values(
+            ['customer_id_short', 'value'], ascending=False).reset_index(drop=True)
+        self.purchase_df['prediction'] = '0' + \
+            self.purchase_df['article_id'].astype(str) + ' '
+        self.purchase_df = self.purchase_df.groupby(
+            'customer_id_short').agg({'prediction': sum}).reset_index()
+        self.purchase_df['prediction'] = self.purchase_df['prediction'].str.strip()
+
+    def _f7_prepare_submission(self, uniBin):
+        sub = self.dataset.df_sub[['customer_id_short', 'customer_id']].copy()
+        self.numCustomers = sub.shape[0]
+
+        sub = pd.merge(
+            left=sub, right=self.df_u_each_age_bin[['customer_id_short', 'age']],
+            on='customer_id_short', how='innor',
+        )
+
+        sub = pd.merge(
+            left=sub, right=self.purchase_df, 
+            on='customer_id_short', how='left',
+            suffixes=('', '_ignored')
+        )
+        # レコメンドの不足分を補完
+        sub['prediction'] = sub['prediction'].fillna(self.general_pred_str)
+        sub['prediction'] = sub['prediction'] + ' ' +  self.general_pred_str
+        sub['prediction'] = sub['prediction'].str.strip()
+        sub['prediction'] = sub['prediction'].str[:131]
+        # 最終的には3つ。
+        sub = sub[['customer_id','customer_id_short', 'prediction']]
+        sub.to_csv(f'submission_' + str(uniBin) + '.csv',index=False)
+        print(f'Saved prediction for {uniBin}. The shape is {sub.shape}. \n')
+        print('-'*50)
+
     def create_reccomendation(self):
 
         # 各年齢Bin毎に繰り返し処理
         for unique_age_bin in self.list_UniBins:
             self._f1_extract_df_customer_each_age_bin(unique_age_bin)
             self._f2_merge_transaction_df_and_df_u_each_age_bin(unique_age_bin)
+            self._f3_create_ldbw_column()
+            self._f4_add_quotient_columns()
+            self._f5_create_general_pred()
+            self._f6_conduct_byfone_2()
+            self._f7_prepare_submission(unique_age_bin)
 
-            pass
+        # 各年齢bin毎の結果を結合
+        for i, unique_age_bin in enumerate(self.list_UniBins):
+            df_temp = pd.read_csv(f'submission_' + str(uniBin) + '.csv')
+            if i == 0:
+                self.df_sub = df_temp
+            else:
+                self.df_sub = pd.concat([self.df_sub, df_temp], axis=0)
 
-        self.df_sub = self.dataset.df_sub[['customer_id_short', 'customer_id']]
+        
+        assert self.df_sub.shape[0] == self.numCustomers, f'The number of dfSub rows is not correct. {self.df_sub.shape[0]} vs {self.numCustomers}.'  
+
 
         # 最終的には3つのカラムにする.
         self.df_sub = self.df_sub[[
