@@ -26,7 +26,7 @@ OBJECT_COLUMNS = ['article_id', 'prod_name', 'product_type_name', 'product_group
                   ]
 
 ITEM_CATEGORICAL_COLUMNS = ['article_id',
-                            # 'prod_name', 
+                            # 'prod_name',
                             'product_type_name', 'product_group_name',
                             'graphical_appearance_name', 'colour_group_name',
                             'perceived_colour_value_name', 'perceived_colour_master_name',
@@ -57,8 +57,6 @@ class SalesLagFeatures(ItemFeatures):
             'int')
         self.dataset.dfi['article_id'] = self.dataset.dfi['article_id'].astype(
             'int')
-
-
 
     def get(self) -> pd.DataFrame:
 
@@ -176,17 +174,49 @@ class SalesLagFeatures(ItemFeatures):
             del roll_mean_5, roll_mean_10, roll_var_5, roll_var_10, rolling_item_feature
 
     def _create_expanding_window_features(self):
-        pass
+        self.time_series_expanding_sales_count_dict = {}
+        # 各アイテム(or各アイテムサブカテゴリ)毎に繰り返し処理
+        for target_column in ITEM_CATEGORICAL_COLUMNS:
+            print(f'create expanding window features of {target_column}')
+            df_sample: pd.DataFrame = self.time_series_sales_count_dict[target_column]
+
+            # Expanding特徴量の生成
+            expanding_mean = df_sample.shift(
+                1, axis=1).expanding(axis=1).mean()
+            expanding_var = df_sample.shift(
+                1, axis=1).expanding(axis=1).var()
+
+            # 結合用にstacking
+            expanding_mean = expanding_mean.stack().reset_index().rename(
+                columns={0: f'expanding_mean_salescount_{target_column}'})
+            expanding_var = expanding_var.stack().reset_index().rename(
+                columns={0: f'expanding_var_salescount_{target_column}'})
+
+            # 結合
+            expanding_item_feature = pd.DataFrame()
+            for i, df_feature in enumerate([expanding_mean, expanding_var]):
+                if i == 0:
+                    expanding_item_feature = df_feature
+                else:
+                    expanding_item_feature = pd.merge(
+                        left=expanding_item_feature, right=df_feature,
+                        on=[target_column, 't_dat'], how='left'
+                    )
+            # dictに格納
+            self.time_series_expanding_sales_count_dict[target_column] = expanding_item_feature
+
+            del expanding_mean, expanding_var, expanding_item_feature
 
     def _export_each_timeseries_features(self):
 
         for target_column in ITEM_CATEGORICAL_COLUMNS:
             lag_features = self.time_series_lag_sales_count_dict[target_column]
             rolling_features = self.time_series_rolling_sales_count_dict[target_column]
+            expanding_features = self.time_series_expanding_sales_count_dict[target_column]
 
             # 結合
             time_series_item_features = pd.DataFrame()
-            for i, df_feature in enumerate([lag_features, rolling_features]):
+            for i, df_feature in enumerate([lag_features, rolling_features, expanding_features]):
                 if i == 0:
                     time_series_item_features = df_feature
                 else:
@@ -315,6 +345,23 @@ class NumericalFeature(ItemFeatures):
         self.item_feature_categorical = pd.DataFrame()
         return self.item_feature_categorical
 
+class TargetEncodingFeature(ItemFeatures):
+    def __init__(self, dataset: DataSet, transaction_df: pd.DataFrame) -> None:
+        self.transaction_df = transaction_df
+        self.dataset = dataset
+        # article_idのデータ型を統一しておく
+        self.transaction_df['article_id'] = self.transaction_df['article_id'].astype(
+            'int')
+        self.dataset.dfi['article_id'] = self.dataset.dfi['article_id'].astype(
+            'int')
+
+    def get(self) -> pd.DataFrame:
+
+        self.item_feature = pd.DataFrame()
+
+        return self.item_feature
+
+
 
 def create_items_features():
 
@@ -326,6 +373,7 @@ def create_items_features():
     # データをDataFrame型で読み込み
     df_transaction = dataset.df
 
-    sales_lag_features = SalesLagFeatures(dataset=dataset, transaction_df=dataset.df)
+    sales_lag_features = SalesLagFeatures(
+        dataset=dataset, transaction_df=dataset.df)
     print('create sales lag feature instance')
     sales_lag_features.get()
