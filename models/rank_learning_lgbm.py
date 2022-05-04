@@ -569,7 +569,7 @@ class RankLearningLgbm:
         # Saving memoryの為、学習用と検証用のデータセットを削除
         del self.train, self.valid
 
-    def _prepare_prediction(self):
+    def _prepare_candidate(self):
         """予測の準備をするメソッド。
         具体的には、
         - sample_submissionを読み込んでおく.
@@ -592,36 +592,48 @@ class RankLearningLgbm:
         self.candidates['article_id'] = self.candidates['article_id'].astype(
             'int')
 
-        # ユーザ特徴量＆アイテム特徴量を結合
-        self.candidates = (
-            self.candidates
-            .merge(self.user_features, on=('customer_id_short'))
-            .merge(self.item_features, on=('article_id'))
-        )
-        # Candidatesのt_datカラムを生成&検証週の最終日に
-        last_date_in_test_week = pd.to_datetime('2020-09-27') - timedelta(days=7* (105-self.val_week_id))
-        self.candidates['t_dat'] = pd.to_datetime(last_date_in_test_week)
-        # ラグ特徴量をマージ
-        for target_column in ITEM_CATEGORICAL_COLUMNS:
-            # 対象サブカテゴリのラグ特徴量を取り出す
-            lag_feature_df = self.item_lag_features[target_column]
-            # マージ
-            self.candidates = pd.merge(self.candidates, lag_feature_df,
-                                       on=[target_column, 't_dat'], how='left'
-                                       )
+
 
     def _predict_using_batches(self):
         """実際に予測を実行するメソッド。メモリの関係からbatch_size数ずつ入力していく.
         Predict using batches, otherwise doesn't fit into memory.
         """
+        def _merge_featureData_to_candidate(candidates_batch:pd.DataFrame):
+            """バッチサイズ分のCandidatesに対して、特徴量データをマージする関数.
+            """
+
+            # ユーザ特徴量＆アイテム特徴量を結合
+            candidates_batch = (
+                candidates_batch
+                .merge(self.user_features, on=('customer_id_short'))
+                .merge(self.item_features, on=('article_id'))
+            )
+            # Candidatesのt_datカラムを生成&検証週の最終日に
+            last_date_in_test_week = pd.to_datetime('2020-09-27') - timedelta(days=7* (105-self.val_week_id))
+            self.candidates['t_dat'] = pd.to_datetime(last_date_in_test_week)
+
+            # ラグ特徴量をマージ
+            for target_column in ITEM_CATEGORICAL_COLUMNS:
+                # 対象サブカテゴリのラグ特徴量を取り出す
+                lag_feature_df = self.item_lag_features[target_column]
+                # マージ
+                candidates_batch = pd.merge(candidates_batch, lag_feature_df,
+                                        on=[target_column, 't_dat'], how='left'
+                                        )
+
+            return candidates_batch
+
         # 予測値のリストをInitialize
         self.preds = []
         # batchサイズ分ずつ、予測していく.
-        batch_size = 1_000_000
+        batch_size = 100_000
         for bucket in tqdm(range(0, len(self.candidates), batch_size)):
+            # candidateからバッチサイズ分抽出
+            candidates_batch = self.candidates.iloc[bucket:(bucket +batch_size), :]
+            # 特徴量データを結合する
+            candidates_batch = _merge_featureData_to_candidate(candidates_batch)
             # 特徴量を用意。
-            X_pred = self.candidates.iloc[bucket: (bucket +
-                                          batch_size)][self.feature_names]
+            X_pred = candidates_batch[self.feature_names]
             # モデルに特徴量を入力して、出力値を取得
             outputs = self.ranker.predict(X=X_pred)
             # -> (ユニークユーザ × num_candidate_predict)個のうち、バッチサイズ分のトランザクションの発生確率を返す?
@@ -662,7 +674,7 @@ class RankLearningLgbm:
             ' '.join(['0'+str(art) for art in self.dummy_list_2w]), inplace=True)
 
     def create_reccomendation(self) -> pd.DataFrame:
-        self._prepare_prediction()
+        self._prepare_candidate()
         self._predict_using_batches()
         self._prepare_submission()
 
