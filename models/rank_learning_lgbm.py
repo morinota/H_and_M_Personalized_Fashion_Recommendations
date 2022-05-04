@@ -627,7 +627,7 @@ class RankLearningLgbm:
         # 予測値のリストをInitialize
         self.preds = []
         # batchサイズ分ずつ、予測していく.
-        batch_size = 100_000
+        batch_size = 1_000_000
         for bucket in tqdm(range(0, len(self.candidates), batch_size)):
             # candidateからバッチサイズ分抽出
             candidates_batch = self.candidates.iloc[bucket:(bucket +batch_size), :]
