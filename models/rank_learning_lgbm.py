@@ -552,6 +552,7 @@ class RankLearningLgbm:
         # Categorical Featureの指定
         self.categorical_feature_names:List[str] = list(
             X_train.select_dtypes(include=int).columns)
+        print(self.categorical_feature_names)
         # 学習
         self.ranker = self.ranker.fit(
             X=X_train,
@@ -559,8 +560,8 @@ class RankLearningLgbm:
             group=self.train_baskets,
             eval_set=[(X_valid, y_valid)],
             eval_group=[list(self.valid_baskets)],
-            feature_name=self.feature_names,
-            categorical_feature=self.categorical_feature_names
+            # feature_name=self.feature_names,
+            # categorical_feature=self.categorical_feature_names
         )
 
         # Feature Importanceを取得
