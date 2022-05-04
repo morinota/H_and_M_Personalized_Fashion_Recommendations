@@ -449,4 +449,4 @@ def create_items_features():
     # エクスポート
     feature_dir = os.path.join(DRIVE_DIR, 'input')
     item_numerical_feature.to_parquet(os.path.join(
-        feature_dir, 'item_numerical_features_my_fullT.parquet'), index=False)
+        feature_dir, 'item_features_my_fullT.parquet'), index=False)
