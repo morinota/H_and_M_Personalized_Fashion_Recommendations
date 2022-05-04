@@ -75,14 +75,17 @@ class RankLearningLgbm:
         """
         # アイテム特徴量
         if Config.use_which_item_features == 'original':
-            self.item_features = pd.read_csv(os.path.join(
-                DRIVE_DIR, 'input/item_features.csv')).reset_index()
+            self.item_features = pd.read_parquet(os.path.join(
+                DRIVE_DIR, 'input/item_features.parquet')).reset_index()
         else:
             self.item_features = pd.read_csv(os.path.join(
                 DRIVE_DIR, f'input/item_features_{Config.use_which_item_features}.csv')).reset_index()
 
         # ユーザ特徴量
-        if Config.use_which_item_features != 'original':
+        if Config.use_which_item_features == 'original':
+            self.user_features = pd.read_parquet(os.path.join(
+                DRIVE_DIR, 'input/user_features.parquet')).reset_index()
+        else:
             self.user_features = pd.read_csv(os.path.join(
                 DRIVE_DIR, f'input/user_features_{Config.use_which_user_features}.csv')).reset_index()
 
