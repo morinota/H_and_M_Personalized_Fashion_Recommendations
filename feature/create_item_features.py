@@ -269,33 +269,38 @@ class NumericalFeature(ItemFeatures):
         # アイテム毎のトランザクション価格に対して、たくさん特徴量を生成
         output_df_price = (
             self.groupby['price']
-            .agg({
-                'mean_item_price': 'mean',
-                'std_item_price': lambda x: x.std(),
-                'max_item_price': 'max',
-                'min_item_price': 'min',
-                'median_item_price': 'median',
-                'sum_item_price': 'sum',
-                # maxとminの差
-                'max_minus_min_item_price': lambda x: x.max()-x.min(),
-                # maxとmeanの差
-                'max_minus_mean_item_price': lambda x: x.max()-x.mean(),
-                # minとmeanの差
-                'mean_minus_min_item_price': lambda x: x.mean()-x.min(),
-                # sum/mean = count (アイテムのトランザクション回数)
-                'count_item_price': lambda x: x.sum() / x.mean(),
-                # 小数点以下だけ取り出した要素
-                'mean_item_price_under_point': lambda x: math.modf(x.mean())[0],
-                'mean_item_price_over_point': lambda x: math.modf(x.mean())[1],
-                'max_item_price_under_point': lambda x: math.modf(x.max())[0],
-                'max_item_price_over_point': lambda x: math.modf(x.max())[1],
-                'min_item_price_under_point': lambda x: math.modf(x.min())[0],
-                'min_item_price_over_point': lambda x: math.modf(x.min())[1],
-                'median_item_price_under_point': lambda x: math.modf(x.median())[0],
-                'median_item_price_over_point': lambda x: math.modf(x.median())[1],
-                'sum_item_price_under_point': lambda x: math.modf(x.sum())[0],
-                # 'sum_item_price_over_point': lambda x: math.modf(x.sum())[1],
-            })
+            .agg(
+                mean_item_price='mean',
+                std_item_price=lambda x: x.std()
+                # dictでaggとrenameを同時に行うのが非推奨らしい.
+                #     {
+                #     'mean_item_price': 'mean',
+                #     'std_item_price': lambda x: x.std(),
+                #     'max_item_price': 'max',
+                #     'min_item_price': 'min',
+                #     'median_item_price': 'median',
+                #     'sum_item_price': 'sum',
+                #     # maxとminの差
+                #     'max_minus_min_item_price': lambda x: x.max()-x.min(),
+                #     # maxとmeanの差
+                #     'max_minus_mean_item_price': lambda x: x.max()-x.mean(),
+                #     # minとmeanの差
+                #     'mean_minus_min_item_price': lambda x: x.mean()-x.min(),
+                #     # sum/mean = count (アイテムのトランザクション回数)
+                #     'count_item_price': lambda x: x.sum() / x.mean(),
+                #     # 小数点以下だけ取り出した要素
+                #     'mean_item_price_under_point': lambda x: math.modf(x.mean())[0],
+                #     'mean_item_price_over_point': lambda x: math.modf(x.mean())[1],
+                #     'max_item_price_under_point': lambda x: math.modf(x.max())[0],
+                #     'max_item_price_over_point': lambda x: math.modf(x.max())[1],
+                #     'min_item_price_under_point': lambda x: math.modf(x.min())[0],
+                #     'min_item_price_over_point': lambda x: math.modf(x.min())[1],
+                #     'median_item_price_under_point': lambda x: math.modf(x.median())[0],
+                #     'median_item_price_over_point': lambda x: math.modf(x.median())[1],
+                #     'sum_item_price_under_point': lambda x: math.modf(x.sum())[0],
+                #     'sum_item_price_over_point': lambda x: math.modf(x.sum())[1],
+                # }
+            )
             .set_index('article_id')
             .astype('float32')  # numerical 特徴量は全てfloatに
         )
