@@ -80,7 +80,8 @@ class RankLearningLgbm:
         else:
             self.item_features = pd.read_csv(os.path.join(
                 DRIVE_DIR, f'input/item_features_{Config.use_which_item_features}.csv')).reset_index()
-
+            # 必要な特徴量のカラムのみ残す.
+            self.item_features = self.item_features[['article_id'] + Config.item_basic_feature_names + Config.item_numerical_feature_names]
         # ユーザ特徴量
         if Config.use_which_item_features == 'original':
             self.user_features = pd.read_parquet(os.path.join(
@@ -88,10 +89,10 @@ class RankLearningLgbm:
         else:
             self.user_features = pd.read_csv(os.path.join(
                 DRIVE_DIR, f'input/user_features_{Config.use_which_user_features}.csv')).reset_index()
+            # 必要なカラムのみ残す
+            self.user_features = self.user_features[['customer_id_short'] + Config.user_numerical_feature_names]
 
-        # 必要な特徴量のカラムのみ残す.
-        self.item_features = self.item_features[['article_id'] + Config.item_basic_feature_names + Config.item_numerical_feature_names]
-        self.user_features = self.user_features[['customer_id_short'] + Config.user_numerical_feature_names]
+        
 
         # ラグ特徴量
         self.item_lag_features = {}
