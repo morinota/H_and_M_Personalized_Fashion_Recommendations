@@ -81,8 +81,8 @@ class RankLearningLgbm:
                 DRIVE_DIR, f'input/item_features_{Config.use_which_item_features}.parquet')).reset_index()
 
         if Config.use_which_item_features == 'original':
-            self.user_features = pd.read_parquet(os.path.join(
-                DRIVE_DIR, f'input/user_features_{Config.use_which_user_features}.parquet')).reset_index()
+            self.user_features = pd.read_csv(os.path.join(
+                DRIVE_DIR, f'input/user_features_{Config.use_which_user_features}.csv')).reset_index()
 
         print(f'length of user_features is {len(self.user_features)}')
         # customer_id_shortカラムを作成
