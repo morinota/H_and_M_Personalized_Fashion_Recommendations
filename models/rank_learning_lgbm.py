@@ -593,8 +593,9 @@ class RankLearningLgbm:
             group=self.train_baskets,
             eval_set=[(X_valid, y_valid)],
             eval_group=[list(self.valid_baskets)],
-            # feature_name=self.feature_names,
-            # categorical_feature=self.categorical_feature_names
+            eval_metric="ndcg",
+            feature_name=self.feature_names,
+            categorical_feature=self.categorical_feature_names
         )
 
         # Feature Importanceを取得
