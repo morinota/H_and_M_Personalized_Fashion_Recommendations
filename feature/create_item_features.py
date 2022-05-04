@@ -294,7 +294,7 @@ class NumericalFeature(ItemFeatures):
                 'median_item_price_under_point': lambda x: math.modf(x.median())[0],
                 'median_item_price_over_point': lambda x: math.modf(x.median())[1],
                 'sum_item_price_under_point': lambda x: math.modf(x.sum())[0],
-                'sum_item_price_over_point': lambda x: math.modf(x.sum())[1],
+                # 'sum_item_price_over_point': lambda x: math.modf(x.sum())[1],
             })
             .set_index('article_id')
             .astype('float32')  # numerical 特徴量は全てfloatに
