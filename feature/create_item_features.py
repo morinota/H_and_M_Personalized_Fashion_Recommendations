@@ -2,6 +2,7 @@ from re import S
 from textwrap import fill
 import pandas as pd
 import numpy as np
+from regex import B
 from pytest import Item
 from tqdm import tqdm
 import math
@@ -233,87 +234,112 @@ class SalesLagFeatures(ItemFeatures):
 
 
 class NumericalFeature(ItemFeatures):
-    def get_item_feature_numerical(self):
+    def __init__(self, dataset: DataSet, transaction_df: pd.DataFrame) -> None:
+        self.transaction_df = transaction_df
+        self.dataset = dataset
+        # article_idのデータ型を統一しておく
+        self.transaction_df['article_id'] = self.transaction_df['article_id'].astype(
+            'int')
+        self.dataset.dfi['article_id'] = self.dataset.dfi['article_id'].astype(
+            'int')
 
-        def _merge_transaction_with_item_meta():
-            """# トランザクションログに対して、アイテムメタをマージ。
-            """
-            transaction_more = pd.merge(
-                self.transaction_train,
-                self.dfi, on='article_id'
-            )
-            return transaction_more
+        # トランザクションログに、アイテムメタデータとユーザメタデータを付与する
+        self.transaction_df = pd.merge(
+            left=self.transaction_df,
+            right=self.dataset.dfi,
+            on='article_id',
+            how='left'
+        )
 
-        self.transaction_with_itemmeta = _merge_transaction_with_item_meta()
+    def get(self) -> pd.DataFrame:
 
-        def _grouping_transaction_each_item():
-            # トランザクションログを、各アイテム毎にグルーピング
-            grouped = self.transaction_with_itemmeta.groupby('article_id')
+        numerical_features = self._get_item_feature_numerical()
 
-            return grouped
+        return numerical_features
 
-        self.groupby_df = _grouping_transaction_each_item()
+    def _get_item_feature_numerical(self):
+        """アイテムに関するNumerical特徴量を生成する関数
+        Returns
+        -------
+        _type_
+            _description_
+        """
+        self.groupby = self.transaction_df.groupby(by='article_id')
 
-        def _create_many_numerical_feature():
-            # アイテム毎のトランザクション価格に対して、たくさん特徴量を生成
-            output_df_price = (
-                self.groupby_df['price']
-                .agg({
-                    'mean_item_price': 'mean',
-                    'std_item_price': lambda x: x.std(),
-                    'max_item_price': 'max',
-                    'min_item_price': 'min',
-                    'median_item_price': 'median',
-                    'sum_item_price': 'sum',
-                    # maxとminの差
-                    'max_minus_min_item_price': lambda x: x.max()-x.min(),
-                    # maxとmeanの差
-                    'max_minus_mean_item_price': lambda x: x.max()-x.mean(),
-                    # minとmeanの差
-                    'mean_minus_min_item_price': lambda x: x.mean()-x.min(),
-                    # sum/mean = count (アイテムのトランザクション回数)
-                    'count_item_price': lambda x: x.sum() / x.mean(),
-                    # 小数点以下だけ取り出した要素
-                    'mean_item_price_under_point': lambda x: math.modf(x.mean())[0],
-                    'mean_item_price_over_point': lambda x: math.modf(x.mean())[1],
-                    'max_item_price_under_point': lambda x: math.modf(x.max())[0],
-                    'max_item_price_over_point': lambda x: math.modf(x.max())[1],
-                    'min_item_price_under_point': lambda x: math.modf(x.min())[0],
-                    'min_item_price_over_point': lambda x: math.modf(x.min())[1],
-                    'median_item_price_under_point': lambda x: math.modf(x.median())[0],
-                    'median_item_price_over_point': lambda x: math.modf(x.median())[1],
-                    'sum_item_price_under_point': lambda x: math.modf(x.sum())[0],
-                    'sum_item_price_over_point': lambda x: math.modf(x.sum())[1],
-                })
-                .set_index('article_id')
-                .astype('float32')
-            )
+        # アイテム毎のトランザクション価格に対して、たくさん特徴量を生成
+        output_df_price = (
+            self.groupby['price']
+            .agg({
+                'mean_item_price': 'mean',
+                'std_item_price': lambda x: x.std(),
+                'max_item_price': 'max',
+                'min_item_price': 'min',
+                'median_item_price': 'median',
+                'sum_item_price': 'sum',
+                # maxとminの差
+                'max_minus_min_item_price': lambda x: x.max()-x.min(),
+                # maxとmeanの差
+                'max_minus_mean_item_price': lambda x: x.max()-x.mean(),
+                # minとmeanの差
+                'mean_minus_min_item_price': lambda x: x.mean()-x.min(),
+                # sum/mean = count (アイテムのトランザクション回数)
+                'count_item_price': lambda x: x.sum() / x.mean(),
+                # 小数点以下だけ取り出した要素
+                'mean_item_price_under_point': lambda x: math.modf(x.mean())[0],
+                'mean_item_price_over_point': lambda x: math.modf(x.mean())[1],
+                'max_item_price_under_point': lambda x: math.modf(x.max())[0],
+                'max_item_price_over_point': lambda x: math.modf(x.max())[1],
+                'min_item_price_under_point': lambda x: math.modf(x.min())[0],
+                'min_item_price_over_point': lambda x: math.modf(x.min())[1],
+                'median_item_price_under_point': lambda x: math.modf(x.median())[0],
+                'median_item_price_over_point': lambda x: math.modf(x.median())[1],
+                'sum_item_price_under_point': lambda x: math.modf(x.sum())[0],
+                'sum_item_price_over_point': lambda x: math.modf(x.sum())[1],
+            })
+            .set_index('article_id')
+            .astype('float32')  # numerical 特徴量は全てfloatに
+        )
 
-            # トランザクションのオンライン/オフラインに対して、特徴量を作成
-            output_df_sales_channel_id = (
-                self.groupby_df['sales_channel_id']
-                .agg({
-                    'item_mean_offline_or_online': 'mean',
-                    'item_median_offline_or_online': 'median',
-                    'item_sum_offline_or_online': 'sum'
-                })
-                .set_index('customer_id_short')
-                .astype('float32')
-            )
+        # トランザクションのオンライン/オフラインに対して、特徴量を作成
+        output_df_sales_channel_id = (
+            self.groupby['sales_channel_id']
+            .agg({
+                'item_mean_offline_or_online': 'mean',
+                'item_median_offline_or_online': 'median',
+                'item_sum_offline_or_online': 'sum'
+            })
+            .set_index('article_id')
+            .astype('float32')  # numerical 特徴量は全てfloatに
+        )
 
-            # 横に結合
-            output_df = pd.merge(
-                output_df_price,
-                output_df_sales_channel_id,
-                how='left',
-                left_index=True, right_index=True
-            )
+        # 横に結合
+        self.output_df = pd.merge(
+            output_df_price,
+            output_df_sales_channel_id,
+            how='left',
+            left_index=True, right_index=True
+        )
 
-            return output_df
+        return self.output_df
 
-        self.item_feature_numerical_from_transaction = _create_many_numerical_feature()
 
-        return self.item_feature_numerical_from_transaction
+class CategoricalFeature(ItemFeatures):
+    def __init__(self, dataset: DataSet, transaction_df: pd.DataFrame) -> None:
+        self.transaction_df = transaction_df
+        self.dataset = dataset
+        # article_idのデータ型を統一しておく
+        self.transaction_df['article_id'] = self.transaction_df['article_id'].astype(
+            'int')
+        self.dataset.dfi['article_id'] = self.dataset.dfi['article_id'].astype(
+            'int')
+
+        # トランザクションログに、アイテムメタデータとユーザメタデータを付与する
+        self.transaction_df = pd.merge(
+            left=self.transaction_df,
+            right=self.dataset.dfi,
+            on='article_id',
+            how='left'
+        )
 
     def get_item_feature_categorical(self):
 
@@ -345,6 +371,7 @@ class NumericalFeature(ItemFeatures):
         self.item_feature_categorical = pd.DataFrame()
         return self.item_feature_categorical
 
+
 class TargetEncodingFeature(ItemFeatures):
     def __init__(self, dataset: DataSet, transaction_df: pd.DataFrame) -> None:
         self.transaction_df = transaction_df
@@ -362,7 +389,6 @@ class TargetEncodingFeature(ItemFeatures):
         return self.item_feature
 
 
-
 def create_items_features():
 
     # DataSetオブジェクトの読み込み
@@ -373,7 +399,19 @@ def create_items_features():
     # データをDataFrame型で読み込み
     df_transaction = dataset.df
 
+    # item_lag_features
     sales_lag_features = SalesLagFeatures(
         dataset=dataset, transaction_df=dataset.df)
     print('create sales lag feature instance')
     sales_lag_features.get()
+
+    # numerical features
+    numerical_item_feature = NumericalFeature(
+        dataset=dataset, transaction_df=dataset.df
+    )
+    item_numerical_feature = numerical_item_feature.get()
+
+    # エクスポート
+    feature_dir = os.path.join(DRIVE_DIR, 'input')
+    item_numerical_feature.to_parquet(os.path.join(
+        feature_dir, 'item_numerical_features_my_fullT.parquet'), index=False)
