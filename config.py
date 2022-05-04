@@ -38,7 +38,8 @@ class Config:
     use_which_item_features = 'my_fullT'
     # 特徴量の種類
     item_basic_feature_names = [
-        'product_code', 'prod_name',
+        # 'product_code', 
+        # 'prod_name', 
         'product_type_name', 'product_group_name',
         'graphical_appearance_name', 'colour_group_name',
         'perceived_colour_value_name',
