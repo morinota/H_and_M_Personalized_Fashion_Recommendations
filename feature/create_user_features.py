@@ -332,14 +332,14 @@ def create_user_features():
     a = AggrFeatures(transactions_df=df_transaction).get().reset_index()
     print('a')
 
-    b = CountFeatures(df_transaction).get().reset_index()
+    # b = CountFeatures(df_transaction).get().reset_index()
     c = CustomerFeatures(df_customers).get().reset_index()
 
     print('b')
 
     # finally join
     user_features = dataset.df_sub[['customer_id', 'customer_id_short']]
-    for df_feature in [a, b, c]:
+    for df_feature in [a, c]:
         print(len(df_feature))
         user_features = pd.merge(
             left=user_features,

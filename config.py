@@ -34,7 +34,7 @@ class Config:
     # use_which_user_features = 'original' 
     use_which_user_features = 'my_fullT'
 
-    use_which_item_features = 'original' 
+    use_which_item_features = 'my_fullT' 
 
 
 
