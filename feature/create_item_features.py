@@ -400,10 +400,10 @@ def create_items_features():
     df_transaction = dataset.df
 
     # item_lag_features
-    sales_lag_features = SalesLagFeatures(
-        dataset=dataset, transaction_df=dataset.df)
-    print('create sales lag feature instance')
-    sales_lag_features.get()
+    # sales_lag_features = SalesLagFeatures(
+    #     dataset=dataset, transaction_df=dataset.df)
+    # print('create sales lag feature instance')
+    # sales_lag_features.get()
 
     # numerical features
     numerical_item_feature = NumericalFeature(
