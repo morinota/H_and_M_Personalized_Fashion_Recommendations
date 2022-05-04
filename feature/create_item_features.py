@@ -271,13 +271,13 @@ class NumericalFeature(ItemFeatures):
             self.groupby['price']
             .agg(
                 mean_item_price='mean',
-                std_item_price=lambda x: x.std()
+                std_item_price=lambda x: x.std(),
                 max_item_price='max',
                 min_item_price='min',
                 median_item_price='median',
                 sum_item_price='sum',
                 # maxとminの差
-                max_minus_min_item_price: lambda x: x.max()-x.min(),
+                max_minus_min_item_price= lambda x: x.max()-x.min(),
                 # maxとmeanの差
                 max_minus_mean_item_price=lambda x: x.max()-x.mean(),
                 # minとmeanの差
