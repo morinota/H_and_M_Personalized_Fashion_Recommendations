@@ -529,7 +529,8 @@ class RankLearningLgbm:
             feature_fraction=Config.feature_fraction,
             importance_type='gain',
             verbose=10,
-            ndcg_eval_at=[3, 5]
+            ndcg_eval_at=[3, 5],
+            class_weight='balanced'
         )
         # 一応、学習用データの最終日を取得し、出力
         last_date_train_data = self.train['t_dat'].max()
