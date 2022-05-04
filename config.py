@@ -35,7 +35,16 @@ class Config:
     use_which_user_features = 'my_fullT'
 
     use_which_item_features = 'my_fullT' 
+    # 特徴量の種類
+    item_lag_feature_names = [
 
+    ]
+    item_numerical_feature_names = [
+
+    ]
+
+    user_numerical_feature_names = []
+    user_lag_feature_names = []
 
 
     # ===========================================================================
