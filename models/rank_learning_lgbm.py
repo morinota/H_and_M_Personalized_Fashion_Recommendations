@@ -394,14 +394,28 @@ class RankLearningLgbm:
         # データ型を一応変換しておく。
         self.negatives_df['article_id'] = self.negatives_df['article_id'].astype(
             'int')
-        # negatives_df(<=候補アイテム)にユーザ特徴量＆アイテム特徴量を結合する。
+        
+        # negatives_df(<=候補アイテム)に特徴量を結合。
         self.negatives_df = (
             self.negatives_df
             .merge(self.user_features, on=('customer_id_short'))
             .merge(self.item_features, on=('article_id'))
         )
+        # ラグ特徴量をマージ
+        for target_column in ITEM_CATEGORICAL_COLUMNS:
+            # 対象サブカテゴリのラグ特徴量を取り出す
+            lag_feature_df = self.item_lag_features[target_column]
+            # t_datをobject型からdatetime型に
+            lag_feature_df['t_dat'] = pd.to_datetime(lag_feature_df['t_dat'])
+
+            # マージ
+            self.negatives_df = pd.merge(self.negatives_df, lag_feature_df,
+                               on=[target_column, 't_dat'], how='left'
+                               )
+
         # negatives_dfのLabelカラムを0にする。(重複ない??)
         self.negatives_df['label'] = 0
+        print(f'negative_df columns is {self.negatives_df.columns}')
 
     def _append_negatives_for_valid_using_lastDate_fromTrain(self):
         """検証用データも同様の手順で、negativeを作る?
@@ -427,15 +441,29 @@ class RankLearningLgbm:
         # データ型を一応変換しておく。
         self.negatives_df_valid['article_id'] = self.negatives_df_valid['article_id'].astype(
             'int')
-        # negatives_df(<=候補アイテム)にユーザ特徴量＆アイテム特徴量を結合する。
+
+        # negatives_df(<=候補アイテム)に特徴量を結合。
         self.negatives_df_valid = (
             self.negatives_df_valid
             .merge(self.user_features, on=('customer_id_short'))
             .merge(self.item_features, on=('article_id'))
         )
+        # ラグ特徴量をマージ
+        for target_column in ITEM_CATEGORICAL_COLUMNS:
+            # 対象サブカテゴリのラグ特徴量を取り出す
+            lag_feature_df = self.item_lag_features[target_column]
+            # t_datをobject型からdatetime型に
+            lag_feature_df['t_dat'] = pd.to_datetime(lag_feature_df['t_dat'])
+
+            # マージ
+            self.negatives_df_valid = pd.merge(self.negatives_df_valid, lag_feature_df,
+                               on=[target_column, 't_dat'], how='left'
+                               )
+
         # negatives_dfのLabelカラムを0にする。(重複ない??)
         self.negatives_df_valid['label'] = 0
 
+        print(f'negative_df_valid columns is {self.negatives_df_valid.columns}')
     def _merge_train_and_negatives(self):
         """学習データのPositiveレコードとNegativeレコードを縦にくっつける。
         """

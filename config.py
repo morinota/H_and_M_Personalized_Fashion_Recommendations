@@ -13,7 +13,7 @@ class Config:
     run_for_submittion = False  # bool
 
     # 5%サンプリングを使うか、フルサンプリングを使うか。
-    use_full_sampling = True  # bool
+    use_full_sampling = False # bool
 
     # ==========================================================================
     # ランク学習用のCandidate
@@ -53,12 +53,12 @@ class Config:
         'max_minus_min_item_price', 'max_minus_mean_item_price',
         'mean_minus_min_item_price', 'count_item_price',
         'mean_item_price_under_point', 'mean_item_price_over_point',
-        # 'max_item_price_under_point', 'max_item_price_over_point',
-        # 'min_item_price_under_point', 'min_item_price_over_point',
-        # 'median_item_price_under_point', 'median_item_price_over_point',
-        # 'sum_item_price_under_point', 'sum_item_price_over_point',
-        # 'item_mean_offline_or_online', 'item_median_offline_or_online',
-        # 'item_sum_offline_or_online'
+        'max_item_price_under_point', 'max_item_price_over_point',
+        'min_item_price_under_point', 'min_item_price_over_point',
+        'median_item_price_under_point', 'median_item_price_over_point',
+        'sum_item_price_under_point', 'sum_item_price_over_point',
+        'item_mean_offline_or_online', 'item_median_offline_or_online',
+        'item_sum_offline_or_online'
     ]
 
     item_categorical_feature_names = []
@@ -72,14 +72,14 @@ class Config:
         'sum_transaction_price', 'max_minus_min_transaction_price',
         'max_minus_mean_transaction_price', 'mean_minus_min_transaction_price',
         'count_transaction_price', 'mean_transaction_price_under_point',
-        # 'mean_transaction_price_over_point',
-        # 'max_transaction_price_under_point', 'max_transaction_price_over_point',
-        # 'min_transaction_price_under_point', 'min_transaction_price_over_point',
-        # 'median_transaction_price_under_point',
-        # 'median_transaction_price_over_point',
-        # 'sum_transaction_price_under_point', 'sum_transaction_price_over_point',
-        # 'mean_sales_channel_id', 'median_sales_channel_id',
-        # 'sum_sales_channel_id'
+        'mean_transaction_price_over_point',
+        'max_transaction_price_under_point', 'max_transaction_price_over_point',
+        'min_transaction_price_under_point', 'min_transaction_price_over_point',
+        'median_transaction_price_under_point',
+        'median_transaction_price_over_point',
+        'sum_transaction_price_under_point', 'sum_transaction_price_over_point',
+        'mean_sales_channel_id', 'median_sales_channel_id',
+        'sum_sales_channel_id'
     ]
     user_lag_feature_names = []
 
