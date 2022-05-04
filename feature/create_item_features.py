@@ -301,7 +301,6 @@ class NumericalFeature(ItemFeatures):
                 #     'sum_item_price_over_point': lambda x: math.modf(x.sum())[1],
                 # }
             )
-            .set_index('article_id')
             .astype('float32')  # numerical 特徴量は全てfloatに
         )
 
@@ -313,7 +312,6 @@ class NumericalFeature(ItemFeatures):
                 'item_median_offline_or_online': 'median',
                 'item_sum_offline_or_online': 'sum'
             })
-            .set_index('article_id')
             .astype('float32')  # numerical 特徴量は全てfloatに
         )
 
