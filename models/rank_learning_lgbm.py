@@ -610,7 +610,7 @@ class RankLearningLgbm:
             )
             # Candidatesのt_datカラムを生成&検証週の最終日に
             last_date_in_test_week = pd.to_datetime('2020-09-27') - timedelta(days=7* (105-self.val_week_id))
-            self.candidates['t_dat'] = pd.to_datetime(last_date_in_test_week)
+            candidates_batch['t_dat'] = pd.to_datetime(last_date_in_test_week)
 
             # ラグ特徴量をマージ
             for target_column in ITEM_CATEGORICAL_COLUMNS:
