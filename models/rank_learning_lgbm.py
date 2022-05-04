@@ -540,7 +540,7 @@ class RankLearningLgbm:
 
         # 特徴量とターゲットを分割
         X_train = self.train.drop(
-            columns=['t_dat', 'customer_id', 'customer_id_short', 'article_id', 'label', 'week'])
+            columns=['t_dat', 'customer_id_short', 'article_id', 'label', 'week'])
         y_train = self.train['label']
         # 特徴量のカラム名を保存
         self.feature_names = list(X_train.columns)
