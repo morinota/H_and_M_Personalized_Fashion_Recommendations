@@ -349,8 +349,13 @@ def create_user_features():
         )
 
     print(len(user_features))
+    print(type(user_features))
+
 
     # エクスポート
     feature_dir = os.path.join(DRIVE_DIR, 'input')
-    user_features.to_parquet(os.path.join(
-        feature_dir, 'user_features_my_fullT.parquet'), index=False)
+    user_features.to_csv(os.path.join(
+        feature_dir, 'user_features_my_fullT.csv'), index=False)
+    # user_features.to_parquet(os.path.join(
+    #     feature_dir, 'user_features_my_fullT.parquet'), index=False)
+    
