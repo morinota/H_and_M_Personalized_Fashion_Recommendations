@@ -31,11 +31,11 @@ class Config:
 
     # =================================================================================
     # 特徴量の話
-    use_which_user_features = 'original'
-    # use_which_user_features = 'my_fullT'
-    use_which_item_features = 'original'
+    # use_which_user_features = 'original'
+    use_which_user_features = 'my_fullT'
+    # use_which_item_features = 'original'
 
-    # use_which_item_features = 'my_fullT'
+    use_which_item_features = 'my_fullT'
     # 特徴量の種類
     item_basic_feature_names = [
         'product_code', 'prod_name',
