@@ -127,6 +127,8 @@ class RankLearningLgbm:
         for target_column in ITEM_CATEGORICAL_COLUMNS:
             # 対象サブカテゴリのラグ特徴量を取り出す
             lag_feature_df = self.item_lag_features[target_column]
+            # t_datをobject型からdatetime型に
+            lag_feature_df['t_dat'] = pd.to_datetime(lag_feature_df['t_dat'])
 
             # マージ
             self.df = pd.merge(self.df, lag_feature_df,
