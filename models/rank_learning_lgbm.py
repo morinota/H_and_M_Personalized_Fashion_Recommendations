@@ -103,10 +103,11 @@ class RankLearningLgbm:
         print(f'length of user_features is {len(self.user_features)}')
 
     def _preprocessing_user_feature(self):
-        self.user_features[['club_member_status', 'fashion_news_frequency']] = (
-            self.user_features[['club_member_status',
-                                'fashion_news_frequency']]
-            .apply(lambda x: pd.factorize(x)[0])).astype("uint64")
+        # self.user_features[['club_member_status', 'fashion_news_frequency']] = (
+        #     self.user_features[['club_member_status',
+        #                         'fashion_news_frequency']]
+        #     .apply(lambda x: pd.factorize(x)[0])).astype("uint64")
+        pass
 
     def _merge_user_item_feature_to_transactions(self):
 
