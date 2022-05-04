@@ -86,6 +86,10 @@ class RankLearningLgbm:
             self.user_features = pd.read_csv(os.path.join(
                 DRIVE_DIR, f'input/user_features_{Config.use_which_user_features}.csv')).reset_index()
 
+        # 必要な特徴量のカラムのみ残す.
+        self.item_features = self.item_features[['article_id'] + Config.item_basic_feature_names + Config.item_numerical_feature_names]
+        self.user_features = self.user_features[['customer_id_short'] + Config.user_numerical_feature_names]
+
         # ラグ特徴量
         self.item_lag_features = {}
         for target_column in ITEM_CATEGORICAL_COLUMNS:
@@ -96,9 +100,7 @@ class RankLearningLgbm:
             # Dictに格納
             self.item_lag_features[target_column] = lag_feature
 
-
         print(f'length of user_features is {len(self.user_features)}')
-        
 
     def _preprocessing_user_feature(self):
         self.user_features[['club_member_status', 'fashion_news_frequency']] = (
@@ -107,14 +109,29 @@ class RankLearningLgbm:
             .apply(lambda x: pd.factorize(x)[0])).astype("uint64")
 
     def _merge_user_item_feature_to_transactions(self):
-        # ここのマージが原因??
+
+        # トランザクションログ側のt_datを'週の最終日'に変換
+        self.df['t_dat'] = pd.to_datetime(self.df['t_dat']).dt.to_period(
+            'W').dt.to_timestamp(freq='W', how='end').dt.floor('D')
+        # ユーザ特徴量をマージ
         self.df = self.df.merge(self.user_features, on=(
             'customer_id_short'), how='left')
+        # アイテム特徴量をマージ
         self.df = self.df.merge(
             self.item_features, on=('article_id'), how='left')
         # 降順(新しい順)で並び変え
         self.df.sort_values(['t_dat', 'customer_id_short'],
                             inplace=True, ascending=False)
+        # ラグ特徴量をマージ
+        for target_column in ITEM_CATEGORICAL_COLUMNS:
+            # 対象サブカテゴリのラグ特徴量を取り出す
+            lag_feature_df = self.item_lag_features[target_column]
+
+            # マージ
+            self.df = pd.merge(self.df, lag_feature_df,
+                               on=[target_column, 't_dat'], how='left'
+                               )
+
         print('unique user of self.df is {}'.format(
             len(self.df['customer_id_short'].unique())
         ))
@@ -412,7 +429,6 @@ class RankLearningLgbm:
         # negatives_dfのLabelカラムを0にする。(重複ない??)
         self.negatives_df_valid['label'] = 0
 
-
     def _merge_train_and_negatives(self):
         """学習データのPositiveレコードとNegativeレコードを縦にくっつける。
         """
@@ -473,14 +489,15 @@ class RankLearningLgbm:
         # 降順でソート
         df_plt.sort_values('feature_importance', ascending=False, inplace=True)
         # 保存
-        df_plt.to_csv(os.path.join(DRIVE_DIR, f'feature/feature_importance_{self.val_week_id}.csv'))
+        df_plt.to_csv(os.path.join(
+            DRIVE_DIR, f'feature/feature_importance_{self.val_week_id}.csv'))
 
         # 描画
         sns.barplot(x="feature_importance", y="feature_name", data=df_plt)
         plt.title('feature importance')
         # 保存
-        plt.savefig(os.path.join(DRIVE_DIR, f'feature/feature_importance_{self.val_week_id}.png'))
-
+        plt.savefig(os.path.join(
+            DRIVE_DIR, f'feature/feature_importance_{self.val_week_id}.png'))
 
     def fit(self):
         """Fit lightgbm ranker model
@@ -530,7 +547,8 @@ class RankLearningLgbm:
         y_valid = self.valid['label']
         print(len(X_valid.columns))
         # Categorical Featureの指定
-        self.categorical_feature_names = list(X_train.select_dtypes('int').columns)
+        self.categorical_feature_names:List[str] = list(
+            X_train.select_dtypes(include=int).columns)
         # 学習
         self.ranker = self.ranker.fit(
             X=X_train,
@@ -577,6 +595,14 @@ class RankLearningLgbm:
             .merge(self.user_features, on=('customer_id_short'))
             .merge(self.item_features, on=('article_id'))
         )
+        # ラグ特徴量をマージ
+        for target_column in ITEM_CATEGORICAL_COLUMNS:
+            # 対象サブカテゴリのラグ特徴量を取り出す
+            lag_feature_df = self.item_lag_features[target_column]
+            # マージ
+            self.candidates = pd.merge(self.candidates, lag_feature_df,
+                                       on=[target_column, 't_dat'], how='left'
+                                       )
 
     def _predict_using_batches(self):
         """実際に予測を実行するメソッド。メモリの関係からbatch_size数ずつ入力していく.
@@ -588,8 +614,8 @@ class RankLearningLgbm:
         batch_size = 1_000_000
         for bucket in tqdm(range(0, len(self.candidates), batch_size)):
             # 特徴量を用意。
-            X_pred = self.candidates.iloc[bucket: bucket +
-                                          batch_size][self.feature_names]
+            X_pred = self.candidates.iloc[bucket: (bucket +
+                                          batch_size)][self.feature_names]
             # モデルに特徴量を入力して、出力値を取得
             outputs = self.ranker.predict(X=X_pred)
             # -> (ユニークユーザ × num_candidate_predict)個のうち、バッチサイズ分のトランザクションの発生確率を返す?

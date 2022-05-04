@@ -36,6 +36,16 @@ class Config:
 
     use_which_item_features = 'my_fullT'
     # 特徴量の種類
+    item_basic_feature_names = [
+        'product_code', 'prod_name',
+        'product_type_name', 'product_group_name',
+        'graphical_appearance_name', 'colour_group_name',
+        'perceived_colour_value_name',
+        'perceived_colour_master_name',
+        'department_name', 'index_code', 'index_name',
+        'index_group_name', 'section_no', 'section_name',
+        'garment_group_name',
+    ]
     item_numerical_feature_names = [
         'mean_item_price', 'std_item_price', 'max_item_price',
         'min_item_price', 'median_item_price', 'sum_item_price',
@@ -48,8 +58,8 @@ class Config:
         'sum_item_price_under_point', 'sum_item_price_over_point',
         'item_mean_offline_or_online', 'item_median_offline_or_online',
         'item_sum_offline_or_online'
-        ]
-        
+    ]
+
     item_categorical_feature_names = []
     item_lag_feature_names = []
     item_target_encoding_features = []
