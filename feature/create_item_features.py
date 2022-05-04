@@ -307,11 +307,16 @@ class NumericalFeature(ItemFeatures):
         # トランザクションのオンライン/オフラインに対して、特徴量を作成
         output_df_sales_channel_id = (
             self.groupby['sales_channel_id']
-            .agg({
-                'item_mean_offline_or_online': 'mean',
-                'item_median_offline_or_online': 'median',
-                'item_sum_offline_or_online': 'sum'
-            })
+            .agg(
+                    item_mean_offline_or_online='mean',
+                    item_median_offline_or_online='median',
+                    item_sum_offline_or_online='sum'
+                #     {
+                #     'item_mean_offline_or_online': 'mean',
+                #     'item_median_offline_or_online': 'median',
+                #     'item_sum_offline_or_online': 'sum'
+                # }
+            )
             .astype('float32')  # numerical 特徴量は全てfloatに
         )
 
