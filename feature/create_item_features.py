@@ -446,9 +446,15 @@ def create_items_features():
     )
     item_numerical_feature = numerical_item_feature.get()
 
+    # 元のアイテムメタデータと生成した特徴量をマージ
+    item_features = pd.merge(
+        dataset.dfi, item_numerical_feature, 
+        on='article_id', how='left'
+    )
+
     # エクスポート
     feature_dir = os.path.join(DRIVE_DIR, 'input')
-    item_numerical_feature.to_csv(os.path.join(
+    item_features.to_csv(os.path.join(
         feature_dir, 'item_features_my_fullT.csv'), index=False)
     # item_numerical_feature.to_parquet(os.path.join(
     #     feature_dir, 'item_features_my_fullT.parquet'), index=False)

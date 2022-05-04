@@ -71,25 +71,34 @@ class RankLearningLgbm:
             self.df_4w['t_dat'].max(), self.df_4w['t_dat'].min()))
 
     def _load_feature_data(self):
+        """事前に作成した特徴量を読み込むメソッド
         """
-        """
+        # アイテム特徴量
         if Config.use_which_item_features == 'original':
             self.item_features = pd.read_parquet(os.path.join(
                 DRIVE_DIR, 'input/item_features.parquet')).reset_index()
         else:
             self.item_features = pd.read_parquet(os.path.join(
-                DRIVE_DIR, f'input/item_features_{Config.use_which_item_features}.parquet')).reset_index()
+                DRIVE_DIR, f'input/item_features_{Config.use_which_item_features}.csv')).reset_index()
 
-        if Config.use_which_item_features == 'original':
+        # ユーザ特徴量
+        if Config.use_which_item_features != 'original':
             self.user_features = pd.read_csv(os.path.join(
                 DRIVE_DIR, f'input/user_features_{Config.use_which_user_features}.csv')).reset_index()
 
+        # ラグ特徴量
+        self.item_lag_features = {}
+        for target_column in ITEM_CATEGORICAL_COLUMNS:
+            file_path = os.path.join(
+                DRIVE_DIR, f'feature/time_series_item_feature_{target_column}.csv')
+
+            lag_feature = pd.read_csv(file_path)
+            # Dictに格納
+            self.item_lag_features[target_column] = lag_feature
+
+
         print(f'length of user_features is {len(self.user_features)}')
-        # customer_id_shortカラムを作成
-        print('a')
-        self.user_features["customer_id_short"] = self.user_features["customer_id"].apply(
-            lambda s: int(s[-16:], 16)).astype("uint64")
-        print('a')
+        
 
     def _preprocessing_user_feature(self):
         self.user_features[['club_member_status', 'fashion_news_frequency']] = (
