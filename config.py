@@ -13,7 +13,7 @@ class Config:
     run_for_submittion = False  # bool
 
     # 5%サンプリングを使うか、フルサンプリングを使うか。
-    use_full_sampling = False # bool
+    use_full_sampling = False  # bool
 
     # ==========================================================================
     # ランク学習用のCandidate
@@ -38,8 +38,8 @@ class Config:
     use_which_item_features = 'my_fullT'
     # 特徴量の種類
     item_basic_feature_names = [
-        # 'product_code', 
-        # 'prod_name', 
+        # 'product_code',
+        # 'prod_name',
         'product_type_name', 'product_group_name',
         'graphical_appearance_name', 'colour_group_name',
         'perceived_colour_value_name',
@@ -83,6 +83,10 @@ class Config:
         'sum_sales_channel_id'
     ]
     user_lag_feature_names = []
+    # Feature Importance上位50の特徴量
+    feature_names_highest50_feature_importance = [
+
+    ]
 
     # ===========================================================================
     # lightGBMハイパラ

@@ -56,6 +56,8 @@ def run_validation(val_week_id=104):
     model = RankLearningLgbm(transaction_train=train_df, dataset=dataset, val_week_id=val_week_id)
     model.preprocessing()
     model.fit()
+    # 特徴量重要度の上位50個をログに出力
+    get_logger(VERSION).info(f'feature names of highest 50 feature importance are {model.feature_names_highest50_feature_importance}')
     df_sub = model.create_reccomendation()
 
     # One-week hold-out validationのオフライン評価

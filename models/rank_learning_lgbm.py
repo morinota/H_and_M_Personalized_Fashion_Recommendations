@@ -534,6 +534,12 @@ class RankLearningLgbm:
         plt.savefig(os.path.join(
             DRIVE_DIR, f'feature/feature_importance_{self.val_week_id}.png'))
 
+        # Feature Importance上位50の特徴量を文字列のリストとして取得したい
+        self.feature_names_highest50_feature_importance:List[str] = (
+            df_plt.iloc[0:50, :]['feature_name'].values.tolist()
+        )
+
+
     def fit(self):
         """Fit lightgbm ranker model
         """
