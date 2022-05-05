@@ -252,11 +252,10 @@ class RuleBaseByCustomerAge:
         # レコメンドの不足分を補完
         sub['prediction'] = sub['prediction'].fillna(self.general_pred_str)
         sub['prediction'] = sub['prediction'] + ' ' + self.general_pred_str
-        sub['prediction'] = sub['prediction'].str.strip()
+        # 両端（先頭、末尾）の半角スペース文字を削除
+        sub['prediction'] = sub['prediction'].str.strip(' ')
         # 12個にする
-        sub['prediction'] = sub['prediction'].str.split(' ')[:12] # 一旦リストに
-        print(type(sub['prediction'].iloc[0]))
-        sub['prediction'] = sub['prediction'].apply(lambda x: " ".join(x)) # 再度strに戻す
+        sub['prediction'] = sub['prediction'][:131] # 一旦リストに
         # 最終的には2つ。
         sub = sub[['customer_id_short', 'prediction']]
         sub.to_csv(f'submission_' + str(uniBin) + '.csv', index=False)
