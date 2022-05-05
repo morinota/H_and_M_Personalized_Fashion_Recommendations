@@ -622,15 +622,14 @@ class RankLearningLgbm:
         y_train = self.train['label']
         # 特徴量のカラム名を保存
         self.feature_names = list(X_train.columns)
-        print(X_train.dtypes)
-        print(len(X_train.columns))
+        print(f'length of X_valid is {len(X_train.columns)}')
         X_valid = self.valid[self.feature_names]
         y_valid = self.valid['label']
-        print(len(X_valid.columns))
+        print(f'length of X_valid is {len(X_valid.columns)}')
         # Categorical Featureの指定
         self.categorical_feature_names: List[str] = list(
             X_train.select_dtypes(include=int).columns)
-        print(self.categorical_feature_names)
+        print(f'categorical feature names are {self.categorical_feature_names}')
         # 学習
         self.ranker = self.ranker.fit(
             X=X_train,
