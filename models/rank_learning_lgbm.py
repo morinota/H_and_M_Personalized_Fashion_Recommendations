@@ -132,6 +132,8 @@ class RankLearningLgbm:
         df_tra['t_dat'] = pd.to_datetime(df_tra['t_dat']).dt.to_period(
             'W').dt.to_timestamp(freq='W', how='end').dt.floor('D')
         # ユーザ特徴量をマージ
+        print(df_tra.columns)
+        print(self.item_features.columns)
         df_tra = df_tra.merge(self.user_features, on=
             'customer_id_short', how='left')
         # アイテム特徴量をマージ
