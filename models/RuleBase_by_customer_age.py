@@ -255,6 +255,7 @@ class RuleBaseByCustomerAge:
         sub['prediction'] = sub['prediction'].str.strip()
         # 12個にする
         sub['prediction'] = sub['prediction'].str.split(' ')[:12] # 一旦リストに
+        print(type(sub['prediction'].ilol[0]))
         sub['prediction'] = sub['prediction'].apply(iter_to_str) # 再度strに戻す
         # 最終的には2つ。
         sub = sub[['customer_id_short', 'prediction']]
