@@ -45,7 +45,7 @@ class Config:
     use_which_item_features = 'my_fullT'
     # 特徴量の種類
     item_basic_feature_names = [
-        'article_id',
+        # 'article_id',
         # 'product_code', # ユニーク値=36284
         # 'prod_name', # ユニーク値=35628
         'product_type_name',  # ユニーク値=125
