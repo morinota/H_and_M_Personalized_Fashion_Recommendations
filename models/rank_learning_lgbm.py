@@ -90,11 +90,18 @@ class RankLearningLgbm:
                 DRIVE_DIR, 'input/user_features.parquet')).reset_index()
             # customer_id_shortカラムに変換する
             self.user_features['customer_id_short'] = (
-                self.user_features["customer_id"].apply(lambda s: int(s[-16:], 16)).astype("uint64")
+                self.user_features["customer_id"].apply(
+                    lambda s: int(s[-16:], 16)).astype("uint64")
             )
             # customer_idカラムを落とす
             self.user_features.drop(columns=['customer_id'], inplace=True)
-            
+
+            # 前処理
+            self.user_features[['club_member_status', 'fashion_news_frequency']] = (
+                self.user_features[['club_member_status',
+                                    'fashion_news_frequency']]
+                .apply(lambda x: pd.factorize(x)[0])).astype("uint64")
+
         else:
             self.user_features = pd.read_csv(os.path.join(
                 DRIVE_DIR, f'input/user_features_{Config.use_which_user_features}.csv')).reset_index()
@@ -141,8 +148,8 @@ class RankLearningLgbm:
         # ユーザ特徴量をマージ
         print(df_tra.columns)
         print(self.item_features.columns)
-        df_tra = df_tra.merge(self.user_features, on=
-            'customer_id_short', how='left')
+        df_tra = df_tra.merge(self.user_features,
+                              on='customer_id_short', how='left')
         # アイテム特徴量をマージ
         df_tra = df_tra.merge(
             self.item_features, on='article_id', how='left')
