@@ -13,4 +13,14 @@ class NegativeSamplerStaticPopularity:
     def __init__(self, dataset:DataSet, transaction_train:pd.DataFrame) -> None:
         pass
 
-    def create_negative_sampler(self, unique_customer_ids:List, n_negative:int):
+    def create_negative_sampler(self,transaction_positive:pd.DataFrame, unique_customer_ids:List, n_negative:int):
+        pass
+
+    def _set_weights_of_sampling(self):
+        """各ユニークアイテムの特徴量(=ex. 人気度)をベースにサンプラーの重みを設定
+        """
+
+        # 各レコード(アイテム)が抽出される確率
+        self.weights_sampler:List[float] = []
+
+    def _

@@ -330,9 +330,15 @@ class SalesLagFeatures(UserFeatures):
     def get(self) -> pd.DataFrame:
         self.user_feature = pd.DataFrame()
         # 以下、プロセス
+        self._get_sales_time_series_each_user_subcategory()
+        self._create_lag_feature()
+        self._create_rolling_window_features()
+        self._create_expanding_window_features()
+        # ラグ特徴量をエクスポート
+        self._export_each_timeseries_features()
         return self.user_feature
 
-    def __get_sales_time_series_each_user_subcategory(self):
+    def _get_sales_time_series_each_user_subcategory(self):
         """各ユーザ毎(or各ユーザサブカテゴリ)の時系列の売上個数のDataFrameを作る。
         (ラグ特徴量を作る為の準備)
         イメージ：レコードが各ユーザ(or各ユーザサブカテゴリ)、
