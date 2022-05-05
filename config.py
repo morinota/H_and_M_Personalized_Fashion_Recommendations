@@ -35,6 +35,7 @@ class Config:
     # 特徴量生成
     create_user_features = True
     create_item_features = False
+    create_not_lag_features = False
     create_lag_features = True
 
     # use_which_user_features = 'original'

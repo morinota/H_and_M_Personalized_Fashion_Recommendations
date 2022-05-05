@@ -82,7 +82,8 @@ class RankLearningLgbm:
             self.item_features = pd.read_csv(os.path.join(
                 DRIVE_DIR, f'input/item_features_{Config.use_which_item_features}.csv')).reset_index()
             # 必要な特徴量のカラムのみ残す.
-            self.item_features = self.item_features[['article_id'] + Config.item_basic_feature_names + Config.item_numerical_feature_names]
+            self.item_features = self.item_features[[
+                'article_id'] + Config.item_basic_feature_names + Config.item_numerical_feature_names]
         # ユーザ特徴量
         if Config.use_which_item_features == 'original':
             self.user_features = pd.read_parquet(os.path.join(
@@ -91,9 +92,8 @@ class RankLearningLgbm:
             self.user_features = pd.read_csv(os.path.join(
                 DRIVE_DIR, f'input/user_features_{Config.use_which_user_features}.csv')).reset_index()
             # 必要なカラムのみ残す
-            self.user_features = self.user_features[['customer_id_short'] + Config.user_numerical_feature_names]
-
-        
+            self.user_features = self.user_features[[
+                'customer_id_short'] + Config.user_numerical_feature_names]
 
         # ラグ特徴量
         self.item_lag_features = {}
@@ -114,7 +114,7 @@ class RankLearningLgbm:
         #     .apply(lambda x: pd.factorize(x)[0])).astype("uint64")
         pass
 
-    def _merge_user_item_feature_to_transactions(self, df_tra:pd.DataFrame)->pd.DataFrame:
+    def _merge_user_item_feature_to_transactions(self, df_tra: pd.DataFrame) -> pd.DataFrame:
         """トランザクションログを受け取り、特徴量データをマージして返すメソッド.
 
         Parameters
@@ -139,7 +139,7 @@ class RankLearningLgbm:
             self.item_features, on=('article_id'), how='left')
         # 降順(新しい順)で並び変え
         df_tra.sort_values(['t_dat', 'customer_id_short'],
-                            inplace=True, ascending=False)
+                           inplace=True, ascending=False)
         # ラグ特徴量をマージ
         for target_column in ITEM_CATEGORICAL_COLUMNS:
             # 対象サブカテゴリのラグ特徴量を取り出す
@@ -149,8 +149,8 @@ class RankLearningLgbm:
 
             # マージ
             df_tra = pd.merge(df_tra, lag_feature_df,
-                               on=[target_column, 't_dat'], how='left'
-                               )
+                              on=[target_column, 't_dat'], how='left'
+                              )
 
         print('unique user of df_tra is {}'.format(
             len(df_tra['customer_id_short'].unique())
@@ -411,7 +411,7 @@ class RankLearningLgbm:
         # データ型を一応変換しておく。
         self.negatives_df['article_id'] = self.negatives_df['article_id'].astype(
             'int')
-        
+
         # # negatives_df(<=候補アイテム)に特徴量を結合。
         # self.negatives_df = (
         #     self.negatives_df
@@ -480,7 +480,9 @@ class RankLearningLgbm:
         # negatives_dfのLabelカラムを0にする。(重複ない??)
         self.negatives_df_valid['label'] = 0
 
-        print(f'negative_df_valid columns is {self.negatives_df_valid.columns}')
+        print(
+            f'negative_df_valid columns is {self.negatives_df_valid.columns}')
+
     def _concat_train_and_negatives(self):
         """学習データのPositiveレコードとNegativeレコードを縦にくっつける。
         """
@@ -552,10 +554,9 @@ class RankLearningLgbm:
             DRIVE_DIR, f'feature/feature_importance_{self.val_week_id}.png'))
 
         # Feature Importance上位50の特徴量を文字列のリストとして取得したい
-        self.feature_names_highest50_feature_importance:List[str] = (
+        self.feature_names_highest50_feature_importance: List[str] = (
             df_plt.iloc[0:50, :]['feature_name'].values.tolist()
         )
-
 
     def fit(self):
         """Fit lightgbm ranker model
@@ -567,8 +568,6 @@ class RankLearningLgbm:
         self._create_query_data_train()
         # ここで特徴量をマージ
         self.train = self._merge_user_item_feature_to_transactions(self.train)
-
-
 
         # 検証用データも同様に準備
         self._create_negatives_for_valid_using_lastDate_fromTrain()
@@ -612,7 +611,7 @@ class RankLearningLgbm:
         y_valid = self.valid['label']
         print(len(X_valid.columns))
         # Categorical Featureの指定
-        self.categorical_feature_names:List[str] = list(
+        self.categorical_feature_names: List[str] = list(
             X_train.select_dtypes(include=int).columns)
         print(self.categorical_feature_names)
         # 学習
@@ -656,20 +655,19 @@ class RankLearningLgbm:
         self.candidates['article_id'] = self.candidates['article_id'].astype(
             'int')
 
-
-
     def _predict_using_batches(self):
         """実際に予測を実行するメソッド。メモリの関係からbatch_size数ずつ入力していく.
         Predict using batches, otherwise doesn't fit into memory.
         """
-        def _merge_featureData_to_candidate(candidates_batch:pd.DataFrame):
+        def _merge_featureData_to_candidate(candidates_batch: pd.DataFrame):
             """バッチサイズ分のCandidatesに対して、特徴量データをマージする関数.
             """
 
             # Candidatesのt_datカラムを生成&検証週の最終日に
-            last_date_in_test_week = pd.to_datetime('2020-09-27') - timedelta(days=7* (105-self.val_week_id))
+            last_date_in_test_week = pd.to_datetime(
+                '2020-09-27') - timedelta(days=7 * (105-self.val_week_id))
             candidates_batch['t_dat'] = pd.to_datetime(last_date_in_test_week)
-            
+
             # ユーザ特徴量＆アイテム特徴量を結合
             candidates_batch = (
                 candidates_batch
@@ -683,8 +681,8 @@ class RankLearningLgbm:
                 lag_feature_df = self.item_lag_features[target_column]
                 # マージ
                 candidates_batch = pd.merge(candidates_batch, lag_feature_df,
-                                        on=[target_column, 't_dat'], how='left'
-                                        )
+                                            on=[target_column, 't_dat'], how='left'
+                                            )
 
             return candidates_batch
 
@@ -694,9 +692,11 @@ class RankLearningLgbm:
         batch_size = 1_000_000
         for bucket in tqdm(range(0, len(self.candidates), batch_size)):
             # candidateからバッチサイズ分抽出
-            candidates_batch = self.candidates.iloc[bucket:(bucket +batch_size), :]
+            candidates_batch = self.candidates.iloc[bucket:(
+                bucket + batch_size), :]
             # 特徴量データを結合する
-            candidates_batch = _merge_featureData_to_candidate(candidates_batch)
+            candidates_batch = _merge_featureData_to_candidate(
+                candidates_batch)
             # 特徴量を用意。
             X_pred = candidates_batch[self.feature_names]
             # モデルに特徴量を入力して、出力値を取得
