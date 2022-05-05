@@ -1,4 +1,6 @@
 from datetime import timedelta
+from sqlite3 import Timestamp
+from time import time
 from typing import Dict, List, Tuple
 from flask import Config
 import pandas as pd
@@ -119,15 +121,29 @@ class RuleBaseByCustomerAge:
             f'The shape of scope transaction for {unique_age_bin} is {self.df_t_each_agebin.shape}. \n')
 
     def _f3_create_ldbw_column(self):
-        """「トランザクションの最終日から何週間前か」を意味する"ldbw"(last_day_of_bought_week)カラムを作る
+        """「トランザクションの最終日から何週間前か」を表現するを意味する"ldbw"(last_day_of_bought_week)カラムを作る
         """
 
         # トランザクションログの最終日を取得
         self.last_ts = self.df_t_each_agebin['t_dat'].max()
-        # 「トランザクションの最終日から何週間前か」、を'ldbw'カラムを格納
-        self.df_t_each_agebin['ldbw'] = self.df_t_each_agebin['t_dat'].apply(
-            # datetime型.floor():丸める（今回は7days毎）
-            lambda d: self.last_ts - (self.last_ts - d).floor('7D')
+        # 曜日カラムを生成。dayofweek属性は、曜日のindex(月曜=0, 日曜=6)を返す。
+        self.df_t_each_agebin['dow'] = self.df_t_each_agebin['t_dat'].dt.dayofweek
+        # 最終日は何曜日？？=>1=火曜日
+        dow_last_ts = self.last_ts.day_of_week
+
+        # 'ldbw'カラムを生成。
+        # (TimedeltaIndexは、timedeltaの各要素に適用するVer)
+        # (もしt_datが火曜日の場合は、ldbw=t_dat)
+        # (もしt_datが月曜日の場合は、ldbw=t_dat-(-1)=t_dat+1=火曜日)
+        self.df_t_each_agebin['ldbw'] = (
+            self.df_t_each_agebin['t_dat']
+            - pd.TimedeltaIndex(data=self.df_t_each_agebin['dow'] - dow_last_ts, unit='D')
+        )
+
+        # t_datが水曜日以降のレコードの場合は、次の週(次の火曜日)としてldbwをカウントする
+        self.df_t_each_agebin.loc[self.df_t_each_agebin['dow'] >= 2, 'ldbw'] = (
+            self.df_t_each_agebin.loc[self.df_t_each_agebin['dow'] >= 2, 'ldbw']
+            + timedelta(days=7) 
         )
 
     def _f4_1_calculate_weekly_sales(self):
@@ -135,8 +151,9 @@ class RuleBaseByCustomerAge:
         self.weekly_sales = self.df_t_each_agebin.groupby(
             ['ldbw', 'article_id'])['t_dat'].count().reset_index()
 
-        self.weekly_sales = self.weekly_sales.rename(columns={'t_dat': 'count'})
-        
+        self.weekly_sales = self.weekly_sales.rename(
+            columns={'t_dat': 'count'})
+
         # トランザクションログにweekly_salesをマージ
         self.df_t_each_agebin = pd.merge(
             left=self.df_t_each_agebin,
@@ -152,7 +169,7 @@ class RuleBaseByCustomerAge:
         self.df_t_each_agebin = pd.merge(
             left=self.df_t_each_agebin,
             right=self.weekly_sales.loc[self.weekly_sales['ldbw']
-                                   == self.last_ts, ['count']],
+                                        == self.last_ts, ['count']],
             on='article_id',
             # 列名が重複している場合の処理(デフォルトは'_x', '_y')
             suffixes=("", "_targ")
@@ -221,23 +238,24 @@ class RuleBaseByCustomerAge:
         self.numCustomers = sub.shape[0]
 
         sub = pd.merge(
-            left=sub, right=self.df_u_each_age_bin[['customer_id_short', 'age']],
+            left=sub, right=self.df_u_each_age_bin[[
+                'customer_id_short', 'age']],
             on='customer_id_short', how='inner',
         )
 
         sub = pd.merge(
-            left=sub, right=self.purchase_df, 
+            left=sub, right=self.purchase_df,
             on='customer_id_short', how='left',
             suffixes=('', '_ignored')
         )
         # レコメンドの不足分を補完
         sub['prediction'] = sub['prediction'].fillna(self.general_pred_str)
-        sub['prediction'] = sub['prediction'] + ' ' +  self.general_pred_str
+        sub['prediction'] = sub['prediction'] + ' ' + self.general_pred_str
         sub['prediction'] = sub['prediction'].str.strip()
         sub['prediction'] = sub['prediction'].str[:131]
         # 最終的には2つ。
         sub = sub[['customer_id_short', 'prediction']]
-        sub.to_csv(f'submission_' + str(uniBin) + '.csv',index=False)
+        sub.to_csv(f'submission_' + str(uniBin) + '.csv', index=False)
         print(f'Saved prediction for {uniBin}. The shape is {sub.shape}. \n')
         print('-'*50)
 
@@ -256,19 +274,22 @@ class RuleBaseByCustomerAge:
             self._f7_prepare_submission(unique_age_bin)
 
         # 各年齢bin毎の結果を結合
-        self.df_sub = self.dataset.df_sub[['customer_id_short', 'customer_id']].copy()
+        self.df_sub = self.dataset.df_sub[[
+            'customer_id_short', 'customer_id']].copy()
 
         for i, unique_age_bin in enumerate(self.list_UniBins):
-            df_temp = pd.read_csv(f'submission_' + str(unique_age_bin) + '.csv')
-            
-            self.df_sub = pd.merge(self.df_sub, df_temp, how='left', 
-            on='customer_id_short')
+            df_temp = pd.read_csv(
+                f'submission_' + str(unique_age_bin) + '.csv')
+
+            self.df_sub = pd.merge(self.df_sub, df_temp, how='left',
+                                   on='customer_id_short')
 
         # もし欠損のあるユーザがいれば、''を埋める
         self.df_sub['prediction'].fillna(value='', inplace=True)
 
         # エラーメッセージ(もしレコメンド結果の長さが違ったら)
-        assert self.df_sub.shape[0] == self.numCustomers, f'The number of dfSub rows is not correct. {self.df_sub.shape[0]} vs {self.numCustomers}.'  
+        assert self.df_sub.shape[
+            0] == self.numCustomers, f'The number of dfSub rows is not correct. {self.df_sub.shape[0]} vs {self.numCustomers}.'
 
         # 最終的には3つのカラムにする.
         self.df_sub = self.df_sub[[
