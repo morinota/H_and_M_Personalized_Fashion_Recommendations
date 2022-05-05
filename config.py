@@ -11,10 +11,10 @@ class Config:
     #
 
     # 本番レコメンドか、検証用レコメンドか
-    run_for_submittion = True  # bool
+    run_for_submittion = False # bool
 
     # 5%サンプリングを使うか、フルサンプリングを使うか。
-    use_full_sampling = False # bool
+    use_full_sampling = True # bool
 
     # ==========================================================================
     # ランク学習用のCandidate
