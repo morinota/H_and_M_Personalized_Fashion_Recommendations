@@ -248,7 +248,7 @@ class RuleBaseByCustomerAge:
             self._f3_create_ldbw_column()
             self._f4_1_calculate_weekly_sales()
             self._f4_2_calculate_count_targ()
-            self._f4_3_calculate_quotient
+            self._f4_3_calculate_quotient()
             self._f5_create_general_pred()
             self._f6_conduct_byfone_2()
             self._f7_prepare_submission(unique_age_bin)
