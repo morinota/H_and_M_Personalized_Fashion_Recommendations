@@ -3,6 +3,7 @@ import sys
 
 import pandas as pd
 import numpy as np
+from config import Config
 from tqdm import tqdm
 import math
 from my_class.dataset import DataSet
@@ -485,8 +486,6 @@ class SalesLagFeatures(UserFeatures):
             time_series_user_features.to_csv(file_path, index=False)
             pass
 
-CREATE_LAG_FEATURES = True
-CREATE_USER_FEATURES = False
 
 def create_user_features():
     # DataSetオブジェクトの読み込み
@@ -500,10 +499,10 @@ def create_user_features():
     df_customers = dataset.dfu  # 各顧客の情報(メタデータ)
     df_articles = dataset.dfi  # 各商品の情報(メタデータ)
 
-    if CREATE_USER_FEATURES:
+    if Config.create_not_lag_features:
         # トランザクションログのNumericalデータから特徴量生成
-        # numerical_user_features = NumericalFeatures(
-        #     transactions_df=df_transaction).get().reset_index()
+        numerical_user_features = NumericalFeatures(
+            transactions_df=df_transaction).get().reset_index()
         print('a')
 
         # b = CountFeatures(df_transaction).get().reset_index()
@@ -535,6 +534,9 @@ def create_user_features():
         # user_features.to_parquet(os.path.join(
         #     feature_dir, 'user_features_my_fullT.parquet'), index=False)
 
-        if CREATE_LAG_FEATURES:
-            # user_lag_features
-            
+    if Config.create_lag_features:
+        # user_lag_features
+        sales_lag_feature_class = SalesLagFeatures(
+            dataset=dataset, transaction_df=dataset.df
+        )
+        sales_lag_feature_class.get()
