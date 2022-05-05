@@ -12,7 +12,7 @@ import os
 from lightgbm.sklearn import LGBMRanker
 from pathlib import Path
 from config import Config
-from negative_sampler_class import static_popularity
+# from negative_sampler_class import static_popularity
 
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 ITEM_CATEGORICAL_COLUMNS = ['article_id',
