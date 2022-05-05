@@ -29,7 +29,9 @@ def iter_to_str(iterable: List[int]) -> str:
     # iterable_str(str)：イテラブルオブジェクトの各要素を" "で繋いで文字列型にしたもの。
     # '''
     # Listの各要素の先頭に"0"を追加する
-    iterable_add_0 = map(lambda x: str(0) + str(x), iterable)
+    # iterable_add_0 = map(lambda x: str(0) + str(x), iterable)
+    iterable_add_0 = [str(x).zfill(10) for x in iterable]
+    
     # リストの要素を半角スペースで繋いで、文字列に。
     iterable_str = " ".join(iterable_add_0)
     return iterable_str

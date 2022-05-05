@@ -143,7 +143,7 @@ class RuleBaseByCustomerAge:
         # t_datが水曜日以降のレコードの場合は、次の週(次の火曜日)としてldbwをカウントする
         self.df_t_each_agebin.loc[self.df_t_each_agebin['dow'] >= 2, 'ldbw'] = (
             self.df_t_each_agebin.loc[self.df_t_each_agebin['dow'] >= 2, 'ldbw']
-            + timedelta(days=7) 
+            + timedelta(days=7)
         )
 
     def _f4_1_calculate_weekly_sales(self):
@@ -193,7 +193,7 @@ class RuleBaseByCustomerAge:
         self.general_pred = target_sales.nlargest(n=12).index.tolist()
 
         # article_idを提出用に整形
-        self.general_pred = ['0' + str(article_id)
+        self.general_pred = [str(article_id).zfill(10)
                              for article_id in self.general_pred]
         self.general_pred_str = ' '.join(self.general_pred)
         del target_sales
@@ -227,8 +227,9 @@ class RuleBaseByCustomerAge:
 
         self.purchase_df = tmp.sort_values(
             ['customer_id_short', 'value'], ascending=False).reset_index(drop=True)
-        self.purchase_df['prediction'] = '0' + \
-            self.purchase_df['article_id'].astype(str) + ' '
+        self.purchase_df['prediction'] = (
+            str(self.purchase_df['article_id']).zfill(10) + ' '
+        )
         self.purchase_df = self.purchase_df.groupby(
             'customer_id_short').agg({'prediction': sum}).reset_index()
         self.purchase_df['prediction'] = self.purchase_df['prediction'].str.strip()
@@ -252,7 +253,9 @@ class RuleBaseByCustomerAge:
         sub['prediction'] = sub['prediction'].fillna(self.general_pred_str)
         sub['prediction'] = sub['prediction'] + ' ' + self.general_pred_str
         sub['prediction'] = sub['prediction'].str.strip()
-        sub['prediction'] = sub['prediction'].str[:131]
+        # 12個にする
+        sub['prediction'] = sub['prediction'].str.split(' ')[:12] # 一旦リストに
+        sub['prediction'] = sub['prediction'].apply(iter_to_str) # 再度strに戻す
         # 最終的には2つ。
         sub = sub[['customer_id_short', 'prediction']]
         sub.to_csv(f'submission_' + str(uniBin) + '.csv', index=False)
