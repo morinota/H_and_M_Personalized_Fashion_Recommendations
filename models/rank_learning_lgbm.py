@@ -88,6 +88,13 @@ class RankLearningLgbm:
         if Config.use_which_item_features == 'original':
             self.user_features = pd.read_parquet(os.path.join(
                 DRIVE_DIR, 'input/user_features.parquet')).reset_index()
+            # customer_id_shortカラムに変換する
+            self.user_features['customer_id_short'] = (
+                self.user_features["customer_id"].apply(lambda s: int(s[-16:], 16)).astype("uint64")
+            )
+            # customer_idカラムを落とす
+            self.user_features.drop(columns=['customer_id'], inplace=True)
+            
         else:
             self.user_features = pd.read_csv(os.path.join(
                 DRIVE_DIR, f'input/user_features_{Config.use_which_user_features}.csv')).reset_index()
