@@ -388,18 +388,10 @@ class SalesLagFeatures(UserFeatures):
             lag2 = lag2.stack().reset_index().rename(
                 columns={0: f'lag2_salescount_{target_column}'})
             print('stack lag features')
-
-            # 結合
-            lag_user_feature = pd.merge(
-                left=lag1, right=lag2, on=[target_column, 't_dat'], how='left'
-            )
-            del lag1, lag2,
-            print('merge lag features')
             
-            # dictに格納
-            self.time_series_lag_sales_count_dict[target_column] = lag_user_feature
-
-            del lag_user_feature
+            # dictにList型で格納
+            self.time_series_lag_sales_count_dict[target_column] = [lag1, lag2]
+            del lag1, lag2
 
     def _create_rolling_window_features(self):
         self.time_series_rolling_sales_count_dict = {}
@@ -429,19 +421,19 @@ class SalesLagFeatures(UserFeatures):
                 columns={0: f'rollvar_10week_salescount_{target_column}'})
 
             # 結合
-            rolling_user_feature = pd.DataFrame()
-            for i, df_feature in enumerate([roll_mean_5, roll_mean_10, roll_var_5, roll_var_10]):
-                if i == 0:
-                    rolling_user_feature = df_feature
-                else:
-                    rolling_user_feature = pd.merge(
-                        left=rolling_user_feature, right=df_feature,
-                        on=[target_column, 't_dat'], how='left'
-                    )
+            # rolling_user_feature = pd.DataFrame()
+            # for i, df_feature in enumerate([roll_mean_5, roll_mean_10, roll_var_5, roll_var_10]):
+            #     if i == 0:
+            #         rolling_user_feature = df_feature
+            #     else:
+            #         rolling_user_feature = pd.merge(
+            #             left=rolling_user_feature, right=df_feature,
+            #             on=[target_column, 't_dat'], how='left'
+            #         )
             # dictに格納
-            self.time_series_rolling_sales_count_dict[target_column] = rolling_user_feature
+            self.time_series_rolling_sales_count_dict[target_column] = [roll_mean_5, roll_mean_10, roll_var_5, roll_var_10]
 
-            del roll_mean_5, roll_mean_10, roll_var_5, roll_var_10, rolling_user_feature
+            del roll_mean_5, roll_mean_10, roll_var_5, roll_var_10
 
     def _create_expanding_window_features(self):
         self.time_series_expanding_sales_count_dict = {}
@@ -462,16 +454,16 @@ class SalesLagFeatures(UserFeatures):
             expanding_var = expanding_var.stack().reset_index().rename(
                 columns={0: f'expanding_var_salescount_{target_column}'})
 
-            # 結合
-            expanding_user_feature = pd.DataFrame()
-            for i, df_feature in enumerate([expanding_mean, expanding_var]):
-                if i == 0:
-                    expanding_user_feature = df_feature
-                else:
-                    expanding_user_feature = pd.merge(
-                        left=expanding_user_feature, right=df_feature,
-                        on=[target_column, 't_dat'], how='left'
-                    )
+            # # 結合
+            # expanding_user_feature = pd.DataFrame()
+            # for i, df_feature in enumerate([expanding_mean, expanding_var]):
+            #     if i == 0:
+            #         expanding_user_feature = df_feature
+            #     else:
+            #         expanding_user_feature = pd.merge(
+            #             left=expanding_user_feature, right=df_feature,
+            #             on=[target_column, 't_dat'], how='left'
+            #         )
             # dictに格納
             self.time_series_expanding_sales_count_dict[target_column] = expanding_user_feature
 
