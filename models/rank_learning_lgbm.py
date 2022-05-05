@@ -689,8 +689,8 @@ class RankLearningLgbm:
             # ユーザ特徴量＆アイテム特徴量を結合
             candidates_batch = (
                 candidates_batch
-                .merge(self.user_features, on=('customer_id_short'))
-                .merge(self.item_features, on=('article_id'))
+                .merge(self.user_features, on=('customer_id_short'), how='left')
+                .merge(self.item_features, on=('article_id'), how='left')
             )
 
             # ラグ特徴量をマージ
