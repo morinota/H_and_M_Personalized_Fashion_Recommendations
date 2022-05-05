@@ -377,20 +377,25 @@ class SalesLagFeatures(UserFeatures):
             # ラグ特徴量の生成
             lag1 = df_sample.shift(1, axis=1)
             lag2 = df_sample.shift(2, axis=1)
-
+            print('generate lag features')
             # 結合用にstacking
             lag1 = lag1.stack().reset_index().rename(
                 columns={0: f'lag1_salescount_{target_column}'})
             lag2 = lag2.stack().reset_index().rename(
                 columns={0: f'lag2_salescount_{target_column}'})
+            print('stack lag features')
+
             # 結合
             lag_user_feature = pd.merge(
                 left=lag1, right=lag2, on=[target_column, 't_dat'], how='left'
             )
+            del lag1, lag2,
+            print('merge lag features')
+            
             # dictに格納
             self.time_series_lag_sales_count_dict[target_column] = lag_user_feature
 
-            del lag1, lag2, lag_user_feature
+            del lag_user_feature
 
     def _create_rolling_window_features(self):
         self.time_series_rolling_sales_count_dict = {}
