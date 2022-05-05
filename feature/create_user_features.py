@@ -326,11 +326,15 @@ class SalesLagFeatures(UserFeatures):
             'int')
         self.dataset.dfi['article_id'] = self.dataset.dfi['article_id'].astype(
             'int')
+        
 
     def get(self) -> pd.DataFrame:
         self.user_feature = pd.DataFrame()
         # 以下、プロセス
         self._get_sales_time_series_each_user_subcategory()
+        # これ以降は、self.datasetとself.transaction_dfは使わないのでdel
+        del self.dataset, self.transaction_df
+
         self._create_lag_feature()
         self._create_rolling_window_features()
         self._create_expanding_window_features()
