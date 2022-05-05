@@ -38,11 +38,11 @@ class Config:
     create_not_lag_features = False
     create_lag_features = True
 
-    # use_which_user_features = 'original'
-    use_which_user_features = 'my_fullT'
-    # use_which_item_features = 'original'
+    use_which_user_features = 'original'
+    # use_which_user_features = 'my_fullT'
+    use_which_item_features = 'original'
+    # use_which_item_features = 'my_fullT'
 
-    use_which_item_features = 'my_fullT'
     # 特徴量の種類
     item_basic_feature_names = [
         # 'article_id',

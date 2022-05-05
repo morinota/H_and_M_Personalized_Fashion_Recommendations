@@ -119,10 +119,12 @@ class RuleBaseByCustomerAge:
             f'The shape of scope transaction for {unique_age_bin} is {self.df_t_each_agebin.shape}. \n')
 
     def _f3_create_ldbw_column(self):
+        """「トランザクションの最終日から何週間前か」を意味する"ldbw"(last_day_of_bought_week)カラムを作る
+        """
 
         # トランザクションログの最終日を取得
         self.last_ts = self.df_t_each_agebin['t_dat'].max()
-        # 最終日との日数差を計算し、'ldbw'カラムを格納
+        # 「トランザクションの最終日から何週間前か」、を'ldbw'カラムを格納
         self.df_t_each_agebin['ldbw'] = self.df_t_each_agebin['t_dat'].apply(
             # datetime型.floor():丸める（今回は7days毎）
             lambda d: self.last_ts - (self.last_ts - d).floor('7D')
