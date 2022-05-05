@@ -30,7 +30,7 @@ class ByfoneModel:
         # 最終日との日数差を計算し、'ldbw'カラムを格納
         self.transaction_train['ldbw'] = self.transaction_train['t_dat'].apply(
             # datetime型.floor():丸める（今回は7days毎）
-            lambda d: self.last_ts - (self.last_ts - d).floor('D')
+            lambda d: self.last_ts - (self.last_ts - d).floor('7D')
         )
 
     def _calculate_weekly_sales(self):

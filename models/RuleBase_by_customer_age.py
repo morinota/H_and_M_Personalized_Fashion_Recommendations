@@ -122,50 +122,52 @@ class RuleBaseByCustomerAge:
 
         # トランザクションログの最終日を取得
         self.last_ts = self.df_t_each_agebin['t_dat'].max()
-        # トランザクションログのt_datを一列のDataFrameとしてコピー
-        tmp = self.df_t_each_agebin[['t_dat']].copy()
-        # 曜日カラムを生成。dayofweek属性は、曜日のindex(月曜=0, 日曜=6)を返す。
-        tmp['dow'] = tmp['t_dat'].dt.dayofweek
+        # 最終日との日数差を計算し、'ldbw'カラムを格納
+        self.df_t_each_agebin['ldbw'] = self.df_t_each_agebin['t_dat'].apply(
+            # datetime型.floor():丸める（今回は7days毎）
+            lambda d: self.last_ts - (self.last_ts - d).floor('7D')
+        )
 
-        # t_datの週内最終日をlast_day_of_bought_weekとして取得.
-        tmp['ldbw'] = tmp['t_dat'] - \
-            pd.TimedeltaIndex(data=tmp['dow'] - 1, unit='D')
-        tmp.loc[tmp['dow'] >= 2, 'ldbw'] = tmp.loc[tmp['dow'] >= 2, 'ldbw'] + \
-            pd.TimedeltaIndex(
-                np.ones(len(tmp.loc[tmp['dow'] >= 2])) * 7, unit='D')
+    def _f4_1_calculate_weekly_sales(self):
+        # 各アイテムのWeeklySalesを取得
+        self.weekly_sales = self.df_t_each_agebin.groupby(
+            ['ldbw', 'article_id'])['t_dat'].count().reset_index()
 
-        self.df_t_each_agebin['ldbw'] = tmp['ldbw'].values
-
-    def _f4_add_quotient_columns(self):
-
-        weekly_sales = self.df_t_each_agebin.drop('customer_id_short', axis=1).groupby(
-            ['ldbw', 'article_id']).count().reset_index()
-        weekly_sales = weekly_sales.rename(columns={'t_dat': 'count'})
+        self.weekly_sales = self.weekly_sales.rename(columns={'t_dat': 'count'})
+        
+        # トランザクションログにweekly_salesをマージ
         self.df_t_each_agebin = pd.merge(
             left=self.df_t_each_agebin,
-            right=weekly_sales,
+            right=self.weekly_sales,
             on=['ldbw', 'article_id'],
             how='left'
         )
 
-        weekly_sales = weekly_sales.reset_index().set_index('article_id')
+    def _f4_2_calculate_count_targ(self):
+        self.weekly_sales = self.weekly_sales.reset_index().set_index('article_id')
 
+        # count_targカラムを生成
         self.df_t_each_agebin = pd.merge(
             left=self.df_t_each_agebin,
-            right=weekly_sales.loc[weekly_sales['ldbw']
+            right=self.weekly_sales.loc[self.weekly_sales['ldbw']
                                    == self.last_ts, ['count']],
             on='article_id',
+            # 列名が重複している場合の処理(デフォルトは'_x', '_y')
             suffixes=("", "_targ")
         )
 
+        # count_targカラムの欠損を埋める
         self.df_t_each_agebin['count_targ'].fillna(0, inplace=True)
-        del weekly_sales
+        del self.weekly_sales
 
+    def _f4_3_calculate_quotient(self):
         self.df_t_each_agebin['quotient'] = (
             self.df_t_each_agebin['count_targ']/self.df_t_each_agebin['count']
         )
 
     def _f5_create_general_pred(self):
+        """quotientの各アイテム毎の合計値を算出し、上位k個をgeneral_predとする。
+        """
         target_sales = self.df_t_each_agebin.drop(
             'customer_id_short', axis=1).groupby('article_id')['quotient'].sum()
         # quotientの合計値の大きい、上位12商品のarticle_idを取得
@@ -178,6 +180,8 @@ class RuleBaseByCustomerAge:
         del target_sales
 
     def _f6_conduct_byfone_2(self):
+        """同じアイテムを再度レコメンドする戦略
+        """
         purchase_dict = {}
 
         # Byfone戦略2つ目
@@ -229,8 +233,8 @@ class RuleBaseByCustomerAge:
         sub['prediction'] = sub['prediction'] + ' ' +  self.general_pred_str
         sub['prediction'] = sub['prediction'].str.strip()
         sub['prediction'] = sub['prediction'].str[:131]
-        # 最終的には3つ。
-        sub = sub[['customer_id','customer_id_short', 'prediction']]
+        # 最終的には2つ。
+        sub = sub[['customer_id_short', 'prediction']]
         sub.to_csv(f'submission_' + str(uniBin) + '.csv',index=False)
         print(f'Saved prediction for {uniBin}. The shape is {sub.shape}. \n')
         print('-'*50)
@@ -242,21 +246,27 @@ class RuleBaseByCustomerAge:
             self._f1_extract_df_customer_each_age_bin(unique_age_bin)
             self._f2_merge_transaction_df_and_df_u_each_age_bin(unique_age_bin)
             self._f3_create_ldbw_column()
-            self._f4_add_quotient_columns()
+            self._f4_1_calculate_weekly_sales()
+            self._f4_2_calculate_count_targ()
+            self._f4_3_calculate_quotient
             self._f5_create_general_pred()
             self._f6_conduct_byfone_2()
             self._f7_prepare_submission(unique_age_bin)
 
         # 各年齢bin毎の結果を結合
+        self.df_sub = self.dataset.df_sub[['customer_id_short', 'customer_id']].copy()
+
         for i, unique_age_bin in enumerate(self.list_UniBins):
             df_temp = pd.read_csv(f'submission_' + str(unique_age_bin) + '.csv')
-            if i == 0:
-                self.df_sub = df_temp
-            else:
-                self.df_sub = pd.concat([self.df_sub, df_temp], axis=0)
+            
+            self.df_sub = pd.merge(self.df_sub, df_temp, how='left', 
+            on='customer_id_short')
+
+        # もし欠損のあるユーザがいれば、''を埋める
+        self.df_sub['prediction'].fillna(value='', inplace=True)
 
         # エラーメッセージ(もしレコメンド結果の長さが違ったら)
-        # assert self.df_sub.shape[0] == self.numCustomers, f'The number of dfSub rows is not correct. {self.df_sub.shape[0]} vs {self.numCustomers}.'  
+        assert self.df_sub.shape[0] == self.numCustomers, f'The number of dfSub rows is not correct. {self.df_sub.shape[0]} vs {self.numCustomers}.'  
 
         # 最終的には3つのカラムにする.
         self.df_sub = self.df_sub[[
