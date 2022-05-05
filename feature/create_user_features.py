@@ -14,8 +14,10 @@ from typing import List, Dict, Any, Union
 import os
 
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
-
+USER_CATEGORICAL_COLUMNS = ['customer_id_short']
 # 特徴量生成のベースとなるクラス
+
+
 class UserFeatures(ABC):
     @abstractmethod
     def get(self) -> pd.DataFrame:
@@ -25,7 +27,7 @@ class UserFeatures(ABC):
         pass
 
 
-class AggrFeatures(UserFeatures):
+class NumericalFeatures(UserFeatures):
     """
     トランザクションログをベースに、ユーザ毎のNumericalデータの特徴量作成。
     Numericalデータとして使えそうなカラムはPriceと
@@ -177,7 +179,6 @@ class CustomerFeatures(UserFeatures):
     def _completion_Missing_value(self):
         """欠損値を補完するメソッド
         """
-
         self.customers_df['FN'] = self.customers_df['FN'].fillna(
             0).astype('int8')
         self.customers_df['Active'] = self.customers_df['Active'].fillna(
@@ -205,7 +206,7 @@ class CustomerFeatures(UserFeatures):
             self.customers_df[f'{column_name}_is_null'] = (
                 self.customers_df[f'{column_name}_is_null'] * 1
             )
-            
+
         columns_list = ['FN', 'Active', 'club_member_status',
                         'fashion_news_frequency', 'age']
         for column_name in columns_list:
@@ -235,7 +236,8 @@ class TargetEncodingFeatures(UserFeatures):
     """
     トランザクションログとアイテムメタデータ、ユーザメタデータをベースに、ユーザ特徴量を生成
     """
-    def __init__(self, transaction_df:pd.DataFrame, dataset:DataSet, topk:int=10):
+
+    def __init__(self, transaction_df: pd.DataFrame, dataset: DataSet, topk: int = 10):
         self.transaction_df = transaction_df
         self.dataset = dataset
         self.topk = topk
@@ -310,10 +312,181 @@ class TargetEncodingFeatures(UserFeatures):
         ex)あるアイテムに対して、クラスタ=20代ユーザのトランザクションに占める、あるアイテムの購入割合
         """
 
+
 class SalesLagFeatures(UserFeatures):
     """各ユーザ(or各ユーザサブカテゴリ)毎の時系列の購入回数のラグを生成する関数
     """
 
+    def __init__(self, dataset: DataSet, transaction_df: pd.DataFrame) -> None:
+        self.transaction_df = transaction_df
+        self.dataset = dataset
+        # article_idのデータ型を統一しておく
+        self.transaction_df['article_id'] = self.transaction_df['article_id'].astype(
+            'int')
+        self.dataset.dfi['article_id'] = self.dataset.dfi['article_id'].astype(
+            'int')
+
+    def get(self) -> pd.DataFrame:
+        self.user_feature = pd.DataFrame()
+        # 以下、プロセス
+        return self.user_feature
+
+    def __get_sales_time_series_each_user_subcategory(self):
+        """各ユーザ毎(or各ユーザサブカテゴリ)の時系列の売上個数のDataFrameを作る。
+        (ラグ特徴量を作る為の準備)
+        イメージ：レコードが各ユーザ(or各ユーザサブカテゴリ)、
+        各カラムが各週の売上個数を示すDataFrame
+        """
+        # トランザクションログに、ユーザメタデータとユーザメタデータを付与する
+        self.transaction_df = pd.merge(
+            left=self.transaction_df,
+            right=self.dataset.dfu,
+            on='customer_id_short',
+            how='left'
+        )
+
+        self.time_series_sales_count_dict = {}
+        # 各アイテム(or各アイテムサブカテゴリ)毎に繰り返し処理
+        for target_column in USER_CATEGORICAL_COLUMNS:
+            print(target_column)
+            df_sales_timeseries = self.transaction_df.groupby(
+                by=[target_column, pd.Grouper(
+                    key='t_dat', freq="W")]  # type: ignore
+            )['article_id'].count()
+            # unstacking
+            df_sales_timeseries = df_sales_timeseries.unstack(fill_value=0)
+            # dictに保存
+            self.time_series_sales_count_dict[target_column] = df_sales_timeseries
+
+        return self.time_series_sales_count_dict
+
+    def _create_lag_feature(self):
+        self.time_series_lag_sales_count_dict = {}
+        # 各アイテム(or各アイテムサブカテゴリ)毎に繰り返し処理
+        for target_column in USER_CATEGORICAL_COLUMNS:
+            print(f'create lag features of {target_column}')
+            df_sample: pd.DataFrame = self.time_series_sales_count_dict[target_column]
+
+            # ラグ特徴量の生成
+            lag1 = df_sample.shift(1, axis=1)
+            lag2 = df_sample.shift(2, axis=1)
+
+            # 結合用にstacking
+            lag1 = lag1.stack().reset_index().rename(
+                columns={0: f'lag1_salescount_{target_column}'})
+            lag2 = lag2.stack().reset_index().rename(
+                columns={0: f'lag2_salescount_{target_column}'})
+            # 結合
+            lag_user_feature = pd.merge(
+                left=lag1, right=lag2, on=[target_column, 't_dat'], how='left'
+            )
+            # dictに格納
+            self.time_series_lag_sales_count_dict[target_column] = lag_user_feature
+
+            del lag1, lag2, lag_user_feature
+
+    def _create_rolling_window_features(self):
+        self.time_series_rolling_sales_count_dict = {}
+        # 各アイテム(or各アイテムサブカテゴリ)毎に繰り返し処理
+        for target_column in USER_CATEGORICAL_COLUMNS:
+            print(f'create rolling window features of {target_column}')
+            df_sample: pd.DataFrame = self.time_series_sales_count_dict[target_column]
+
+            # Rolling特徴量の生成
+            roll_mean_5 = df_sample.shift(
+                1, axis=1).rolling(window=5, axis=1).mean()
+            roll_mean_10 = df_sample.shift(
+                1, axis=1).rolling(window=10, axis=1).mean()
+            roll_var_5 = df_sample.shift(
+                1, axis=1).rolling(window=5, axis=1).var()
+            roll_var_10 = df_sample.shift(
+                1, axis=1).rolling(window=10, axis=1).var()
+
+            # 結合用にstacking
+            roll_mean_5 = roll_mean_5.stack().reset_index().rename(
+                columns={0: f'rollmean_5week_salescount_{target_column}'})
+            roll_mean_10 = roll_mean_10.stack().reset_index().rename(
+                columns={0: f'rollmean_10week_salescount_{target_column}'})
+            roll_var_5 = roll_var_5.stack().reset_index().rename(
+                columns={0: f'rollvar_5week_salescount_{target_column}'})
+            roll_var_10 = roll_var_10.stack().reset_index().rename(
+                columns={0: f'rollvar_10week_salescount_{target_column}'})
+
+            # 結合
+            rolling_user_feature = pd.DataFrame()
+            for i, df_feature in enumerate([roll_mean_5, roll_mean_10, roll_var_5, roll_var_10]):
+                if i == 0:
+                    rolling_user_feature = df_feature
+                else:
+                    rolling_user_feature = pd.merge(
+                        left=rolling_user_feature, right=df_feature,
+                        on=[target_column, 't_dat'], how='left'
+                    )
+            # dictに格納
+            self.time_series_rolling_sales_count_dict[target_column] = rolling_user_feature
+
+            del roll_mean_5, roll_mean_10, roll_var_5, roll_var_10, rolling_user_feature
+
+    def _create_expanding_window_features(self):
+        self.time_series_expanding_sales_count_dict = {}
+        # 各アイテム(or各アイテムサブカテゴリ)毎に繰り返し処理
+        for target_column in USER_CATEGORICAL_COLUMNS:
+            print(f'create expanding window features of {target_column}')
+            df_sample: pd.DataFrame = self.time_series_sales_count_dict[target_column]
+
+            # Expanding特徴量の生成
+            expanding_mean = df_sample.shift(
+                1, axis=1).expanding(axis=1).mean()
+            expanding_var = df_sample.shift(
+                1, axis=1).expanding(axis=1).var()
+
+            # 結合用にstacking
+            expanding_mean = expanding_mean.stack().reset_index().rename(
+                columns={0: f'expanding_mean_salescount_{target_column}'})
+            expanding_var = expanding_var.stack().reset_index().rename(
+                columns={0: f'expanding_var_salescount_{target_column}'})
+
+            # 結合
+            expanding_user_feature = pd.DataFrame()
+            for i, df_feature in enumerate([expanding_mean, expanding_var]):
+                if i == 0:
+                    expanding_user_feature = df_feature
+                else:
+                    expanding_user_feature = pd.merge(
+                        left=expanding_user_feature, right=df_feature,
+                        on=[target_column, 't_dat'], how='left'
+                    )
+            # dictに格納
+            self.time_series_expanding_sales_count_dict[target_column] = expanding_user_feature
+
+            del expanding_mean, expanding_var, expanding_user_feature
+
+    def _export_each_timeseries_features(self):
+
+        for target_column in USER_CATEGORICAL_COLUMNS:
+            lag_features = self.time_series_lag_sales_count_dict[target_column]
+            rolling_features = self.time_series_rolling_sales_count_dict[target_column]
+            expanding_features = self.time_series_expanding_sales_count_dict[target_column]
+
+            # 結合
+            time_series_user_features = pd.DataFrame()
+            for i, df_feature in enumerate([lag_features, rolling_features, expanding_features]):
+                if i == 0:
+                    time_series_user_features = df_feature
+                else:
+                    time_series_user_features = pd.merge(
+                        left=time_series_user_features, right=df_feature,
+                        on=[target_column, 't_dat'], how='left'
+                    )
+
+            # とりあえずユーザの各サブカテゴリ毎の時系列特徴量をexportしておく
+            file_path = os.path.join(
+                DRIVE_DIR, f'feature/time_series_user_feature_{target_column}.csv')
+            time_series_user_features.to_csv(file_path, index=False)
+            pass
+
+CREATE_LAG_FEATURES = True
+CREATE_USER_FEATURES = False
 
 def create_user_features():
     # DataSetオブジェクトの読み込み
@@ -321,41 +494,47 @@ def create_user_features():
     # DataFrameとしてデータ読み込み
     dataset.read_data(c_id_short=False)
 
-
     # データをDataFrame型で読み込み
     df_transaction = dataset.df
     df_sub = dataset.df_sub  # 提出用のサンプル
     df_customers = dataset.dfu  # 各顧客の情報(メタデータ)
     df_articles = dataset.dfi  # 各商品の情報(メタデータ)
 
-    # トランザクションログのNumericalデータから特徴量生成
-    a = AggrFeatures(transactions_df=df_transaction).get().reset_index()
-    print('a')
+    if CREATE_USER_FEATURES:
+        # トランザクションログのNumericalデータから特徴量生成
+        # numerical_user_features = NumericalFeatures(
+        #     transactions_df=df_transaction).get().reset_index()
+        print('a')
 
-    # b = CountFeatures(df_transaction).get().reset_index()
-    c = CustomerFeatures(df_customers).get().reset_index()
+        # b = CountFeatures(df_transaction).get().reset_index()
+        categorical_user_features = CustomerFeatures(
+            df_customers).get().reset_index()
 
-    print('b')
+        print('b')
 
-    # finally join
-    user_features = dataset.df_sub[['customer_id', 'customer_id_short']]
-    for df_feature in [a, c]:
-        print(len(df_feature))
-        user_features = pd.merge(
-            left=user_features,
-            right=df_feature,
-            on='customer_id_short',
-            how='left'
-        )
+        # ラグ特徴量（Lag, Rolling, Expanding）を生成
 
-    print(len(user_features))
-    print(type(user_features))
+        # finally join
+        user_features = dataset.df_sub[['customer_id', 'customer_id_short']]
+        for df_feature in [numerical_user_features, categorical_user_features]:
+            print(len(df_feature))
+            user_features = pd.merge(
+                left=user_features,
+                right=df_feature,
+                on='customer_id_short',
+                how='left'
+            )
 
+        print(len(user_features))
+        print(type(user_features))
 
-    # エクスポート
-    feature_dir = os.path.join(DRIVE_DIR, 'input')
-    user_features.to_csv(os.path.join(
-        feature_dir, 'user_features_my_fullT.csv'), index=False)
-    # user_features.to_parquet(os.path.join(
-    #     feature_dir, 'user_features_my_fullT.parquet'), index=False)
-    
+        # エクスポート
+        feature_dir = os.path.join(DRIVE_DIR, 'input')
+        user_features.to_csv(os.path.join(
+            feature_dir, 'user_features_my_fullT.csv'), index=False)
+        # user_features.to_parquet(os.path.join(
+        #     feature_dir, 'user_features_my_fullT.parquet'), index=False)
+
+        if CREATE_LAG_FEATURES:
+            # user_lag_features
+            

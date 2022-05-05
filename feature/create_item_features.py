@@ -92,7 +92,6 @@ class SalesLagFeatures(ItemFeatures):
         self.transaction_df['t_year'] = self.transaction_df['t_dat'].dt.year
 
         self.time_series_sales_count_dict = {}
-        print(self.transaction_df.columns)
         # 各アイテム(or各アイテムサブカテゴリ)毎に繰り返し処理
         for target_column in ITEM_CATEGORICAL_COLUMNS:
             print(target_column)
