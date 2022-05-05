@@ -114,19 +114,31 @@ class RankLearningLgbm:
         #     .apply(lambda x: pd.factorize(x)[0])).astype("uint64")
         pass
 
-    def _merge_user_item_feature_to_transactions(self):
+    def _merge_user_item_feature_to_transactions(self, df_tra:pd.DataFrame)->pd.DataFrame:
+        """トランザクションログを受け取り、特徴量データをマージして返すメソッド.
+
+        Parameters
+        ----------
+        df_tra : pd.DataFrame
+            トランザクションログ
+
+        Returns
+        -------
+        pd.DataFrame
+            特徴量データをマージした、トランザクションログ
+        """
 
         # トランザクションログ側のt_datを'週の最終日'に変換
-        self.df['t_dat'] = pd.to_datetime(self.df['t_dat']).dt.to_period(
+        df_tra['t_dat'] = pd.to_datetime(df_tra['t_dat']).dt.to_period(
             'W').dt.to_timestamp(freq='W', how='end').dt.floor('D')
         # ユーザ特徴量をマージ
-        self.df = self.df.merge(self.user_features, on=(
+        df_tra = df_tra.merge(self.user_features, on=(
             'customer_id_short'), how='left')
         # アイテム特徴量をマージ
-        self.df = self.df.merge(
+        df_tra = df_tra.merge(
             self.item_features, on=('article_id'), how='left')
         # 降順(新しい順)で並び変え
-        self.df.sort_values(['t_dat', 'customer_id_short'],
+        df_tra.sort_values(['t_dat', 'customer_id_short'],
                             inplace=True, ascending=False)
         # ラグ特徴量をマージ
         for target_column in ITEM_CATEGORICAL_COLUMNS:
@@ -136,13 +148,15 @@ class RankLearningLgbm:
             lag_feature_df['t_dat'] = pd.to_datetime(lag_feature_df['t_dat'])
 
             # マージ
-            self.df = pd.merge(self.df, lag_feature_df,
+            df_tra = pd.merge(df_tra, lag_feature_df,
                                on=[target_column, 't_dat'], how='left'
                                )
 
-        print('unique user of self.df is {}'.format(
-            len(self.df['customer_id_short'].unique())
+        print('unique user of df_tra is {}'.format(
+            len(df_tra['customer_id_short'].unique())
         ))
+
+        return df_tra
 
     def _create_train_and_valid(self):
         N_ROWS = 1_000_000
@@ -166,8 +180,8 @@ class RankLearningLgbm:
         print(self._load_feature_data)
         self._preprocessing_user_feature()
         print(self._preprocessing_user_feature)
-        self._merge_user_item_feature_to_transactions()
-        print(self._merge_user_item_feature_to_transactions)
+        # self._merge_user_item_feature_to_transactions()
+        # print(self._merge_user_item_feature_to_transactions)
         self._create_train_and_valid()
         print(self._create_train_and_valid)
 
@@ -338,7 +352,7 @@ class RankLearningLgbm:
         # 後はコレをオリジナルとくっつければいいだけだけど...。
         return candidates_df
 
-    def _create_label_column(self):
+    def _create_positive_label_column(self):
         """ユーザ毎に# take only last 15 transactions。
         その後、各レコードにlabel=1(すなわち、購入あり)を付与する
         """
@@ -357,7 +371,9 @@ class RankLearningLgbm:
             .rank(method='first', ascending=False))
         # rn が15以下( =ユーザ毎に直近15件)のレコードだけ残す。
         self.train = self.train.query("rn <= 15")
+        # トランザクションログの不要なカラム(=学習に使えない)を落とす
         self.train.drop(columns=['price', 'sales_channel_id'], inplace=True)
+
         self.train.sort_values(['t_dat', 'customer_id_short'], inplace=True)
 
         self.train['label'] = 1
@@ -371,7 +387,7 @@ class RankLearningLgbm:
         # 検証用データに対しても同様(ユーザ毎に直近15件っていう制限はなくていいや)
         self.valid['label'] = 1
 
-    def _append_negatives_for_train_using_lastDate_fromTrain(self):
+    def _create_negatives_for_train_using_lastDate_fromTrain(self):
         # 各ユーザに対して、学習データ期間の最終購入日を取得する
         # ＝＞重複を取り除く時に重要！
         last_dates = (
@@ -396,29 +412,29 @@ class RankLearningLgbm:
         self.negatives_df['article_id'] = self.negatives_df['article_id'].astype(
             'int')
         
-        # negatives_df(<=候補アイテム)に特徴量を結合。
-        self.negatives_df = (
-            self.negatives_df
-            .merge(self.user_features, on=('customer_id_short'))
-            .merge(self.item_features, on=('article_id'))
-        )
-        # ラグ特徴量をマージ
-        for target_column in ITEM_CATEGORICAL_COLUMNS:
-            # 対象サブカテゴリのラグ特徴量を取り出す
-            lag_feature_df = self.item_lag_features[target_column]
-            # t_datをobject型からdatetime型に
-            lag_feature_df['t_dat'] = pd.to_datetime(lag_feature_df['t_dat'])
+        # # negatives_df(<=候補アイテム)に特徴量を結合。
+        # self.negatives_df = (
+        #     self.negatives_df
+        #     .merge(self.user_features, on=('customer_id_short'))
+        #     .merge(self.item_features, on=('article_id'))
+        # )
+        # # ラグ特徴量をマージ
+        # for target_column in ITEM_CATEGORICAL_COLUMNS:
+        #     # 対象サブカテゴリのラグ特徴量を取り出す
+        #     lag_feature_df = self.item_lag_features[target_column]
+        #     # t_datをobject型からdatetime型に
+        #     lag_feature_df['t_dat'] = pd.to_datetime(lag_feature_df['t_dat'])
 
-            # マージ
-            self.negatives_df = pd.merge(self.negatives_df, lag_feature_df,
-                               on=[target_column, 't_dat'], how='left'
-                               )
+        #     # マージ
+        #     self.negatives_df = pd.merge(self.negatives_df, lag_feature_df,
+        #                        on=[target_column, 't_dat'], how='left'
+        #                        )
 
         # negatives_dfのLabelカラムを0にする。(重複ない??)
         self.negatives_df['label'] = 0
         print(f'negative_df columns is {self.negatives_df.columns}')
 
-    def _append_negatives_for_valid_using_lastDate_fromTrain(self):
+    def _create_negatives_for_valid_using_lastDate_fromTrain(self):
         """検証用データも同様の手順で、negativeを作る?
         """
         # 各ユーザに対して、学習データ期間の最終購入日を取得する。
@@ -443,29 +459,29 @@ class RankLearningLgbm:
         self.negatives_df_valid['article_id'] = self.negatives_df_valid['article_id'].astype(
             'int')
 
-        # negatives_df(<=候補アイテム)に特徴量を結合。
-        self.negatives_df_valid = (
-            self.negatives_df_valid
-            .merge(self.user_features, on=('customer_id_short'))
-            .merge(self.item_features, on=('article_id'))
-        )
-        # ラグ特徴量をマージ
-        for target_column in ITEM_CATEGORICAL_COLUMNS:
-            # 対象サブカテゴリのラグ特徴量を取り出す
-            lag_feature_df = self.item_lag_features[target_column]
-            # t_datをobject型からdatetime型に
-            lag_feature_df['t_dat'] = pd.to_datetime(lag_feature_df['t_dat'])
+        # # negatives_df(<=候補アイテム)に特徴量を結合。
+        # self.negatives_df_valid = (
+        #     self.negatives_df_valid
+        #     .merge(self.user_features, on=('customer_id_short'))
+        #     .merge(self.item_features, on=('article_id'))
+        # )
+        # # ラグ特徴量をマージ
+        # for target_column in ITEM_CATEGORICAL_COLUMNS:
+        #     # 対象サブカテゴリのラグ特徴量を取り出す
+        #     lag_feature_df = self.item_lag_features[target_column]
+        #     # t_datをobject型からdatetime型に
+        #     lag_feature_df['t_dat'] = pd.to_datetime(lag_feature_df['t_dat'])
 
-            # マージ
-            self.negatives_df_valid = pd.merge(self.negatives_df_valid, lag_feature_df,
-                               on=[target_column, 't_dat'], how='left'
-                               )
+        #     # マージ
+        #     self.negatives_df_valid = pd.merge(self.negatives_df_valid, lag_feature_df,
+        #                        on=[target_column, 't_dat'], how='left'
+        #                        )
 
         # negatives_dfのLabelカラムを0にする。(重複ない??)
         self.negatives_df_valid['label'] = 0
 
         print(f'negative_df_valid columns is {self.negatives_df_valid.columns}')
-    def _merge_train_and_negatives(self):
+    def _concat_train_and_negatives(self):
         """学習データのPositiveレコードとNegativeレコードを縦にくっつける。
         """
         print(f'length of positive in train is {len(self.train)}')
@@ -481,7 +497,7 @@ class RankLearningLgbm:
 
         del self.negatives_df
 
-    def _merge_valid_and_negatives(self):
+    def _concat_valid_and_negatives(self):
         """同様に、検証データのPositiveレコードとNegativeレコードを縦にくっつける。
         """
         print(f'length of positive in train is {len(self.valid)}')
@@ -545,15 +561,21 @@ class RankLearningLgbm:
         """Fit lightgbm ranker model
         """
         self._create_purchased_dict()
-        self._create_label_column()
-        self._append_negatives_for_train_using_lastDate_fromTrain()
-        self._merge_train_and_negatives()
+        self._create_positive_label_column()
+        self._create_negatives_for_train_using_lastDate_fromTrain()
+        self._concat_train_and_negatives()
         self._create_query_data_train()
+        # ここで特徴量をマージ
+        self.train = self._merge_user_item_feature_to_transactions(self.train)
+
+
 
         # 検証用データも同様に準備
-        self._append_negatives_for_valid_using_lastDate_fromTrain()
-        self._merge_valid_and_negatives()
+        self._create_negatives_for_valid_using_lastDate_fromTrain()
+        self._concat_valid_and_negatives()
         self._create_query_data_valid()
+        # ここで特徴量をマージ
+        self.valid = self._merge_user_item_feature_to_transactions(self.valid)
 
         # データセットを用意
         self.ranker = LGBMRanker(
@@ -644,15 +666,16 @@ class RankLearningLgbm:
             """バッチサイズ分のCandidatesに対して、特徴量データをマージする関数.
             """
 
+            # Candidatesのt_datカラムを生成&検証週の最終日に
+            last_date_in_test_week = pd.to_datetime('2020-09-27') - timedelta(days=7* (105-self.val_week_id))
+            candidates_batch['t_dat'] = pd.to_datetime(last_date_in_test_week)
+            
             # ユーザ特徴量＆アイテム特徴量を結合
             candidates_batch = (
                 candidates_batch
                 .merge(self.user_features, on=('customer_id_short'))
                 .merge(self.item_features, on=('article_id'))
             )
-            # Candidatesのt_datカラムを生成&検証週の最終日に
-            last_date_in_test_week = pd.to_datetime('2020-09-27') - timedelta(days=7* (105-self.val_week_id))
-            candidates_batch['t_dat'] = pd.to_datetime(last_date_in_test_week)
 
             # ラグ特徴量をマージ
             for target_column in ITEM_CATEGORICAL_COLUMNS:

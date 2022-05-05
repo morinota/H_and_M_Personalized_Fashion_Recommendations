@@ -536,7 +536,6 @@ def create_user_features():
 
     if Config.create_lag_features:
         # user_lag_features
-        sales_lag_feature_class = SalesLagFeatures(
-            dataset=dataset, transaction_df=dataset.df
-        )
+        sales_lag_feature_class = SalesLagFeatures(dataset=dataset, transaction_df=dataset.df)
+        print('create sales lag feature instance')
         sales_lag_feature_class.get()
