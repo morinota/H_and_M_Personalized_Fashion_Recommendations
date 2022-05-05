@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from inspect import CO_ASYNC_GENERATOR
 from re import sub
+from turtle import back
 from typing import Dict, List, Tuple
 import pandas as pd
 from sympy import Li
@@ -708,6 +709,8 @@ class RankLearningLgbm:
         # batchサイズ分ずつ、予測していく.
         batch_size = 1_000_000
         for bucket in tqdm(range(0, len(self.candidates), batch_size)):
+            print(
+                f'predict process with index from {bucket} to {bucket+batch_size}')
             # candidateからバッチサイズ分抽出
             candidates_batch = self.candidates.iloc[bucket:(
                 bucket + batch_size), :]
