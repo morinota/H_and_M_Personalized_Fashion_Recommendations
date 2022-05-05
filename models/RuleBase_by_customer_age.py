@@ -256,7 +256,7 @@ class RuleBaseByCustomerAge:
         # 12個にする
         sub['prediction'] = sub['prediction'].str.split(' ')[:12] # 一旦リストに
         print(type(sub['prediction'].iloc[0]))
-        sub['prediction'] = sub['prediction'].apply(iter_to_str) # 再度strに戻す
+        sub['prediction'] = sub['prediction'].apply(lambda x: " ".join(x)) # 再度strに戻す
         # 最終的には2つ。
         sub = sub[['customer_id_short', 'prediction']]
         sub.to_csv(f'submission_' + str(uniBin) + '.csv', index=False)
