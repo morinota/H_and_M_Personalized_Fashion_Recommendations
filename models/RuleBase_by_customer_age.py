@@ -120,12 +120,14 @@ class RuleBaseByCustomerAge:
 
     def _f3_create_ldbw_column(self):
 
+        # トランザクションログの最終日を取得
         self.last_ts = self.df_t_each_agebin['t_dat'].max()
+        # トランザクションログのt_datを一列のDataFrameとしてコピー
         tmp = self.df_t_each_agebin[['t_dat']].copy()
         # 曜日カラムを生成。dayofweek属性は、曜日のindex(月曜=0, 日曜=6)を返す。
         tmp['dow'] = tmp['t_dat'].dt.dayofweek
 
-        # トランザクション発生週の最終日をlast_day_of_bought_weekとして保存?
+        # t_datの週内最終日をlast_day_of_bought_weekとして取得.
         tmp['ldbw'] = tmp['t_dat'] - \
             pd.TimedeltaIndex(data=tmp['dow'] - 1, unit='D')
         tmp.loc[tmp['dow'] >= 2, 'ldbw'] = tmp.loc[tmp['dow'] >= 2, 'ldbw'] + \

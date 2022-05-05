@@ -409,6 +409,7 @@ class SalesLagFeatures(UserFeatures):
                 1, axis=1).rolling(window=5, axis=1).var()
             roll_var_10 = df_sample.shift(
                 1, axis=1).rolling(window=10, axis=1).var()
+            print('generate rolling features')
 
             # 結合用にstacking
             roll_mean_5 = roll_mean_5.stack().reset_index().rename(
@@ -419,7 +420,7 @@ class SalesLagFeatures(UserFeatures):
                 columns={0: f'rollvar_5week_salescount_{target_column}'})
             roll_var_10 = roll_var_10.stack().reset_index().rename(
                 columns={0: f'rollvar_10week_salescount_{target_column}'})
-
+            print('stack rolling features')
             # 結合
             # rolling_user_feature = pd.DataFrame()
             # for i, df_feature in enumerate([roll_mean_5, roll_mean_10, roll_var_5, roll_var_10]):
@@ -432,7 +433,7 @@ class SalesLagFeatures(UserFeatures):
             #         )
             # dictに格納
             self.time_series_rolling_sales_count_dict[target_column] = [roll_mean_5, roll_mean_10, roll_var_5, roll_var_10]
-
+            print('save rolling features')
             del roll_mean_5, roll_mean_10, roll_var_5, roll_var_10
 
     def _create_expanding_window_features(self):
@@ -447,14 +448,14 @@ class SalesLagFeatures(UserFeatures):
                 1, axis=1).expanding(axis=1).mean()
             expanding_var = df_sample.shift(
                 1, axis=1).expanding(axis=1).var()
-
+            print('generate expanding features')
             # 結合用にstacking
             expanding_mean = expanding_mean.stack().reset_index().rename(
                 columns={0: f'expanding_mean_salescount_{target_column}'})
             expanding_var = expanding_var.stack().reset_index().rename(
                 columns={0: f'expanding_var_salescount_{target_column}'})
-
-            # # 結合
+            print('stack expanding features')
+            # 結合
             # expanding_user_feature = pd.DataFrame()
             # for i, df_feature in enumerate([expanding_mean, expanding_var]):
             #     if i == 0:
@@ -464,10 +465,12 @@ class SalesLagFeatures(UserFeatures):
             #             left=expanding_user_feature, right=df_feature,
             #             on=[target_column, 't_dat'], how='left'
             #         )
-            # dictに格納
-            self.time_series_expanding_sales_count_dict[target_column] = expanding_user_feature
 
-            del expanding_mean, expanding_var, expanding_user_feature
+
+            # dictに格納
+            self.time_series_expanding_sales_count_dict[target_column] = [expanding_mean, expanding_var]
+            print('save expanding features')
+            del expanding_mean, expanding_var
 
     def _export_each_timeseries_features(self):
 
@@ -478,7 +481,7 @@ class SalesLagFeatures(UserFeatures):
 
             # 結合
             time_series_user_features = pd.DataFrame()
-            for i, df_feature in enumerate([lag_features, rolling_features, expanding_features]):
+            for i, df_feature in enumerate(lag_features + rolling_features + expanding_features):
                 if i == 0:
                     time_series_user_features = df_feature
                 else:
