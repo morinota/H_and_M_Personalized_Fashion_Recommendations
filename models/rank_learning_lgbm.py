@@ -664,6 +664,7 @@ class RankLearningLgbm:
             # NoneだったらオリジナルのCandidate
             self.candidates = self.__prepare_candidates_original(
                 self.sample_sub['customer_id_short'].unique(), Config.num_candidate_predict)
+            print(f'length of prediction candidates is {len(self.candidates)}')
         else:
             self.candidates = self._load_candidate_from_other_recommendation()
 
@@ -722,9 +723,11 @@ class RankLearningLgbm:
             self.preds.append(outputs)
 
     def _prepare_submission(self):
-        # 各バッチ毎の予測結果(ndarrayのリスト)を縦に結合
+        # 各バッチ毎の予測結果(ndarrayのリスト)を縦に結合(1つのndarrayに)
         # ->(ユニークユーザ × num_candidate_predict)個のレコードの発生確率y
         self.preds = np.concatenate(self.preds)
+        print(f'type of prediction results is {type(self.preds)}')
+        print(f'length of prediction results is {self.preds.shape}')
         # 候補アイテムのdf(長さ=(ユニークユーザ × num_candidate_predict))に、予測結果を格納.
         self.candidates['preds'] = self.preds
 
