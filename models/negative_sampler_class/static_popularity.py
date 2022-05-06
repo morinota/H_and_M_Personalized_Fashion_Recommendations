@@ -104,7 +104,7 @@ class NegativeSamplerStaticPopularity:
         self.df_candidates = self.df_candidates.explode('prediction')
         # 「候補」アイテムのカラムをRename
         self.df_candidates.rename(columns={'prediction': 'article_id'}, inplace=True)
-
+        print(f'columns of df_candidates are {self.df_candidates.columns}')
         # 最終的には2つのカラム
         self.df_candidates = self.df_candidates[['customer_id_short', 'article_id']]
 

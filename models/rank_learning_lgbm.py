@@ -647,7 +647,7 @@ class RankLearningLgbm:
         """
         self.sample_sub = self.dataset.df_sub[[
             'customer_id_short', 'customer_id']].copy()
-            
+
         self.candidates = pd.DataFrame()
         # レコメンド候補を用意
         if Config.predict_candidate_way_name == None:
@@ -666,6 +666,7 @@ class RankLearningLgbm:
         else:
             self.candidates = self._load_candidate_from_other_recommendation()
 
+        print(f'columns of candidates are {self.candidates.columns}')
         # article_idのデータ型をindに
         self.candidates['article_id'] = self.candidates['article_id'].astype(
             'int')
