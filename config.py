@@ -11,14 +11,14 @@ class Config:
     #
 
     # 本番レコメンドか、検証用レコメンドか
-    run_for_submittion = False # bool
+    run_for_submittion = False  # bool
 
     # 5%サンプリングを使うか、フルサンプリングを使うか。
-    use_full_sampling = True # bool
+    use_full_sampling = False  # bool
 
     # ==========================================================================
     # ランク学習用のCandidate
-    num_candidate_train = 15  # 訓練用のCandidateの数
+    num_candidate_train = 12  # 訓練用のCandidateの数
     num_candidate_predict = 12  # 予測用のCandidateの数
     num_candidate_valid = 7
 
@@ -34,14 +34,14 @@ class Config:
     # 特徴量の話
     # 特徴量生成
     create_user_features = False
-    create_item_features =True
+    create_item_features = True
     create_not_lag_features = True
     create_lag_features = False
 
-    use_which_user_features = 'original'
-    # use_which_user_features = 'my_fullT'
-    use_which_item_features = 'original'
-    # use_which_item_features = 'my_fullT'
+    # use_which_user_features = 'original'
+    use_which_user_features = 'my_fullT'
+    # use_which_item_features = 'original'
+    use_which_item_features = 'my_fullT'
 
     # 特徴量の種類
     item_basic_feature_names = [
@@ -90,7 +90,7 @@ class Config:
     ]
 
     item_categorical_feature_names = []
-    item_lag_feature_names = [
+    item_lag_feature_names_kind = [
         # 実際のカラム名には、_の後にアイテムサブカテゴリstrが続く.
         'lag1_salescount_',
         'lag2_salescount_',
@@ -102,6 +102,22 @@ class Config:
 
         'expanding_mean_salescount_',
         'expanding_var_salescount_',
+    ]
+    item_lag_feature_names_subcategory = [
+        # 実際のカラム名には、先頭にitem_lag_feature_names_kindが続く.
+        'article_id',
+        # 'prod_name',
+        'product_type_name',  # ユニーク値=125
+        'product_group_name',  # ユニーク値=18
+        'graphical_appearance_name',  # ユニーク値=30
+        'colour_group_name',  # ユニーク値=50
+        'perceived_colour_value_name',  # ユニーク値=8
+        'perceived_colour_master_name',  # ユニーク値=20
+        'department_name', 'index_code',  # ユニーク値=294
+        'index_name',  # ユニーク値=10
+        'index_group_name',  # ユニーク値=5
+        'section_name',  # ユニーク値=56
+        'garment_group_name',  # ユニーク値=21
     ]
     item_target_encoding_features = []
 
