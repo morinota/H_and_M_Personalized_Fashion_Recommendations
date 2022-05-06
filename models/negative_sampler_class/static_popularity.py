@@ -7,7 +7,7 @@ from my_class.dataset import DataSet
 from utils.useful_func import iter_to_str
 import numpy as np
 from tqdm import tqdm
-from ..Byfone_appraoch import ByfoneModel
+from models.Byfone_appraoch_moreSpeedy import ByfoneModel
 
 
 class NegativeSamplerStaticPopularity:

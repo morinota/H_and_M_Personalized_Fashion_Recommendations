@@ -1,3 +1,4 @@
+from copyreg import pickle
 from datetime import datetime, timedelta
 from inspect import CO_ASYNC_GENERATOR
 from re import sub
@@ -14,6 +15,7 @@ from lightgbm.sklearn import LGBMRanker
 from pathlib import Path
 from config import Config
 from models.negative_sampler_class.static_popularity import NegativeSamplerStaticPopularity
+import pickle
 
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 ITEM_CATEGORICAL_COLUMNS = ['article_id',
@@ -626,6 +628,11 @@ class RankLearningLgbm:
 
         # Feature Importanceを取得
         self._save_feature_importance()
+
+        # 学習済みモデルの保存
+        if Config.save_trained_model:
+            filepath = os.path.join(DRIVE_DIR, 'trained_lgbm_model.pkl')
+            pickle.dump(obj=self.ranker, file=open(filepath, 'wb') )
 
         # Saving memoryの為、学習用と検証用のデータセットを削除
         del self.train, self.valid

@@ -16,6 +16,9 @@ class Config:
     # 5%サンプリングを使うか、フルサンプリングを使うか。
     use_full_sampling = False  # bool
 
+    # LGBMRankerをセーブするか否か
+    save_trained_model = True
+
     # ==========================================================================
     # ランク学習用のCandidate
     num_candidate_train = 12  # 訓練用のCandidateの数
