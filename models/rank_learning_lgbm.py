@@ -13,7 +13,7 @@ import os
 from lightgbm.sklearn import LGBMRanker
 from pathlib import Path
 from config import Config
-# from negative_sampler_class import static_popularity
+from negative_sampler_class.static_popularity import NegativeSamplerStaticPopularity
 
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 ITEM_CATEGORICAL_COLUMNS = ['article_id',
@@ -186,7 +186,7 @@ class RankLearningLgbm:
             pd.to_datetime('2020-09-16') - self.date_minus)]
 
         # delete transactions to save memory
-        del self.df
+        # del self.df
 
     def preprocessing(self):
         """前処理を実行するメソッド.
@@ -419,6 +419,14 @@ class RankLearningLgbm:
             self.negatives_df = self.__prepare_candidates_original(
                 customers_id=self.train['customer_id_short'].unique(),
                 n_candidates=Config.num_candidate_train)
+        elif Config.predict_candidate_way_name == 'StaticPopularity_byfone':
+            # Negativeサンプラーオブジェクトを使って、Negativeサンプル(DataFrame)を生成。
+            self.negatives_df = NegativeSamplerStaticPopularity(
+                dataset=self.dataset,
+                transaction_train=self.df,
+                val_week_id=self.val_week_id
+            ).get_negative_record(unique_customer_ids=self.train['customer_id_short'].unique())
+
         else:
             self.negatives_df = self._load_candidate_from_other_recommendation()
 

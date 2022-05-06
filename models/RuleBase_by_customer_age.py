@@ -37,11 +37,6 @@ class RuleBaseByCustomerAge:
             bins=self.ageBin
         )
 
-    def _check_missing_data_of_age(self):
-        """年齢の欠損値の数を確認
-        """
-        pass
-
     def _extract_recent_transaction(self):
         """最近(直近三週間)のトランザクションのみを抽出。
         """
@@ -82,10 +77,9 @@ class RuleBaseByCustomerAge:
 
     def preprocessing(self):
         self._grouping_each_age()
-        self._check_missing_data_of_age()
-        self._extract_recent_transaction()
-        self._add_age_bin_to_recent_transaction()
-        self._count_recent_popular_articles_of_each_ages()
+        # self._extract_recent_transaction()
+        # self._add_age_bin_to_recent_transaction()
+        # self._count_recent_popular_articles_of_each_ages()
 
     def _f1_extract_df_customer_each_age_bin(self, unique_age_bin: str):
         """各年齢ビンに該当するdf_customerを抽出する。
@@ -144,7 +138,7 @@ class RuleBaseByCustomerAge:
         # t_datが水曜日以降のレコードの場合は、次の週(次の火曜日)としてldbwをカウントする
         self.df_t_each_agebin.loc[self.df_t_each_agebin['dow'] >= 2, 'ldbw'] = (
             self.df_t_each_agebin.loc[self.df_t_each_agebin['dow'] >= 2, 'ldbw']
-            + timedelta(days=7)
+            + pd.TimedeltaIndex(data=np.ones(len(self.df_t_each_agebin.loc[self.df_t_each_agebin['dow'] >= 2])) * 7, unit='D')
         )
 
     def _f4_1_calculate_weekly_sales(self):
