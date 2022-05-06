@@ -10,6 +10,7 @@ from utils.just_offline_validation import offline_validation
 from utils.partitioned_validation import partitioned_validation, user_grouping_online_and_offline
 from utils.oneweek_holdout_validation import get_train_oneweek_holdout_validation, get_valid_oneweek_holdout_validation
 
+from models.negative_sampler_class.static_popularity import NegativeSamplerStaticPopularity
 import os
 from logs.base_log import create_logger, get_logger, stop_watch
 # from logs.time_keeper import stop_watch
