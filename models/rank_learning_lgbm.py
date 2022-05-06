@@ -647,7 +647,8 @@ class RankLearningLgbm:
         """
         self.sample_sub = self.dataset.df_sub[[
             'customer_id_short', 'customer_id']].copy()
-
+            
+        self.candidates = pd.DataFrame()
         # レコメンド候補を用意
         if Config.predict_candidate_way_name == None:
             # NoneだったらオリジナルのCandidate
@@ -657,7 +658,7 @@ class RankLearningLgbm:
 
         elif Config.predict_candidate_way_name == 'StaticPopularity_byfone':
             # Negativeサンプラーオブジェクトを使って、Negativeサンプル(DataFrame)を生成。
-            self.negatives_df = NegativeSamplerStaticPopularity(
+            self.candidates = NegativeSamplerStaticPopularity(
                 dataset=self.dataset,
                 transaction_train=self.df,
                 val_week_id=self.val_week_id
