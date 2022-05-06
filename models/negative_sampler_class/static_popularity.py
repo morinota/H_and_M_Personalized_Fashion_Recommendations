@@ -99,7 +99,7 @@ class NegativeSamplerStaticPopularity:
         self.df_candidates['prediction'] = self.df_candidates['prediction'].apply(
             lambda x: [int(article_id) for article_id in x]
             )
-        print(f'check data type of candidates: {type(self.df_candidates['prediction'].iloc[0][0])}')
+        print(f'check data type of candidates: {self.df_candidates['prediction'][0]}')
         # explodeメソッドで、各ユーザの[predictionのリスト]をレコードに展開する！他のカラムの要素は複製される。
         self.df_candidates = self.df_candidates.explode('prediction')
         # 「候補」アイテムのカラムをRename
