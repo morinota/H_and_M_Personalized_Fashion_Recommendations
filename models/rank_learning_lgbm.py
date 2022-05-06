@@ -454,8 +454,17 @@ class RankLearningLgbm:
         # 各ユーザに対して、「候補」アイテム(negative)をn個取得する。(transaction_dfっぽい形式になってる!)
         if Config.predict_candidate_way_name == None:
             self.negatives_df_valid = self.__prepare_candidates_original(
-                customers_id=self.train['customer_id_short'].unique(),
+                customers_id=self.valid['customer_id_short'].unique(),
                 n_candidates=Config.num_candidate_valid)
+
+        elif Config.predict_candidate_way_name == 'StaticPopularity_byfone':
+            # Negativeサンプラーオブジェクトを使って、Negativeサンプル(DataFrame)を生成。
+            self.negatives_df = NegativeSamplerStaticPopularity(
+                dataset=self.dataset,
+                transaction_train=self.df,
+                val_week_id=self.val_week_id
+            ).get_negative_record(unique_customer_ids=self.valid['customer_id_short'].unique())
+
         else:
             self.negatives_df_valid = self._load_candidate_from_other_recommendation()
 
@@ -638,6 +647,14 @@ class RankLearningLgbm:
             self.candidates = self.__prepare_candidates_original(
                 self.sample_sub['customer_id_short'].unique(), Config.num_candidate_predict)
             print(f'length of prediction candidates is {len(self.candidates)}')
+
+        elif Config.predict_candidate_way_name == 'StaticPopularity_byfone':
+            # Negativeサンプラーオブジェクトを使って、Negativeサンプル(DataFrame)を生成。
+            self.negatives_df = NegativeSamplerStaticPopularity(
+                dataset=self.dataset,
+                transaction_train=self.df,
+                val_week_id=self.val_week_id
+            ).get_negative_record(unique_customer_ids=self.sample_sub['customer_id_short'].unique())
         else:
             self.candidates = self._load_candidate_from_other_recommendation()
 
