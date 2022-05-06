@@ -629,7 +629,8 @@ class RankLearningLgbm:
         # Categorical Featureの指定
         self.categorical_feature_names: List[str] = list(
             X_train.select_dtypes(include=int).columns)
-        print(f'categorical feature names are {self.categorical_feature_names}')
+        print(
+            f'categorical feature names are {self.categorical_feature_names}')
         # 学習
         self.ranker = self.ranker.fit(
             X=X_train,
