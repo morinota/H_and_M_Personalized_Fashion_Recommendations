@@ -199,4 +199,4 @@ class Config:
     # ===================================================---===================
     # validation
     training_days_one_week_holdout_validation = 31
-    grouping_column = 'online_and_offline'  # or 'age_bin' or 'online_and_offline' or 'active_status'
+    grouping_column = 'active_status'  # or 'age_bin' or 'online_and_offline' or 'active_status'
