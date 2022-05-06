@@ -276,13 +276,14 @@ class NumericalFeature(ItemFeatures):
                 median_item_price='median',
                 sum_item_price='sum',
                 # maxとminの差
-                max_minus_min_item_price= lambda x: x.max()-x.min(),
+                max_minus_min_item_price=lambda x: x.max()-x.min(),
                 # maxとmeanの差
                 max_minus_mean_item_price=lambda x: x.max()-x.mean(),
                 # minとmeanの差
                 mean_minus_min_item_price=lambda x: x.mean()-x.min(),
                 # sum/mean = count (アイテムのトランザクション回数)
                 count_item_price=lambda x: x.sum() / x.mean(),
+
                 # 小数点以下だけ取り出した要素
                 mean_item_price_under_point=lambda x: math.modf(x.mean())[
                     0],
@@ -298,34 +299,7 @@ class NumericalFeature(ItemFeatures):
                     1],
                 sum_item_price_under_point=lambda x: math.modf(x.sum())[0],
                 sum_item_price_over_point=lambda x: math.modf(x.sum())[1],
-                # dictでaggとrenameを同時に行うのが非推奨らしい.
-                #     {
-                #     'mean_item_price': 'mean',
-                #     'std_item_price': lambda x: x.std(),
-                #     'max_item_price': 'max',
-                #     'min_item_price': 'min',
-                #     'median_item_price': 'median',
-                #     'sum_item_price': 'sum',
-                #     # maxとminの差
-                #     'max_minus_min_item_price': lambda x: x.max()-x.min(),
-                #     # maxとmeanの差
-                #     'max_minus_mean_item_price': lambda x: x.max()-x.mean(),
-                #     # minとmeanの差
-                #     'mean_minus_min_item_price': lambda x: x.mean()-x.min(),
-                #     # sum/mean = count (アイテムのトランザクション回数)
-                #     'count_item_price': lambda x: x.sum() / x.mean(),
-                #     # 小数点以下だけ取り出した要素
-                #     'mean_item_price_under_point': lambda x: math.modf(x.mean())[0],
-                #     'mean_item_price_over_point': lambda x: math.modf(x.mean())[1],
-                #     'max_item_price_under_point': lambda x: math.modf(x.max())[0],
-                #     'max_item_price_over_point': lambda x: math.modf(x.max())[1],
-                #     'min_item_price_under_point': lambda x: math.modf(x.min())[0],
-                #     'min_item_price_over_point': lambda x: math.modf(x.min())[1],
-                #     'median_item_price_under_point': lambda x: math.modf(x.median())[0],
-                #     'median_item_price_over_point': lambda x: math.modf(x.median())[1],
-                #     'sum_item_price_under_point': lambda x: math.modf(x.sum())[0],
-                #     'sum_item_price_over_point': lambda x: math.modf(x.sum())[1],
-                # }
+
             )
             .astype('float32')  # numerical 特徴量は全てfloatに
         )
@@ -447,7 +421,24 @@ def create_items_features():
 
     # 元のアイテムメタデータと生成した特徴量をマージ
     item_features = pd.merge(
-        dataset.dfi, item_numerical_feature, 
+        dataset.dfi, item_numerical_feature,
+        on='article_id', how='left'
+    )
+
+    # よく分からないOne-hot encoding カラムを追加
+    one_hot_encoding_columns = [
+        'prod_name_3',
+        'product_type_name_3', 'product_group_name_3',
+        'graphical_appearance_name_3', 'colour_group_name_3',
+        'perceived_colour_value_name_3', 'perceived_colour_master_name_3',
+        'department_name_3', 'index_name_3', 'index_group_name_3',
+        'section_name_3', 'garment_group_name_3'
+    ]
+    item_feature_origin = pd.read_parquet(os.path.join(DRIVE_DIR, 'input/item_features.parquet'))
+    item_feature_origin = item_feature_origin[one_hot_encoding_columns].reset_index()
+    # マージ
+    item_features = pd.merge(
+        item_features, item_feature_origin,
         on='article_id', how='left'
     )
 
@@ -455,5 +446,5 @@ def create_items_features():
     feature_dir = os.path.join(DRIVE_DIR, 'input')
     item_features.to_csv(os.path.join(
         feature_dir, 'item_features_my_fullT.csv'), index=False)
-    # item_numerical_feature.to_parquet(os.path.join(
-    #     feature_dir, 'item_features_my_fullT.parquet'), index=False)
+    item_features.to_parquet(os.path.join(
+        feature_dir, 'item_features_my_fullT.parquet'), index=False)

@@ -189,7 +189,7 @@ class RuleBaseByCustomerAge:
         """
         target_sales = self.df_t_each_agebin.drop(
             'customer_id_short', axis=1).groupby('article_id')['quotient'].sum()
-        # quotientの合計値の大きい、上位12商品のarticle_idを取得
+        # quotientの合計値の大きい、上位12商品のarticle_id(dfのindexになってる)を取得
         self.general_pred = target_sales.nlargest(n=12).index.tolist()
 
         # article_idを提出用に整形
