@@ -82,9 +82,13 @@ class NegativeSamplerStaticPopularity:
         self.negatives_df = self.negatives_df[['customer_id_short', 'article_id']]
 
     def get_prediction_candidates(self, unique_customer_ids):
-        self.negatives_df:pd.DataFrame
+        self.df_candidates = pd.DataFrame()
         self.unique_customer_ids = unique_customer_ids
         self.n_negative = Config.num_candidate_predict
+
+        self._create_byfone_recommendation()
+
+        return self.df_candidates
 
     def _create_byfone_recommendation(self):
         byfone_model = ByfoneModel(self.df_t,
