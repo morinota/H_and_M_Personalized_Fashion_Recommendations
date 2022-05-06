@@ -2,6 +2,7 @@ from re import S
 from textwrap import fill
 import pandas as pd
 import numpy as np
+from config import Config
 from regex import B
 from pytest import Item
 from tqdm import tqdm
@@ -408,43 +409,45 @@ def create_items_features():
     df_transaction = dataset.df
 
     # item_lag_features
-    sales_lag_features = SalesLagFeatures(
-        dataset=dataset, transaction_df=dataset.df)
-    print('create sales lag feature instance')
-    sales_lag_features.get()
+    if Config.create_lag_features:
+        sales_lag_features = SalesLagFeatures(
+            dataset=dataset, transaction_df=dataset.df)
+        print('create sales lag feature instance')
+        sales_lag_features.get()
 
-    # numerical features
-    numerical_item_feature = NumericalFeature(
-        dataset=dataset, transaction_df=dataset.df
-    )
-    item_numerical_feature = numerical_item_feature.get()
+    if Config.create_not_lag_features:
+        # numerical features
+        numerical_item_feature = NumericalFeature(
+            dataset=dataset, transaction_df=dataset.df
+        )
+        item_numerical_feature = numerical_item_feature.get()
 
-    # 元のアイテムメタデータと生成した特徴量をマージ
-    item_features = pd.merge(
-        dataset.dfi, item_numerical_feature,
-        on='article_id', how='left'
-    )
+        # 元のアイテムメタデータと生成した特徴量をマージ
+        item_features = pd.merge(
+            dataset.dfi, item_numerical_feature,
+            on='article_id', how='left'
+        )
 
-    # よく分からないOne-hot encoding カラムを追加
-    one_hot_encoding_columns = [
-        'prod_name_3',
-        'product_type_name_3', 'product_group_name_3',
-        'graphical_appearance_name_3', 'colour_group_name_3',
-        'perceived_colour_value_name_3', 'perceived_colour_master_name_3',
-        'department_name_3', 'index_name_3', 'index_group_name_3',
-        'section_name_3', 'garment_group_name_3'
-    ]
-    item_feature_origin = pd.read_parquet(os.path.join(DRIVE_DIR, 'input/item_features.parquet'))
-    item_feature_origin = item_feature_origin[one_hot_encoding_columns].reset_index()
-    # マージ
-    item_features = pd.merge(
-        item_features, item_feature_origin,
-        on='article_id', how='left'
-    )
+        # よく分からないOne-hot encoding カラムを追加
+        one_hot_encoding_columns = [
+            'prod_name_3',
+            'product_type_name_3', 'product_group_name_3',
+            'graphical_appearance_name_3', 'colour_group_name_3',
+            'perceived_colour_value_name_3', 'perceived_colour_master_name_3',
+            'department_name_3', 'index_name_3', 'index_group_name_3',
+            'section_name_3', 'garment_group_name_3'
+        ]
+        item_feature_origin = pd.read_parquet(os.path.join(DRIVE_DIR, 'input/item_features.parquet'))
+        item_feature_origin = item_feature_origin[one_hot_encoding_columns].reset_index()
+        # マージ
+        item_features = pd.merge(
+            item_features, item_feature_origin,
+            on='article_id', how='left'
+        )
 
-    # エクスポート
-    feature_dir = os.path.join(DRIVE_DIR, 'input')
-    item_features.to_csv(os.path.join(
-        feature_dir, 'item_features_my_fullT.csv'), index=False)
-    item_features.to_parquet(os.path.join(
-        feature_dir, 'item_features_my_fullT.parquet'), index=False)
+        # エクスポート
+        feature_dir = os.path.join(DRIVE_DIR, 'input')
+        item_features.to_csv(os.path.join(
+            feature_dir, 'item_features_my_fullT.csv'), index=False)
+        item_features.to_parquet(os.path.join(
+            feature_dir, 'item_features_my_fullT.parquet'), index=False)
