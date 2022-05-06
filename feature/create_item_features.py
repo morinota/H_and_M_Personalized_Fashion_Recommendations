@@ -428,7 +428,7 @@ def create_items_features():
             on='article_id', how='left'
         )
 
-        # よく分からないOne-hot encoding カラムを追加
+        # よく分からないOne-hot encodingカラム(=対象サブカテゴリが、人気上位3つのサブカテゴリに含まれるか否か)を追加
         one_hot_encoding_columns = [
             'prod_name_3',
             'product_type_name_3', 'product_group_name_3',
