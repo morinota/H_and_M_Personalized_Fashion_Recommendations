@@ -282,7 +282,7 @@ class RuleBaseByCustomerAge:
 
         # 両者のレコメンド結果を結合
         pred_list = []
-        for cust_id in tqdm(self.df_sub['customer_id_short']):
+        for cust_id in tqdm(sub['customer_id_short']):
             # もしユーザidがpurchase_dictにあれば=トランザクションログに含まれていれば...
             if cust_id in self.purchase_dict:
                 series = pd.Series(self.purchase_dict[cust_id])
