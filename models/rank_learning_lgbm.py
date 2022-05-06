@@ -459,7 +459,7 @@ class RankLearningLgbm:
 
         elif Config.predict_candidate_way_name == 'StaticPopularity_byfone':
             # Negativeサンプラーオブジェクトを使って、Negativeサンプル(DataFrame)を生成。
-            self.negatives_df = NegativeSamplerStaticPopularity(
+            self.negatives_df_valid = NegativeSamplerStaticPopularity(
                 dataset=self.dataset,
                 transaction_train=self.df,
                 val_week_id=self.val_week_id
