@@ -3,7 +3,7 @@ import pandas as pd
 from tqdm import tqdm
 from datetime import datetime
 from my_class.dataset import DataSet
-from models.Byfone_appraoch import ByfoneModel
+from models.Byfone_appraoch_moreSpeedy import ByfoneModel
 from utils.partitioned_validation import partitioned_validation, user_grouping_online_and_offline
 from utils.oneweek_holdout_validation import get_train_oneweek_holdout_validation, get_valid_oneweek_holdout_validation
 from utils.just_offline_validation import offline_validation
