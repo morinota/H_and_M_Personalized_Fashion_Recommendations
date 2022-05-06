@@ -437,25 +437,7 @@ class RankLearningLgbm:
         self.negatives_df['article_id'] = self.negatives_df['article_id'].astype(
             'int')
 
-        # # negatives_df(<=候補アイテム)に特徴量を結合。
-        # self.negatives_df = (
-        #     self.negatives_df
-        #     .merge(self.user_features, on=('customer_id_short'))
-        #     .merge(self.item_features, on=('article_id'))
-        # )
-        # # ラグ特徴量をマージ
-        # for target_column in ITEM_CATEGORICAL_COLUMNS:
-        #     # 対象サブカテゴリのラグ特徴量を取り出す
-        #     lag_feature_df = self.item_lag_features[target_column]
-        #     # t_datをobject型からdatetime型に
-        #     lag_feature_df['t_dat'] = pd.to_datetime(lag_feature_df['t_dat'])
-
-        #     # マージ
-        #     self.negatives_df = pd.merge(self.negatives_df, lag_feature_df,
-        #                        on=[target_column, 't_dat'], how='left'
-        #                        )
-
-        # negatives_dfのLabelカラムを0にする。(重複ない??)
+        # negatives_dfのLabelカラムを0にする。
         self.negatives_df['label'] = 0
         print(f'negative_df columns is {self.negatives_df.columns}')
 
@@ -484,25 +466,7 @@ class RankLearningLgbm:
         self.negatives_df_valid['article_id'] = self.negatives_df_valid['article_id'].astype(
             'int')
 
-        # # negatives_df(<=候補アイテム)に特徴量を結合。
-        # self.negatives_df_valid = (
-        #     self.negatives_df_valid
-        #     .merge(self.user_features, on=('customer_id_short'))
-        #     .merge(self.item_features, on=('article_id'))
-        # )
-        # # ラグ特徴量をマージ
-        # for target_column in ITEM_CATEGORICAL_COLUMNS:
-        #     # 対象サブカテゴリのラグ特徴量を取り出す
-        #     lag_feature_df = self.item_lag_features[target_column]
-        #     # t_datをobject型からdatetime型に
-        #     lag_feature_df['t_dat'] = pd.to_datetime(lag_feature_df['t_dat'])
-
-        #     # マージ
-        #     self.negatives_df_valid = pd.merge(self.negatives_df_valid, lag_feature_df,
-        #                        on=[target_column, 't_dat'], how='left'
-        #                        )
-
-        # negatives_dfのLabelカラムを0にする。(重複ない??)
+        # negatives_dfのLabelカラムを0にする。
         self.negatives_df_valid['label'] = 0
 
         print(
