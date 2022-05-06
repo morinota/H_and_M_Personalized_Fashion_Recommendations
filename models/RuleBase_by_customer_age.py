@@ -196,6 +196,7 @@ class RuleBaseByCustomerAge:
         self.general_pred = [str(article_id).zfill(10)
                              for article_id in self.general_pred]
         self.general_pred_str = ' '.join(self.general_pred)
+        print(f'general pred is {self.general_pred}')
         del target_sales
 
     def _f6_conduct_byfone_2(self):
