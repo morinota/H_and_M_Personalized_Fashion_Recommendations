@@ -661,7 +661,7 @@ class RankLearningLgbm:
                 dataset=self.dataset,
                 transaction_train=self.df,
                 val_week_id=self.val_week_id
-            ).get_negative_record(unique_customer_ids=self.sample_sub['customer_id_short'].unique())
+            ).get_prediction_candidates(unique_customer_ids=self.sample_sub['customer_id_short'].unique())
         else:
             self.candidates = self._load_candidate_from_other_recommendation()
 

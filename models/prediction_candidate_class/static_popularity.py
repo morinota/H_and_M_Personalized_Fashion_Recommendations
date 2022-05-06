@@ -79,34 +79,5 @@ class NegativeSamplerStaticPopularity:
         # 「候補」アイテムのカラムをRename
         self.negatives_df.rename(columns={'negatives': 'article_id'}, inplace=True)
 
-        self.negatives_df = self.negatives_df[['customer_id_short', 'article_id']]
-
-    def get_prediction_candidates(self, unique_customer_ids):
-        self.negatives_df:pd.DataFrame
-        self.unique_customer_ids = unique_customer_ids
-        self.n_negative = Config.num_candidate_predict
-
-    def _create_byfone_recommendation(self):
-        byfone_model = ByfoneModel(self.df_t,
-                                   self.dataset,
-                                   val_week_id=self.val_week_id)
-        byfone_model.preprocessing()
-        # レコメンド結果を取得(str型になってるので変換が必要)
-        self.df_candidates = byfone_model.create_reccomendation()
-        # str=> strのlistへ
-        self.df_candidates['prediction'] = self.df_candidates['prediction'].apply(lambda x: x.split(' '))
-        # strのList=>intのListへ
-        self.df_candidates['prediction'] = self.df_candidates['prediction'].apply(
-            lambda x: [int(article_id) for article_id in x]
-            )
-        print(f'check data type of candidates: {type(self.df_candidates['prediction'].iloc[0][0])}')
-        # explodeメソッドで、各ユーザの[predictionのリスト]をレコードに展開する！他のカラムの要素は複製される。
-        self.df_candidates = self.df_candidates.explode('prediction')
-        # 「候補」アイテムのカラムをRename
-        self.df_candidates.rename(columns={'prediction': 'article_id'}, inplace=True)
-
-        # 最終的には2つのカラム
-        self.df_candidates = self.df_candidates[['customer_id_short', 'article_id']]
-
 if __name__ == '__main__':
     pass

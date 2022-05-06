@@ -166,6 +166,22 @@ def user_grouping_age_bin(dataset: DataSet) -> pd.DataFrame:
 
     return grouping_df
 
+def user_grouping_active_status(dataset: DataSet) -> pd.DataFrame:
+
+    # ユーザのメタデータと、ユーザの活動量メタデータを使用する
+    df_u = dataset.dfu
+    df_u_activity = dataset.df_u_activity
+    # マージ
+    df_u = pd.merge(df_u, df_u_activity, on='customer_id_short', how='left')
+    # グルーピング対象のカラムを'group'にRenameする。
+    df_u.rename(columns={'active_status':'group'})
+    # 返値用のdfを生成
+    grouping_df = df_u[['customer_id_short', 'group']]
+
+    return grouping_df
+    
+
+
 
 def main():
     sample1_list = list(range(5))

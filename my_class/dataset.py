@@ -26,6 +26,8 @@ class DataSet:
         csv_users = os.path.join(DataSet.INPUT_DIR, 'customers.csv')
         csv_items = os.path.join(DataSet.INPUT_DIR, 'articles.csv')
 
+        csv_user_activity = os.path.join(DataSet.INPUT_DIR, 'metadata_customer_id.csv')
+
         # データをDataFrame型で読み込み
         if c_id_short == True:
             # 実際の購買記録の情報
@@ -59,6 +61,11 @@ class DataSet:
         # price カラムを×10^3しておく...その方が、小数点以下と整数で分けやすい??
         # -> なぜかそのままのpriceを元にした特徴量の方がスコアが上がる...?関係ないはずだけど
         self.df['price'] = self.df['price'] * (10 **3) 
+
+        # ユーザの活動量に関するメタデータ
+        self.df_u_activity = pd.read_csv(csv_user_activity)
+        # customer_id_shortカラムを生成
+        self.df_u_activity['customer_id_short'] =self.df_u_activity["customer_id"].apply(lambda s: int(s[-16:], 16)).astype("uint64")
 
         # 提出用のサンプル
         self.df_sub = pd.read_csv(csv_sub)
