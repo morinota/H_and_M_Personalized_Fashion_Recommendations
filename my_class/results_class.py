@@ -56,9 +56,13 @@ class Results:
         # 順番にマージしていく
         sub_df = self.df_sub[['customer_id', 'customer_id_short']].copy()
         for name, df in self.results_dict.items():
-            df = df[['customer_id_short', 'prediction']].rename(columns={'prediction':f'{name}'})
-            sub_df = pd.merge(sub_df, df, how='left',
-                              on='customer_id_short')
+            if 'customer_id_short' in df.columns:
+                df = df[['customer_id_short', 'prediction']].rename(columns={'prediction':f'{name}'})
+                sub_df = pd.merge(sub_df, df, how='left', on='customer_id_short')
+            elif 'customer_id' in df.columns:
+                df = df[['customer_id', 'prediction']].rename(columns={'prediction':f'{name}'})
+                sub_df = pd.merge(sub_df, df, how='left', on='customer_id')
+                
         
         self.df_sub = sub_df
         print(self.df_sub.columns)
