@@ -21,7 +21,7 @@ def divide_transaction_data_with_group(dataset: DataSet, divide_column: str) -> 
     pass
 
 
-def partitioned_validation(val_df: pd.DataFrame, pred_df: pd.DataFrame, grouping: pd.Series, score: pd.DataFrame = 0, approach_name: str = "last_purchased_items", ignore: bool = False, figsize=(12, 6)) -> pd.DataFrame:
+def partitioned_validation(val_df: pd.DataFrame, pred_df: pd.DataFrame, grouping_df: pd.DataFrame, score: pd.DataFrame = 0, approach_name: str = "last_purchased_items", ignore: bool = False, figsize=(12, 6)) -> pd.DataFrame:
     """全ユーザのレコメンド結果を受け取り、グルーピング毎に予測精度を評価する関数。
 
     Parameters
@@ -52,8 +52,12 @@ def partitioned_validation(val_df: pd.DataFrame, pred_df: pd.DataFrame, grouping
     # レコードの順番をそろえたい...。
     val_df = val_df.sort_values(by='customer_id_short')
     pred_df = pred_df.sort_values(by='customer_id_short')
+    grouping_df = grouping_df.sort_values(by='customer_id_short')
+
     print(val_df[['customer_id_short', 'article_id']].head())
     print(pred_df[['customer_id_short', f'prediction']].head())
+    print(grouping_df[['customer_id_short', f'group']].head())
+
 
     # Listで抽出
     actual: List[List[str]] = val_df['article_id'].apply(
@@ -73,6 +77,8 @@ def partitioned_validation(val_df: pd.DataFrame, pred_df: pd.DataFrame, grouping
     ap12 = mapk(actual, predicted, return_apks=True)
     # MAP@kを算出
     map12 = round(np.mean(ap12), 6)
+
+    grouping = grouping_df['group']
 
     # isinstance()関数でオブジェクトのデータ型を判定
     # 本来はscoreに各Validation結果を格納していく？
