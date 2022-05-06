@@ -88,7 +88,14 @@ class Config:
         'item_median_offline_or_online',  # 各アイテムの購入方法(1 or 2)の中央値(1 or 2)
         'item_sum_offline_or_online'  # 各アイテムの購入方法(1 or 2)の合計値
     ]
-
+    item_one_hot_encoding_feature_names = [
+            'prod_name_3',
+            'product_type_name_3', 'product_group_name_3',
+            'graphical_appearance_name_3', 'colour_group_name_3',
+            'perceived_colour_value_name_3', 'perceived_colour_master_name_3',
+            'department_name_3', 'index_name_3', 'index_group_name_3',
+            'section_name_3', 'garment_group_name_3'
+        ]
     item_categorical_feature_names = []
     item_lag_feature_names_kind = [
         # 実際のカラム名には、_の後にアイテムサブカテゴリstrが続く.

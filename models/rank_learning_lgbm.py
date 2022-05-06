@@ -84,7 +84,7 @@ class RankLearningLgbm:
                 DRIVE_DIR, f'input/item_features_{Config.use_which_item_features}.csv')).reset_index()
             # 必要な特徴量のカラムのみ残す.
             self.item_features = self.item_features[[
-                'article_id'] + Config.item_basic_feature_names + Config.item_numerical_feature_names]
+                'article_id'] + Config.item_basic_feature_names + Config.item_numerical_feature_names+Config.item_one_hot_encoding_feature_names]
         # ユーザ特徴量
         if Config.use_which_item_features == 'original':
             self.user_features = pd.read_parquet(os.path.join(
