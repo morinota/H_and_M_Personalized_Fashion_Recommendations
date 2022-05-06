@@ -174,7 +174,7 @@ def user_grouping_active_status(dataset: DataSet) -> pd.DataFrame:
     # マージ
     df_u = pd.merge(df_u, df_u_activity, on='customer_id_short', how='left')
     # グルーピング対象のカラムを'group'にRenameする。
-    df_u.rename(columns={'active_status':'group'})
+    df_u.rename(columns={'active_status':'group'}, inplace=True)
     # 返値用のdfを生成
     grouping_df = df_u[['customer_id_short', 'group']]
 
