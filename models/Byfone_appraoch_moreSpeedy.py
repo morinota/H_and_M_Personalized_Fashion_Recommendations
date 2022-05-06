@@ -46,6 +46,8 @@ class ByfoneModel:
             + pd.TimedeltaIndex(data=np.ones(len(
                 self.transaction_train.loc[self.transaction_train['dow'] >= 2])) * 7, unit='D')
         )
+        # 曜日カラムは不要なので落としておく
+        self.transaction_train.drop(columns=['dow'], inplace=True)
 
     def _calculate_weekly_sales(self):
         self.weekly_sales = self.transaction_train.drop(
