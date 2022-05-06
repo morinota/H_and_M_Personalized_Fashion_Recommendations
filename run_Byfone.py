@@ -6,7 +6,6 @@ from my_class.dataset import DataSet
 from models.Byfone_appraoch import ByfoneModel
 from utils.partitioned_validation import partitioned_validation, user_grouping_online_and_offline
 from utils.oneweek_holdout_validation import get_train_oneweek_holdout_validation, get_valid_oneweek_holdout_validation
-from utils.recommend_emsemble import recommend_emsemble
 from utils.just_offline_validation import offline_validation
 import os
 from logs.base_log import create_logger, get_logger, stop_watch
