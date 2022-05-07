@@ -37,10 +37,10 @@ class Config:
     # =================================================================================
     # 特徴量の話
     # 特徴量生成
-    create_user_features = False
-    create_item_features = True
-    create_not_lag_features = True
-    create_lag_features = False
+    create_user_features = True
+    create_item_features = False
+    create_not_lag_features = False
+    create_lag_features = True
 
     # use_which_user_features = 'original'
     use_which_user_features = 'my_fullT'

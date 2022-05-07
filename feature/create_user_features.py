@@ -319,6 +319,7 @@ class SalesLagFeatures(UserFeatures):
     """
 
     def __init__(self, dataset: DataSet, transaction_df: pd.DataFrame) -> None:
+    
         self.transaction_df = transaction_df
         self.dataset = dataset
         # article_idのデータ型を統一しておく
@@ -326,6 +327,11 @@ class SalesLagFeatures(UserFeatures):
             'int')
         self.dataset.dfi['article_id'] = self.dataset.dfi['article_id'].astype(
             'int')
+
+        # transaction_dfを2020年だけにしておく
+        self.transaction_df['t_dat'] = pd.to_datetime(self.transaction_df['t_dat'])
+        self.transaction_df['year'] = self.transaction_df['t_dat'].dt.year
+        self.transaction_df = self.transaction_df[self.transaction_df['year'] == 2020]
         
 
     def get(self) -> pd.DataFrame:
