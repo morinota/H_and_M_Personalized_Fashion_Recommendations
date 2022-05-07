@@ -14,7 +14,7 @@ class Config:
     run_for_submittion = False  # bool
 
     # 5%サンプリングを使うか、フルサンプリングを使うか。
-    use_full_sampling = True # bool
+    use_full_sampling = False # bool
 
     # LGBMRankerをセーブするか否か
     save_trained_model = True
@@ -200,7 +200,7 @@ class Config:
     # lightGBMハイパラ
     # 以下が良く調整されるらしい...(深さはあんまり??)
     boosting_type = 'gbdt'  # 多くは'gbdt'. たまに 'dart' or 'goss'
-    n_estimators = 200  # 最後らへんに増やす。それまではいじらない。
+    n_estimators = 500  # 最後らへんに増やす。それまではいじらない。
     num_leaves = 63  # かなり多様だが、中央値だと63らしい。
     learning_rate = 0.1  # 最後らへんに減らす。それまではいじらない。
     feature_fraction = 0.8
