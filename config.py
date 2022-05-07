@@ -174,7 +174,9 @@ class Config:
         # 'sum_sales_channel_id'  # 各ユーザのアイテム購入におけるonline or offlineの合計値(1~2)
     ]
     item_categorical_feature_names = []
-    user_lag_feature_names = []
+    user_lag_feature_subcategory = [
+        'customer_id_short'
+    ]
 
     # Feature Importance上位50の特徴量(val_week_id=104における)
     feature_names_highest50_feature_importance = [

@@ -112,7 +112,7 @@ class RankLearningLgbm:
             self.user_features = self.user_features[[
                 'customer_id_short'] + Config.user_numerical_feature_names]
 
-        # ラグ特徴量
+        # ラグ特徴量(アイテム)
         self.item_lag_features = {}
         for target_column in Config.item_lag_feature_names_subcategory:
             file_path = os.path.join(
@@ -121,6 +121,16 @@ class RankLearningLgbm:
             lag_feature = pd.read_csv(file_path)
             # Dictに格納
             self.item_lag_features[target_column] = lag_feature
+
+        # ラグ特徴量(ユーザ)
+        self.user_lag_features = {}
+        for target_column in Config.user_lag_feature_subcategory:
+            file_path = os.path.join(
+                DRIVE_DIR, f'feature/time_series_user_feature_{target_column}.csv')
+
+            lag_feature = pd.read_csv(file_path)
+            # Dictに格納
+            self.user_lag_features[target_column] = lag_feature
 
         print(f'length of user_features is {len(self.user_features)}')
 
@@ -159,10 +169,22 @@ class RankLearningLgbm:
         # 降順(新しい順)で並び変え
         df_tra.sort_values(['t_dat', 'customer_id_short'],
                            inplace=True, ascending=False)
-        # ラグ特徴量をマージ
+        # ラグ特徴量(アイテム)をマージ
         for target_column in Config.item_lag_feature_names_subcategory:
             # 対象サブカテゴリのラグ特徴量を取り出す
             lag_feature_df = self.item_lag_features[target_column]
+            # t_datをobject型からdatetime型に
+            lag_feature_df['t_dat'] = pd.to_datetime(lag_feature_df['t_dat'])
+
+            # マージ
+            df_tra = pd.merge(df_tra, lag_feature_df,
+                              on=[target_column, 't_dat'], how='left'
+                              )
+        
+        # ラグ特徴量(ユーザ)をマージ
+        for target_column in Config.user_lag_feature_subcategory:
+            # 対象サブカテゴリのラグ特徴量を取り出す
+            lag_feature_df = self.user_lag_features[target_column]
             # t_datをobject型からdatetime型に
             lag_feature_df['t_dat'] = pd.to_datetime(lag_feature_df['t_dat'])
 
@@ -689,10 +711,19 @@ class RankLearningLgbm:
                 .merge(self.item_features, on=('article_id'), how='left')
             )
 
-            # ラグ特徴量をマージ
+            # ラグ特徴量（アイテム）をマージ
             for target_column in Config.item_lag_feature_names_subcategory:
                 # 対象サブカテゴリのラグ特徴量を取り出す
                 lag_feature_df = self.item_lag_features[target_column]
+                # マージ
+                candidates_batch = pd.merge(candidates_batch, lag_feature_df,
+                                            on=[target_column, 't_dat'], how='left'
+                                            )
+
+            # ラグ特徴量（ユーザ）をマージ
+            for target_column in Config.user_lag_feature_subcategory:
+                # 対象サブカテゴリのラグ特徴量を取り出す
+                lag_feature_df = self.user_lag_features[target_column]
                 # マージ
                 candidates_batch = pd.merge(candidates_batch, lag_feature_df,
                                             on=[target_column, 't_dat'], how='left'
