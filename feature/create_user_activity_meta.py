@@ -32,7 +32,7 @@ class CreateUserActivityMeta:
         self._create_coldstart_status()
         self._create_frequent_transaction_of_user_in_month()
 
-        self._merge_all_meta_created
+        self._merge_all_meta_created()
         print(self.result.head())
         
         return self.result
