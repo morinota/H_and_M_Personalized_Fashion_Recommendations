@@ -26,8 +26,8 @@ def validation_eachmodel(val_results: Results, val_df, grouping_df:pd.DataFrame)
         # オフラインスコアの検証
         score_df = partitioned_validation(val_df=val_df,
                                           pred_df=pred_df,
+                                          grouping_df=grouping_df,
                                           score=score_df,
-                                          grouping=grouping_df['group'],
                                           approach_name=name
                                           )
         del pred_df
