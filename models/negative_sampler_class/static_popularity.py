@@ -23,8 +23,11 @@ class NegativeSamplerStaticPopularity:
         self.n_negative = Config.num_candidate_train
 
         self._get_quotient_each_item()
+        print(self._get_quotient_each_item)
         self._set_weights_of_sampling()
+        print(self._set_weights_of_sampling)
         self._create_negative_sampler()
+        print(self._create_negative_sampler)
         return self.negatives_df
 
     def _get_quotient_each_item(self):
