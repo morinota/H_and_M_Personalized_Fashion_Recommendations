@@ -60,7 +60,7 @@ class NegativeSamplerStaticPopularity:
         # 結果のDictをInitialize:Dict[ユーザid, 「候補」リスト]
         self.prediction_dict = {}
         # 各ユーザ毎に繰り返し処理で、Negativeサンプルを付与していく。
-        for i, cust_id in tqdm(enumerate(self.unique_customer_ids)):
+        for i, cust_id in enumerate(tqdm(self.unique_customer_ids)):
             # 対象ユーザのNegativeサンプルを生成
             negative_sample = self.quotient_each_item['article_id'].sample(
                 n=self.n_negative,
