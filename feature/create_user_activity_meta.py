@@ -172,3 +172,5 @@ class CreateUserActivityMeta:
             on='customer_id_short', how='outer'
         )
         del self.df_active_user, self.df_coldstart_user, self.df_transaction_frequent
+
+        return self.result
