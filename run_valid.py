@@ -69,7 +69,8 @@ def main(val_week_id):
     elif Config.grouping_column == 'age_bin':
         grouping_df = user_grouping_age_bin(dataset=dataset)
     elif Config.grouping_column == 'active_status':
-        grouping_df = user_grouping_active_status(dataset, train_df)
+        grouping_df = user_grouping_active_status(dataset, train_df, 
+        target_column='cold_start_status')
 
 
     # レコメンド結果の読み込み

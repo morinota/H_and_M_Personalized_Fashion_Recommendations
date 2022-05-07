@@ -174,7 +174,7 @@ def user_grouping_age_bin(dataset: DataSet) -> pd.DataFrame:
 
     return grouping_df
 
-def user_grouping_active_status(dataset: DataSet, train_df) -> pd.DataFrame:
+def user_grouping_active_status(dataset: DataSet, train_df, target_column:str='active_status') -> pd.DataFrame:
 
     # メタデータを生成
     meta_class = CreateUserActivityMeta(dataset, train_df)
@@ -182,7 +182,7 @@ def user_grouping_active_status(dataset: DataSet, train_df) -> pd.DataFrame:
     # マージ
     df_u = pd.merge(dataset.df_sub, df_u_activity, on='customer_id_short', how='left')
     # グルーピング対象のカラムを'group'にRenameする。
-    df_u.rename(columns={'active_status':'group'}, inplace=True)
+    df_u.rename(columns={target_column:'group'}, inplace=True)
     # 返値用のdfを生成
     grouping_df = df_u[['customer_id_short', 'group']]
 
