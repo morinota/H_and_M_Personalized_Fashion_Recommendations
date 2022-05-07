@@ -4,6 +4,7 @@ from typing import Dict, List, Tuple
 from config import Config
 import pandas as pd
 from my_class.dataset import DataSet
+from numpy import negative
 from utils.useful_func import iter_to_str
 import numpy as np
 from tqdm import tqdm
@@ -56,21 +57,34 @@ class NegativeSamplerStaticPopularity:
 
 
     def _create_negative_sampler(self):
+        # 対象ユーザ全員分のNegativeサンプルを生成
+
+        self.negative_samples_all_user = self.quotient_each_item['article_id'].sample(
+                n=(self.n_negative * len(self.unique_customer_ids)),
+                weights=self.weights_sampler, # 各行が抽出される確率リスト
+                axis=0, # 行を抽出
+                replace=True, # 重複あり
+            )
 
         # 結果のDictをInitialize:Dict[ユーザid, 「候補」リスト]
         self.prediction_dict = {}
-        # 各ユーザ毎に繰り返し処理で、Negativeサンプルを付与していく。
+
+        # 各ユーザ毎に繰り返し処理で、Negativeサンプルを切り出していく
         for i, cust_id in enumerate(tqdm(self.unique_customer_ids)):
             # 対象ユーザのNegativeサンプルを生成
-            negative_sample = self.quotient_each_item['article_id'].sample(
-                n=self.n_negative,
-                weights=self.weights_sampler, # 各行が抽出される確率リスト
-                axis=0, # 行を抽出
-                replace=False, # 重複無し
-            )
+            # negative_sample = self.quotient_each_item['article_id'].sample(
+            #     n=self.n_negative,
+            #     weights=self.weights_sampler, # 各行が抽出される確率リスト
+            #     axis=0, # 行を抽出
+            #     replace=True, # 重複無し
+            # )
+            # 対象ユーザのNegativeサンプルを切り出す
+            negative_sample = self.negative_samples_all_user[i*12 :(i+1)*12]
+
             # 対象ユーザのNegativeサンプルをdictに格納
             self.prediction_dict[cust_id] = negative_sample
 
+        del self.negative_samples_all_user
         # ＝＞user_idと「候補」をそれぞれリストで取得。
         k = list(map(lambda x: x[0], self.prediction_dict.items()))
         v = list(map(lambda x: x[1], self.prediction_dict.items()))

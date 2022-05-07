@@ -14,7 +14,7 @@ class Config:
     run_for_submittion = False  # bool
 
     # 5%サンプリングを使うか、フルサンプリングを使うか。
-    use_full_sampling = True # bool
+    use_full_sampling = False # bool
 
     # LGBMRankerをセーブするか否か
     save_trained_model = True
