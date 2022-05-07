@@ -114,7 +114,7 @@ class RankLearningLgbm:
 
         # ラグ特徴量
         self.item_lag_features = {}
-        for target_column in ITEM_CATEGORICAL_COLUMNS:
+        for target_column in Config.item_lag_feature_names_subcategory:
             file_path = os.path.join(
                 DRIVE_DIR, f'feature/time_series_item_feature_{target_column}.csv')
 
@@ -692,7 +692,7 @@ class RankLearningLgbm:
             )
 
             # ラグ特徴量をマージ
-            for target_column in ITEM_CATEGORICAL_COLUMNS:
+            for target_column in Config.item_lag_feature_names_subcategory:
                 # 対象サブカテゴリのラグ特徴量を取り出す
                 lag_feature_df = self.item_lag_features[target_column]
                 # マージ

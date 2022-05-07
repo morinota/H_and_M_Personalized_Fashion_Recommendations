@@ -14,7 +14,7 @@ class Config:
     run_for_submittion = False  # bool
 
     # 5%サンプリングを使うか、フルサンプリングを使うか。
-    use_full_sampling = False  # bool
+    use_full_sampling = True # bool
 
     # LGBMRankerをセーブするか否か
     save_trained_model = True
@@ -59,8 +59,8 @@ class Config:
         'perceived_colour_value_name',  # ユニーク値=8
         'perceived_colour_master_name',  # ユニーク値=20
         'department_name', 'index_code',  # ユニーク値=294
-        'index_name',  # ユニーク値=10
-        'index_group_name',  # ユニーク値=5
+        # 'index_name',  # ユニーク値=10
+        # 'index_group_name',  # ユニーク値=5
         'section_name',  # ユニーク値=56
         'garment_group_name',  # ユニーク値=21
     ]
@@ -81,24 +81,35 @@ class Config:
         # 各アイテムの購入価格に関する小数点以下と整数値のカラム
         # (最大値、中央値、最小値だけでいいかも。＝＞実際にユーザが見る価格はそれらだし。)
         # (4000円か3980円か、みたいな違いを意図してるから、underpointだけでいいかも!)
-        'mean_item_price_under_point', 'mean_item_price_over_point',
-        'max_item_price_under_point', 'max_item_price_over_point',
-        'min_item_price_under_point', 'min_item_price_over_point',
-        'median_item_price_under_point', 'median_item_price_over_point',
-        'sum_item_price_under_point', 'sum_item_price_over_point',
+        # 'mean_item_price_under_point', 
+        # 'sum_item_price_under_point',
+        'max_item_price_under_point',
+        'min_item_price_under_point',
+        'median_item_price_under_point',
+        # 'mean_item_price_over_point',
+        #  'max_item_price_over_point',
+        #  'min_item_price_over_point',
+        #  'median_item_price_over_point',
+        #  'sum_item_price_over_point',
 
         # 各アイテムの購入方法に関するカラム(sumは要らないかも...)
         'item_mean_offline_or_online',  # 各アイテムの購入方法(1 or 2)の平均値(1~2)
         'item_median_offline_or_online',  # 各アイテムの購入方法(1 or 2)の中央値(1 or 2)
-        'item_sum_offline_or_online'  # 各アイテムの購入方法(1 or 2)の合計値
+        # 'item_sum_offline_or_online'  # 各アイテムの購入方法(1 or 2)の合計値
     ]
     item_one_hot_encoding_feature_names = [
-            'prod_name_3',
-            'product_type_name_3', 'product_group_name_3',
-            'graphical_appearance_name_3', 'colour_group_name_3',
-            'perceived_colour_value_name_3', 'perceived_colour_master_name_3',
-            'department_name_3', 'index_name_3', 'index_group_name_3',
-            'section_name_3', 'garment_group_name_3'
+            # 'prod_name_3',
+            'product_type_name_3', 
+            # 'product_group_name_3',
+            # 'graphical_appearance_name_3', 
+            'colour_group_name_3',
+            # 'perceived_colour_value_name_3',
+             'perceived_colour_master_name_3',
+            # 'department_name_3',
+            #  'index_name_3',
+            #   'index_group_name_3',
+            # 'section_name_3',
+            #  'garment_group_name_3'
         ]
     item_categorical_feature_names = []
     item_lag_feature_names_kind = [
@@ -118,17 +129,17 @@ class Config:
         # 実際のカラム名には、先頭にitem_lag_feature_names_kindが続く.
         'article_id',
         # 'prod_name',
-        'product_type_name',  # ユニーク値=125
+        # 'product_type_name',  # ユニーク値=125
         'product_group_name',  # ユニーク値=18
         'graphical_appearance_name',  # ユニーク値=30
-        'colour_group_name',  # ユニーク値=50
-        'perceived_colour_value_name',  # ユニーク値=8
-        'perceived_colour_master_name',  # ユニーク値=20
-        'department_name', 'index_code',  # ユニーク値=294
+        # 'colour_group_name',  # ユニーク値=50
+        # 'perceived_colour_value_name',  # ユニーク値=8
+        # 'perceived_colour_master_name',  # ユニーク値=20
+        # 'department_name',  # ユニーク値=294
         'index_name',  # ユニーク値=10
-        'index_group_name',  # ユニーク値=5
-        'section_name',  # ユニーク値=56
-        'garment_group_name',  # ユニーク値=21
+        # 'index_group_name',  # ユニーク値=5
+        # 'section_name',  # ユニーク値=56
+        # 'garment_group_name',  # ユニーク値=21
     ]
     item_target_encoding_features = []
 
@@ -146,18 +157,21 @@ class Config:
 
         # 各ユーザの購入価格に関する小数点以下と整数値のカラム
         # (アイテム側にはあってもいいけど、ユーザ側には意味ないかも)
-        'mean_transaction_price_under_point',
-        'mean_transaction_price_over_point',
-        'max_transaction_price_under_point', 'max_transaction_price_over_point',
-        'min_transaction_price_under_point', 'min_transaction_price_over_point',
-        'median_transaction_price_under_point',
-        'median_transaction_price_over_point',
-        'sum_transaction_price_under_point', 'sum_transaction_price_over_point',
+        # 'mean_transaction_price_under_point',
+        # 'mean_transaction_price_over_point',
+        # 'max_transaction_price_under_point', 
+        # 'max_transaction_price_over_point',
+        # 'min_transaction_price_under_point', 
+        # 'min_transaction_price_over_point',
+        # 'median_transaction_price_under_point',
+        # 'median_transaction_price_over_point',
+        # 'sum_transaction_price_under_point',
+        #  'sum_transaction_price_over_point',
 
         # 各ユーザの購入方法に関するカラム(sumは要らないかも...)
         'mean_sales_channel_id',  # 各ユーザのアイテム購入におけるonline or offlineの平均値(1~2)
         'median_sales_channel_id',  # 各ユーザのアイテム購入におけるonline or offlineの中央値(1~2)
-        'sum_sales_channel_id'  # 各ユーザのアイテム購入におけるonline or offlineの合計値(1~2)
+        # 'sum_sales_channel_id'  # 各ユーザのアイテム購入におけるonline or offlineの合計値(1~2)
     ]
     item_categorical_feature_names = []
     user_lag_feature_names = []
