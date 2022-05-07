@@ -160,7 +160,7 @@ class RankLearningLgbm:
         df_tra.sort_values(['t_dat', 'customer_id_short'],
                            inplace=True, ascending=False)
         # ラグ特徴量をマージ
-        for target_column in ITEM_CATEGORICAL_COLUMNS:
+        for target_column in Config.item_lag_feature_names_subcategory:
             # 対象サブカテゴリのラグ特徴量を取り出す
             lag_feature_df = self.item_lag_features[target_column]
             # t_datをobject型からdatetime型に
@@ -199,8 +199,6 @@ class RankLearningLgbm:
         print(self._load_feature_data)
         self._preprocessing_user_feature()
         print(self._preprocessing_user_feature)
-        # self._merge_user_item_feature_to_transactions()
-        # print(self._merge_user_item_feature_to_transactions)
         self._create_train_and_valid()
         print(self._create_train_and_valid)
 
