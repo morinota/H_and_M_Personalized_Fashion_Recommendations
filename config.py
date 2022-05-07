@@ -59,7 +59,7 @@ class Config:
         'perceived_colour_value_name',  # ユニーク値=8
         'perceived_colour_master_name',  # ユニーク値=20
         'department_name', 'index_code',  # ユニーク値=294
-        # 'index_name',  # ユニーク値=10
+        'index_name',  # ユニーク値=10
         # 'index_group_name',  # ユニーク値=5
         'section_name',  # ユニーク値=56
         'garment_group_name',  # ユニーク値=21
