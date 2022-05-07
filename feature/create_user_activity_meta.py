@@ -5,7 +5,6 @@ import os
 from math import sqrt
 from pathlib import Path
 
-from regex import D
 from tqdm import tqdm
 tqdm.pandas()
 from my_class.dataset import DataSet
@@ -24,6 +23,9 @@ class CreateUserActivityMeta:
 
         # 2020年だけ抽出
         self.df_t = self.df_t[self.df_t['year']==2020]
+
+        last_ts = self.df_t['t_dat'].max()
+        print(f'last day of train_transaction is {last_ts}')
 
     def get_user_activity_meta(self)->pd.DataFrame:
         self._create_active_status()
