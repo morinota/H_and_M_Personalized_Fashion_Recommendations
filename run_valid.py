@@ -3,7 +3,7 @@ from my_class.dataset import DataSet
 from my_class.results_class import Results
 import pandas as pd
 from utils.partitioned_validation import partitioned_validation, user_grouping_active_status, user_grouping_online_and_offline, user_grouping_age_bin
-from utils.oneweek_holdout_validation import get_valid_oneweek_holdout_validation
+from utils.oneweek_holdout_validation import get_valid_oneweek_holdout_validation, get_train_oneweek_holdout_validation
 import os
 from logs.base_log import create_logger, get_logger, stop_watch
 # from logs.time_keeper import stop_watch
@@ -48,6 +48,20 @@ def main(val_week_id):
     # DataFrameとしてデータ読み込み
     dataset.read_data()
 
+    # 検証用データを作成
+    val_df = get_valid_oneweek_holdout_validation(
+        dataset=dataset,  # type: ignore
+        val_week_id=val_week_id
+    )
+    # 訓練用データを作成
+    train_df = get_train_oneweek_holdout_validation(
+        dataset=dataset,
+        week_column_exist=False,
+        val_week_id=val_week_id,
+        training_days=9999,
+        # how="use_same_season_in_past"
+    )
+
     # 全ユーザをグルーピング
     grouping_df = pd.DataFrame()
     if Config.grouping_column == 'online_and_offline':
@@ -55,15 +69,8 @@ def main(val_week_id):
     elif Config.grouping_column == 'age_bin':
         grouping_df = user_grouping_age_bin(dataset=dataset)
     elif Config.grouping_column == 'active_status':
-        grouping_df = user_grouping_active_status(dataset=dataset)
+        grouping_df = user_grouping_active_status(dataset, train_df)
 
-    print(f'grouping df is {grouping_df.head()}')
-
-    # 検証用データを作成
-    val_df = get_valid_oneweek_holdout_validation(
-        dataset=dataset,  # type: ignore
-        val_week_id=val_week_id
-    )
 
     # レコメンド結果の読み込み
     val_results = Results()

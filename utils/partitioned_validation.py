@@ -1,3 +1,4 @@
+import imp
 from my_class.dataset import DataSet
 from utils.useful_func import iter_to_str
 from multiprocessing.spawn import import_main_path
@@ -11,6 +12,7 @@ import numpy as np
 import pandas as pd
 import datetime
 import matplotlib.pyplot as plt
+from feature.create_user_activity_meta import CreateUserActivityMeta
 plt.style.use('ggplot')
 
 INPUT_DIR = 'input'
@@ -172,13 +174,13 @@ def user_grouping_age_bin(dataset: DataSet) -> pd.DataFrame:
 
     return grouping_df
 
-def user_grouping_active_status(dataset: DataSet) -> pd.DataFrame:
+def user_grouping_active_status(dataset: DataSet, train_df) -> pd.DataFrame:
 
-    # ユーザのメタデータと、ユーザの活動量メタデータを使用する
-    df_u = dataset.dfu
-    df_u_activity = dataset.df_u_activity
+    # メタデータを生成
+    meta_class = CreateUserActivityMeta(dataset, train_df)
+    df_u_activity = meta_class.get_user_activity_meta()
     # マージ
-    df_u = pd.merge(df_u, df_u_activity, on='customer_id_short', how='left')
+    df_u = pd.merge(dataset.df_sub, df_u_activity, on='customer_id_short', how='left')
     # グルーピング対象のカラムを'group'にRenameする。
     df_u.rename(columns={'active_status':'group'}, inplace=True)
     # 返値用のdfを生成

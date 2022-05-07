@@ -62,10 +62,10 @@ class DataSet:
         # -> なぜかそのままのpriceを元にした特徴量の方がスコアが上がる...?関係ないはずだけど
         self.df['price'] = self.df['price'] * (10 **3) 
 
-        # ユーザの活動量に関するメタデータ
-        self.df_u_activity = pd.read_csv(csv_user_activity)
-        # customer_id_shortカラムを生成
-        self.df_u_activity['customer_id_short'] =self.df_u_activity["customer_id"].apply(lambda s: int(s[-16:], 16)).astype("uint64")
+        # # ユーザの活動量に関するメタデータ
+        # self.df_u_activity = pd.read_csv(csv_user_activity)
+        # # customer_id_shortカラムを生成
+        # self.df_u_activity['customer_id_short'] =self.df_u_activity["customer_id"].apply(lambda s: int(s[-16:], 16)).astype("uint64")
 
         # 提出用のサンプル
         self.df_sub = pd.read_csv(csv_sub)
