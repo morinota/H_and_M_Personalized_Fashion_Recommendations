@@ -853,12 +853,12 @@ class RankLearningLgbm:
             self.preds_non_cold_start.reset_index().rename(
                 columns={'article_id': 'prediction'}),
             how='left', on='customer_id_short')
-        print(self.preds_non_cold_start.head())
+        print(self.preds_non_cold_start.columns)
         # 3つのカラムだけ残す
         self.preds_non_cold_start = self.preds_non_cold_start[[
             'customer_id_short', 'customer_id', 'prediction']]
 
-    def _prepare_submission(self):
+    def _create_recommendation_cold_start_user(self):
         """coldstartなユーザに対するレコメンド結果を用意。
         """
         # モデルでレコメンドしきれていないユーザ(cold startユーザ)用のレコメンド
@@ -881,19 +881,22 @@ class RankLearningLgbm:
                 lambda s: int(s[-16:], 16)).astype("uint64")
 
         # レコメンド内容をcoldstart ユーザに対してマージ
-        self.sample_sub_cold_start = pd.merge(
+        self.preds_cold_start = pd.merge(
             self.sample_sub_cold_start,
             recommend_result, on='customer_id_short', how='left'
         )
         # 3つのカラムだけ残す
-        self.sample_sub_cold_start = self.sample_sub_cold_start[[
+        self.preds_cold_start  = self.preds_cold_start[[
             'customer_id_short', 'customer_id',  'prediction']]
 
-        print(self.sample_sub_cold_start.head())
+        print(self.preds_cold_start.columns)
 
+    def _prepare_submission(self):
+        print(self.preds_cold_start.columns)
+        print(self.preds_non_cold_start.columns)
         # non_cold_startユーザの結果とcold_startユーザの結果をConcat
         self.preds = pd.concat(
-            objs=[self.preds_non_cold_start, self.sample_sub_cold_start],
+            objs=[self.preds_non_cold_start, self.preds_cold_start],
             axis=0  # 縦方向の連結
         )
 
@@ -907,9 +910,10 @@ class RankLearningLgbm:
         self._prepare_candidate()
         self._predict_using_batches()
         self._create_recommendation_by_ranking()
+        self._create_recommendation_cold_start_user()
         self._prepare_submission()
 
-        return self.preds_non_cold_start[['customer_id', 'customer_id_short', 'prediction']]
+        return self.preds
 
 
 if __name__ == '__main__':

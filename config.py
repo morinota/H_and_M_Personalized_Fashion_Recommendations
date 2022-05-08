@@ -21,7 +21,7 @@ class Config:
     # LGBMrankerの予測データでnon_coldstartユーザのみを使うか
     predict_only_non_coldstart_user = True
     # coldstartユーザに対して、どのレコメンド結果を使うか
-    approach_name_for_coldstart_user = 'time_decaying'
+    approach_name_for_coldstart_user = 'last_purchased_items'
     
 
     # LGBMRankerをセーブするか否か
@@ -214,7 +214,7 @@ class Config:
     # lightGBMハイパラ
     # 以下が良く調整されるらしい...(深さはあんまり??)
     boosting_type = 'gbdt'  # 多くは'gbdt'. たまに 'dart' or 'goss'
-    n_estimators = 300  # 最後らへんに増やす。それまではいじらない。
+    n_estimators = 100  # 最後らへんに増やす。それまではいじらない。
     num_leaves = 63  # かなり多様だが、中央値だと63らしい。
     learning_rate = 0.01  # 最後らへんに減らす。それまではいじらない。
     feature_fraction = 0.8
