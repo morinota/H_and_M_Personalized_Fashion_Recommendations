@@ -706,6 +706,9 @@ class RankLearningLgbm:
         self.sample_sub = self.dataset.df_sub[[
             'customer_id_short', 'customer_id']].copy()
 
+        if Config.predict_only_non_coldstart_user:
+            self.sample_sub = self.
+
         self.candidates = pd.DataFrame()
         # レコメンド候補を用意
         if Config.predict_candidate_way_name == None:
