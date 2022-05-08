@@ -34,14 +34,26 @@ class RankLearningLgbm:
         # インスタンス変数(属性の初期化)
         self.dataset = dataset
         self.df = transaction_train
-        self.ALL_ITEMS = []
-        self.ALL_USERS = []
-        self.hyper_params = {}
         self.val_week_id = val_week_id
         print(len(self.df))
         print('unique user of self.df is {}'.format(
             len(self.df['customer_id_short'].unique())
         ))
+    
+    def _extract_non_coldstart_user(self):
+
+        # ユーザアクティビティに関するdfを読み込む
+        file_path = os.path.join(DRIVE_DIR, 'input/metadata_customer_id.csv')
+        self.user_activity_df = pd.read_csv(file_path)
+
+        # 'cold_start_status'をトランザクションログにマージする
+        self.df = self.df.merge(
+            self.user_activity_df[['customer_id_short', 'cold_start_status']],
+            on='customer_id_short', how='left'
+        )
+        # 'cold_start_status' == 'non_cold_start'のユーザのトランザクションログのみ残す
+        self.df = self.df.loc[self.df['cold_start_status']=='non_cold_start']
+        
 
     def _create_df_1w_to4w(self):
         """予測期間に対して、過去i week (i=1,...,4)のトランザクションログを抽出して、DataFrameとして保存。
@@ -229,6 +241,9 @@ class RankLearningLgbm:
     def preprocessing(self):
         """前処理を実行するメソッド.
         """
+        if Config.train_only_non_coldstart_user:
+            self._extract_non_coldstart_user()
+
         self._create_df_1w_to4w()
         print(self._create_df_1w_to4w)
         self._load_feature_data()
@@ -411,19 +426,24 @@ class RankLearningLgbm:
         """
         self.train: pd.DataFrame
 
-        # まずトランザクションログ(=新しい順)に、0~len(train)の通し番号を付ける。
-        self.train['rank'] = range(len(self.train))
-        # assign()メソッドで新規カラムを追加or既存カラムに値を代入
-        # ここでは、rmカラムを新規に追加してる。
-        self.train = self.train.assign(
-            # 各ユーザ毎のrank Seriesに対して、rankメソッドで順位づけする。
-            # 降順でソート.
-            # method引数で、同一値の処理を指定(通し番号だから問題なくない?)
-            # method='first'とすると同一値（重複値）は登場順に順位付け
-            rn=self.train.groupby(['customer_id_short'])['rank']
-            .rank(method='first', ascending=False))
-        # rn が15以下( =ユーザ毎に直近15件)のレコードだけ残す。
-        self.train = self.train.query("rn <= 15")
+        if Config.train_only_non_coldstart_user == False:
+            # まずトランザクションログ(=新しい順)に、0~len(train)の通し番号を付ける。
+            self.train['rank'] = range(len(self.train))
+            # assign()メソッドで新規カラムを追加or既存カラムに値を代入
+            # ここでは、rmカラムを新規に追加してる。
+            self.train = self.train.assign(
+                # 各ユーザ毎のrank Seriesに対して、rankメソッドで順位づけする。
+                # 降順でソート.
+                # method引数で、同一値の処理を指定(通し番号だから問題なくない?)
+                # method='first'とすると同一値（重複値）は登場順に順位付け
+                rn=self.train.groupby(['customer_id_short'])['rank']
+                .rank(method='first', ascending=False))
+            # rn が15以下( =ユーザ毎に直近15件)のレコードだけ残す。
+            self.train = self.train.query("rn <= 15")
+
+            del self.train['rank']
+            del self.train['rn']
+
         # トランザクションログの不要なカラム(=学習に使えない)を落とす
         self.train.drop(columns=['price', 'sales_channel_id'], inplace=True)
 
@@ -431,8 +451,6 @@ class RankLearningLgbm:
 
         self.train['label'] = 1
 
-        del self.train['rank']
-        del self.train['rn']
 
         self.train.sort_values(['t_dat', 'customer_id_short'], inplace=True)
         print(f'length of positve train data is {len(self.train)}')

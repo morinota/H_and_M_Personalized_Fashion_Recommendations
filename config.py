@@ -14,7 +14,10 @@ class Config:
     run_for_submittion = False  # bool
 
     # 5%サンプリングを使うか、フルサンプリングを使うか。
-    use_full_sampling = False # bool
+    use_full_sampling = True # bool
+
+    # LGBMrankerの学習データでnon_coldstartユーザのみを使うか
+    train_only_non_coldstart_user = True
 
     # LGBMRankerをセーブするか否か
     save_trained_model = True
@@ -208,7 +211,7 @@ class Config:
     boosting_type = 'gbdt'  # 多くは'gbdt'. たまに 'dart' or 'goss'
     n_estimators = 500  # 最後らへんに増やす。それまではいじらない。
     num_leaves = 63  # かなり多様だが、中央値だと63らしい。
-    learning_rate = 0.1  # 最後らへんに減らす。それまではいじらない。
+    learning_rate = 0.01  # 最後らへんに減らす。それまではいじらない。
     feature_fraction = 0.8
     bagging_freq = 1
     bagging_fraction = 0.8
