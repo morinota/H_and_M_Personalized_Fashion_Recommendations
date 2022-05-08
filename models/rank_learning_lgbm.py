@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from re import sub
 from turtle import back
 from typing import Dict, List, Tuple
-from boto import config
+
 import pandas as pd
 from sympy import Li
 from my_class.dataset import DataSet
