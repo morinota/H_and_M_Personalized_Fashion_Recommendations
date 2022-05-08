@@ -839,7 +839,13 @@ class RankLearningLgbm:
         self.preds['article_id'] = self.preds['article_id'].apply(
             lambda x: ' '.join(['0'+str(k) for k in x]))
 
-        # モデルでレコメンドしきれていないユーザを補完
+    def _prepare_submission(self):
+        # モデルでレコメンドしきれていないユーザ(cold startユーザ)用のレコメンド
+        if Config.approach_name_for_coldstart_user == 'last_purchased_items':
+
+            recommend_result = 
+        self.sample_sub_cold_start_user 
+
         self.preds = self.sample_sub[['customer_id_short', 'customer_id']].merge(
             self.preds
             .reset_index()
@@ -851,6 +857,7 @@ class RankLearningLgbm:
         self._prepare_candidate()
         self._predict_using_batches()
         self._create_recommendation_by_ranking()
+        self._prepare_submission()
 
         return self.preds[['customer_id', 'customer_id_short', 'prediction']]
 

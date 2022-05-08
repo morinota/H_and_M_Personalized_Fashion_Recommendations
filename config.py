@@ -20,6 +20,8 @@ class Config:
     train_only_non_coldstart_user = True
     # LGBMrankerの予測データでnon_coldstartユーザのみを使うか
     predict_only_non_coldstart_user = True
+    # coldstartユーザに対して、どのレコメンド結果を使うか
+    approach_name_for_coldstart_user = 'last_purchased_items'
     
 
     # LGBMRankerをセーブするか否か
@@ -64,7 +66,7 @@ class Config:
         'colour_group_name',  # ユニーク値=50
         'perceived_colour_value_name',  # ユニーク値=8
         'perceived_colour_master_name',  # ユニーク値=20
-        'department_name', 'index_code',  # ユニーク値=294
+        'department_name',  # ユニーク値=294
         'index_name',  # ユニーク値=10
         # 'index_group_name',  # ユニーク値=5
         'section_name',  # ユニーク値=56
