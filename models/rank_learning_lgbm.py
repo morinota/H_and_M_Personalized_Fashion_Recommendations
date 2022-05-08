@@ -883,7 +883,7 @@ class RankLearningLgbm:
         # レコメンド内容をcoldstart ユーザに対してマージ
         self.preds_cold_start = pd.merge(
             self.sample_sub_cold_start,
-            recommend_result, on='customer_id_short', how='left'
+            recommend_result[['customer_id_short', 'prediction']], on='customer_id_short', how='left'
         )
         # 3つのカラムだけ残す
         print(self.sample_sub_cold_start.columns)
