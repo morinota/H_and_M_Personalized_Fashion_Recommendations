@@ -823,7 +823,7 @@ class RankLearningLgbm:
             candidates_batch['アイテム価格中央/ユーザ価格最大'] = candidates_batch['median_item_price'] / candidates_batch['max_transaction_price']
             candidates_batch['アイテム価格中央/ユーザ価格最小'] = candidates_batch['median_item_price'] / candidates_batch['min_transaction_price']
 
-            df_tra['channelアイテム平均/channelユーザ平均'] = df_tra['item_mean_offline_or_online'] / df_tra['mean_sales_channel_id']
+            candidates_batch['channelアイテム平均/channelユーザ平均'] = candidates_batch['item_mean_offline_or_online'] / candidates_batch['mean_sales_channel_id']
 
             return candidates_batch
 
