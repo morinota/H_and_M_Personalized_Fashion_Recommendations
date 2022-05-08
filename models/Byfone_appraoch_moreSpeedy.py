@@ -56,8 +56,8 @@ class ByfoneModel:
             columns={'t_dat': 'count'})
 
         # 各トランザクションにweekly_salesをマージ
-        self.transaction_train = self.transaction_train.join(
-            self.weekly_sales, on=['ldbw', 'article_id'])
+        self.transaction_train = self.transaction_train.merge(
+            self.weekly_sales, on=['ldbw', 'article_id'], how='left')
 
         pass
 
@@ -66,10 +66,10 @@ class ByfoneModel:
         self.last_day = self.last_ts.strftime('%Y-%m-%d')
 
         # count_targカラムを生成
-        self.transaction_train = self.transaction_train.join(
+        self.transaction_train = self.transaction_train.merge(
             self.weekly_sales.loc[self.weekly_sales['ldbw']
                                   == self.last_day, ['count']],
-            on='article_id', rsuffix="_targ"
+            on='article_id', how='left', suffixes=('', '_targ')
         )
         # 欠損を0埋め
         self.transaction_train['count_targ'].fillna(0, inplace=True)
