@@ -728,7 +728,7 @@ class RankLearningLgbm:
             )
             # non_cold_startなユーザのみを予測対象とする。
             self.sample_sub_non_cold_start = self.sample_sub.loc[self.sample_sub['cold_start_status']
-                                                  == 'non_cold_start']
+                                                                 == 'non_cold_start']
             # cold_startなユーザは、静的なレコメンドを実行(Chris? Time decay?)
             self.sample_sub_cold_start = self.sample_sub.loc[
                 self.sample_sub['cold_start_status'] == 'cold_start']
@@ -799,7 +799,7 @@ class RankLearningLgbm:
             return candidates_batch
 
         # 予測値のリストをInitialize
-        self.preds = []
+        self.preds_non_cold_start = []
         # batchサイズ分ずつ、予測していく.
         batch_size = 1_000_000
         for bucket in tqdm(range(0, len(self.candidates), batch_size)):
@@ -817,43 +817,45 @@ class RankLearningLgbm:
             outputs = self.ranker.predict(X=X_pred)
             # -> (ユニークユーザ × num_candidate_predict)個のうち、バッチサイズ分のトランザクションの発生確率を返す?
             # 予測値のリストにndarrayを追加
-            self.preds.append(outputs)
+            self.preds_non_cold_start.append(outputs)
 
     def _create_recommendation_by_ranking(self):
         # 各バッチ毎の予測結果(ndarrayのリスト)を縦に結合(1つのndarrayに)
         # ->(ユニークユーザ × num_candidate_predict)個のレコードの発生確率y
-        self.preds = np.concatenate(self.preds)
-        print(f'type of prediction results is {type(self.preds)}')
-        print(f'length of prediction results is {self.preds.shape}')
+        self.preds_non_cold_start = np.concatenate(self.preds_non_cold_start)
+        print(
+            f'type of prediction results is {type(self.preds_non_cold_start)}')
+        print(
+            f'length of prediction results is {self.preds_non_cold_start.shape}')
         # 候補アイテムのdf(長さ=(ユニークユーザ × num_candidate_predict))に、予測結果を格納.
-        self.candidates['preds'] = self.preds
+        self.candidates['preds'] = self.preds_non_cold_start
 
         # 提出用のカラムのみ抽出.
-        self.preds = self.candidates[[
+        self.preds_non_cold_start = self.candidates[[
             'customer_id_short', 'article_id', 'preds']]
         # 各ユニークユーザ毎で、発生確率の高いアイテム順にソート
-        self.preds.sort_values(
+        self.preds_non_cold_start.sort_values(
             ['customer_id_short', 'preds'], ascending=False, inplace=True)
         # 「行=ユニークユーザ」「列=レコメンドアイテムのリスト」のDataFrameに変換
-        self.preds = (
-            self.preds.groupby('customer_id_short')[
+        self.preds_non_cold_start = (
+            self.preds_non_cold_start.groupby('customer_id_short')[
                 ['article_id']].aggregate(lambda x: x.tolist())
         )
         # 上位12個のみ残す。
-        self.preds['article_id'] = self.preds['article_id'].apply(
+        self.preds_non_cold_start['article_id'] = self.preds_non_cold_start['article_id'].apply(
             lambda x: x[:Config.num_recommend_item])
         # 提出用にレコメンドアイテムの体裁を整える。
-        self.preds['article_id'] = self.preds['article_id'].apply(
+        self.preds_non_cold_start['article_id'] = self.preds_non_cold_start['article_id'].apply(
             lambda x: ' '.join(['0'+str(k) for k in x]))
 
         # カラム名を修正
-        self.preds = self.sample_sub_non_cold_start[['customer_id_short', 'customer_id']].merge(
-            self.preds
-            .reset_index()
-            .rename(columns={'article_id': 'prediction'}), how='left')
-        print(self.preds.head())
+        self.preds_non_cold_start = self.sample_sub_non_cold_start[['customer_id_short', 'customer_id']].merge(
+            self.preds_non_cold_start.reset_index().rename(
+                columns={'article_id': 'prediction'}),
+            how='left', on='customer_id_short')
+        print(self.preds_non_cold_start.head())
         # 3つのカラムだけ残す
-        self.preds = self.preds[[
+        self.preds_non_cold_start = self.preds_non_cold_start[[
             'customer_id_short', 'customer_id', 'prediction']]
 
     def _prepare_submission(self):
@@ -861,8 +863,6 @@ class RankLearningLgbm:
         """
         # モデルでレコメンドしきれていないユーザ(cold startユーザ)用のレコメンド
         recommend_result = pd.DataFrame()
-        print('length of cold start user is {}'.format(
-            len(self.sample_sub_cold_start)))
 
         if Config.approach_name_for_coldstart_user == 'time_decaying':
             # レコメンド結果を読み込み
@@ -893,21 +893,23 @@ class RankLearningLgbm:
 
         # non_cold_startユーザの結果とcold_startユーザの結果をConcat
         self.preds = pd.concat(
-            objs=[self.preds, self.sample_sub_cold_start],
+            objs=[self.preds_non_cold_start, self.sample_sub_cold_start],
             axis=0  # 縦方向の連結
         )
 
     def create_reccomendation(self) -> pd.DataFrame:
         self._devide_users_with_cold_start_or_non_cold_start()
-        print(f'length of non_cold_start user is {self.sample_sub_non_cold_start.shape[0]}')
-        print(f'length of cold_start user is {self.sample_sub_cold_start.shape[0]}')
+        print(
+            f'length of non_cold_start user is {self.sample_sub_non_cold_start.shape[0]}')
+        print(
+            f'length of cold_start user is {self.sample_sub_cold_start.shape[0]}')
 
         self._prepare_candidate()
         self._predict_using_batches()
         self._create_recommendation_by_ranking()
         self._prepare_submission()
 
-        return self.preds[['customer_id', 'customer_id_short', 'prediction']]
+        return self.preds_non_cold_start[['customer_id', 'customer_id_short', 'prediction']]
 
 
 if __name__ == '__main__':
