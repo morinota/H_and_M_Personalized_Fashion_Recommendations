@@ -53,6 +53,11 @@ class RankLearningLgbm:
         )
         # 'cold_start_status' == 'non_cold_start'のユーザのトランザクションログのみ残す
         self.df = self.df.loc[self.df['cold_start_status']=='non_cold_start']
+        # 'cold_start_status'カラムを落とす
+        self.df.drop(columns='cold_start_status', inplace=True)
+
+        print('length of unique user of non coldstart user is {} in train'
+        .format(len(self.df['customer_id_short'].unique())))
         
 
     def _create_df_1w_to4w(self):
