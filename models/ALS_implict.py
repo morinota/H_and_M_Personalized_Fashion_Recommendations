@@ -7,6 +7,7 @@ import numpy as np
 import scipy.sparse
 from implicit.als import AlternatingLeastSquares
 from tqdm import tqdm
+import os
 
 INPUT_DIR = r"input"
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
@@ -78,7 +79,7 @@ class MatrixFactrization:
         self._add_originalId_item_and_user()
         self._get_rating_matrix()
 
-    def fit(self, hyper_params: Dict = {'factors': 500,
+    def fit(self, hyper_params: Dict = {'factors': 5,
                                  'iterations': 3,
                                  'regularization': 0.01,
                                  'confidence': 50}):
@@ -105,10 +106,43 @@ class MatrixFactrization:
         self.model.fit(self.hyper_params['confidence'] * self.rating_matrix_coo,
                        show_progress=True)
 
+    
+    def get_feature_vectors(self):
+
         # 学習後、推定されたUser MatrixとItem Matrixを保存
         self.user_matrix = self.model.user_factors
-        self.item_matrix = self.model.item_factors
+        self.item_matrix = self.model.item_factors.to_
 
+        # implicit.gpu._cuda.Matrix型からndarray型へ変換
+        self.user_matrix = self.user_matrix.to_numpy()
+        self.item_matrix = self.item_matrix.to_numpy()
+
+        # DataFrameに加工する
+        self.user_matrix_df = pd.DataFrame(
+            data=self.user_matrix, index=self.ALL_USERS, 
+            columns=['user潜在変数1', 'user潜在変数2', 'user潜在変数3', 'user潜在変数4', 'user潜在変数5']
+        )
+        self.item_matrix_df = pd.DataFrame(
+            data=self.item_matrix, index=self.ALL_ITEMS, 
+            columns=['item潜在変数1', 'item潜在変数2', 'item潜在変数3', 'item潜在変数4', 'item潜在変数5']
+        )
+        del self.user_matrix, self.item_matrix
+
+        # indexに埋まっているcustomer_id_short, article_idを掘り起こす
+        self.user_matrix_df = self.user_matrix_df.reset_index()
+        self.item_matrix_df = self.item_matrix_df.reset_index()
+
+        # 掘り起こしたindexのカラム名を変更しておく
+        self.user_matrix_df.rename(columns={'index':'customer_id_short'}, inplace=True)
+        self.item_matrix_df.rename(columns={'index':'article_id'}, inplace=True)
+        
+        # 特徴量としてエクスポート
+        features_dir = os.path.join(DRIVE_DIR, 'feature')
+        self.user_matrix_df.to_csv(os.path.join(features_dir, 'user_matrix_features.csv'), index=False)
+        self.item_matrix_df.to_csv(os.path.join(features_dir, 'item_matrix_features.csv'), index=False)
+
+        
+        
     def _predict(self):
         preds = []
         batch_size = 2000  # バッチサイズ人のユーザのレコメンドを一度に得る。(一斉は無理?)

@@ -71,10 +71,47 @@ def run_validation(val_week_id=104):
             DRIVE_DIR, f'val_results_{val_week_id}_csv')
         df_sub.to_csv(os.path.join(val_result_dir, f'val_{VERSION}.csv'))
 
+def get_hidden_features():
+        # DataSetオブジェクトの読み込み
+    dataset = DataSet()
+    # DataFrameとしてデータ読み込み
+    # dataset.read_data()
+    dataset.read_data_sampled()
+
+    print("1")
+
+    # One-week hold-out validation
+    val_df = get_valid_oneweek_holdout_validation(
+        dataset=dataset,  # type: ignore
+        val_week_id=val_week_id
+    )
+    train_df = get_train_oneweek_holdout_validation(
+        dataset=dataset,
+        week_column_exist=False,
+        val_week_id=val_week_id,
+        training_days=31,
+        # how="use_same_season_in_past"
+    )
+
+    # 全ユーザをグルーピング
+    grouping_df = user_grouping_online_and_offline(dataset=dataset)
+
+    # レコメンド結果を生成
+    model = MatrixFactrization(transaction_train=train_df, dataset=dataset)
+    model.preprocessing()
+    model.fit()
+    model.get_feature_vectors()
+
 
 if __name__ == '__main__':
     create_logger(VERSION)
     get_logger(VERSION).info("メッセージ")
     val_week_ids = [104, 103, 102]
     for val_week_id in val_week_ids:
-        run_validation(val_week_id=val_week_id)
+        # run_validation(val_week_id=val_week_id)
+        pass
+
+    get_hidden_features()
+    
+
+
