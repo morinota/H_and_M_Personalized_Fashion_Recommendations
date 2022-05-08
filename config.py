@@ -212,7 +212,7 @@ class Config:
     # lightGBMハイパラ
     # 以下が良く調整されるらしい...(深さはあんまり??)
     boosting_type = 'gbdt'  # 多くは'gbdt'. たまに 'dart' or 'goss'
-    n_estimators = 500  # 最後らへんに増やす。それまではいじらない。
+    n_estimators = 300  # 最後らへんに増やす。それまではいじらない。
     num_leaves = 63  # かなり多様だが、中央値だと63らしい。
     learning_rate = 0.01  # 最後らへんに減らす。それまではいじらない。
     feature_fraction = 0.8

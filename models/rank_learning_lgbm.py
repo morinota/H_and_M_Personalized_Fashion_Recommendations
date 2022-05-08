@@ -657,12 +657,24 @@ class RankLearningLgbm:
         print(f'dates of training data is..to{last_date_train_data}')
         print(f'len of train data is {len(self.train)}')
 
-        # 特徴量とターゲットを分割
-        X_train = self.train.drop(
-            columns=['t_dat', 'customer_id_short', 'article_id', 'label', 'week'])
-        y_train = self.train['label']
+        # ラグ特徴量のカラム名を生成
+        lag_feature_names = []
+        for subcategory in Config.item_lag_feature_names_subcategory+Config.user_lag_feature_subcategory:
+            for lag_kind in Config.item_lag_feature_names_kind:
+                feature_name = f'{lag_kind}{subcategory}'
+                lag_feature_names.append(feature_name)
         # 特徴量のカラム名を保存
-        self.feature_names = list(X_train.columns)
+        self.feature_names = (
+            Config.item_basic_feature_names
+            + Config.item_numerical_feature_names
+            + Config.item_one_hot_encoding_feature_names
+            + Config.user_numerical_feature_names
+            + Config.hidden_variable_feature_names
+            + lag_feature_names
+            )
+        # 特徴量とターゲットを分割
+        X_train = self.train[self.feature_names]
+        y_train = self.train['label']
         print(f'length of X_valid is {len(X_train.columns)}')
         X_valid = self.valid[self.feature_names]
         y_valid = self.valid['label']
@@ -713,6 +725,8 @@ class RankLearningLgbm:
             )
             # non_cold_startなユーザのみを予測対象とする。
             self.sample_sub = self.sample_sub.loc[self.sample_sub['cold_start_status'] == 'non_cold_start']
+            # cold_startなユーザは、静的なレコメンドを実行(Chris? Time decay?)
+            self.sample_sub_cold_start_user = self.sample_sub.loc[self.sample_sub['cold_start_status'] == 'cold_start']
             
         self.candidates = pd.DataFrame()
         # レコメンド候補を用意
@@ -798,7 +812,7 @@ class RankLearningLgbm:
             # 予測値のリストにndarrayを追加
             self.preds.append(outputs)
 
-    def _prepare_submission(self):
+    def _create_recommendation_by_ranking(self):
         # 各バッチ毎の予測結果(ndarrayのリスト)を縦に結合(1つのndarrayに)
         # ->(ユニークユーザ × num_candidate_predict)個のレコードの発生確率y
         self.preds = np.concatenate(self.preds)
@@ -836,7 +850,7 @@ class RankLearningLgbm:
     def create_reccomendation(self) -> pd.DataFrame:
         self._prepare_candidate()
         self._predict_using_batches()
-        self._prepare_submission()
+        self._create_recommendation_by_ranking()
 
         return self.preds[['customer_id', 'customer_id_short', 'prediction']]
 
