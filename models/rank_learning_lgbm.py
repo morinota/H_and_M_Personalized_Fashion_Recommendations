@@ -1,6 +1,5 @@
 from copyreg import pickle
 from datetime import datetime, timedelta
-from inspect import CO_ASYNC_GENERATOR
 from re import sub
 from turtle import back
 from typing import Dict, List, Tuple
@@ -45,6 +44,8 @@ class RankLearningLgbm:
         # ユーザアクティビティに関するdfを読み込む
         file_path = os.path.join(DRIVE_DIR, 'input/metadata_customer_id.csv')
         self.user_activity_df = pd.read_csv(file_path)
+        self.user_activity_df['customer_id_short'] =self.user_activity_df["customer_id"].apply(lambda s: int(s[-16:], 16)).astype("uint64")
+
 
         # 'cold_start_status'をトランザクションログにマージする
         self.df = self.df.merge(
