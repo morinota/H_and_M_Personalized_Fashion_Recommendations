@@ -14,8 +14,10 @@ class Config:
     run_for_submittion = False # bool
 
     # 5%サンプリングを使うか、フルサンプリングを使うか。
-    use_full_sampling = True # bool
+    use_full_sampling = False # bool
 
+    # cold_startユーザのボーダーライン
+    borderline_cold_start_user = 20
     # LGBMrankerの学習データでnon_coldstartユーザのみを使うか
     train_only_non_coldstart_user = True
     # LGBMrankerの予測データでnon_coldstartユーザのみを使うか

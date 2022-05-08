@@ -4,6 +4,7 @@ import pandas as pd
 import os
 from math import sqrt
 from pathlib import Path
+from config import Config
 
 from tqdm import tqdm
 tqdm.pandas()
@@ -134,9 +135,9 @@ class CreateUserActivityMeta:
 
         # 2020年のトランザクション数が10未満のユーザをコールドスタートユーザと見なす
         def create_cold_start_status(x:pd.Series):
-            if x['num_transactions'] >= 10:
+            if x['num_transactions'] >= Config.borderline_cold_start_user:
                 return 'non_cold_start'
-            elif x['num_transactions'] < 10:
+            elif x['num_transactions'] < Config.borderline_cold_start_user:
                 return 'cold_start'
 
         df_avg_item_per_u['cold_start_status'] = (

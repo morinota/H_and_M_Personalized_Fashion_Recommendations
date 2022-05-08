@@ -16,6 +16,7 @@ from pathlib import Path
 from config import Config
 from models.negative_sampler_class.static_popularity import NegativeSamplerStaticPopularity
 import pickle
+from feature.create_user_activity_meta import CreateUserActivityMeta
 
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 ITEM_CATEGORICAL_COLUMNS = ['article_id',
@@ -42,11 +43,9 @@ class RankLearningLgbm:
 
     def _extract_non_coldstart_user(self):
 
-        # ユーザアクティビティに関するdfを読み込む
-        file_path = os.path.join(DRIVE_DIR, 'input/metadata_customer_id.csv')
-        self.user_activity_df = pd.read_csv(file_path)
-        self.user_activity_df['customer_id_short'] = self.user_activity_df["customer_id"].apply(
-            lambda s: int(s[-16:], 16)).astype("uint64")
+        # ユーザアクティビティに関するdfを用意する
+        user_activity_meta_class = CreateUserActivityMeta(self.dataset, self.df)
+        self.user_activity_df = user_activity_meta_class.get_user_activity_meta()
 
         # 'cold_start_status'をトランザクションログにマージする
         self.df = self.df.merge(
