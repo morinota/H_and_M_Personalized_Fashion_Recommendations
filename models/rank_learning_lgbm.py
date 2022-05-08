@@ -886,10 +886,12 @@ class RankLearningLgbm:
             recommend_result, on='customer_id_short', how='left'
         )
         # 3つのカラムだけ残す
+        print(self.sample_sub_cold_start.columns)
+        print(self.preds_cold_start.columns)
+
         self.preds_cold_start  = self.preds_cold_start[[
             'customer_id_short', 'customer_id',  'prediction']]
 
-        print(self.preds_cold_start.columns)
 
     def _prepare_submission(self):
         print(self.preds_cold_start.columns)
