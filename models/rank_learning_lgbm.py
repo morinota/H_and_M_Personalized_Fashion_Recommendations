@@ -716,7 +716,6 @@ class RankLearningLgbm:
             eval_metric="ndcg",
             feature_name=self.feature_names,
             categorical_feature=self.categorical_feature_names,
-            eva
         )
 
         # Feature Importanceを取得
