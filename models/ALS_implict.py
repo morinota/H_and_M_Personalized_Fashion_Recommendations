@@ -115,7 +115,7 @@ class MatrixFactrization:
         print(type(self.user_matrix))
      
         # 長さを確認
-        print(self.item_matrix.shape)
+        print(self.user_matrix.shape)
         print(len(self.ALL_USERS))
         print(self.item_matrix.shape)
         print(len(self.ALL_ITEMS))
