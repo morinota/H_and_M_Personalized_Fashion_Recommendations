@@ -11,10 +11,10 @@ class Config:
     #
 
     # 本番レコメンドか、検証用レコメンドか
-    run_for_submittion = False  # bool
+    run_for_submittion = True  # bool
 
     # 5%サンプリングを使うか、フルサンプリングを使うか。
-    use_full_sampling = False # bool
+    use_full_sampling = True # bool
 
     # LGBMrankerの学習データでnon_coldstartユーザのみを使うか
     train_only_non_coldstart_user = True
@@ -183,7 +183,7 @@ class Config:
     ]
     item_categorical_feature_names = []
     user_lag_feature_subcategory = [
-        'customer_id_short'
+        # 'customer_id_short'
     ]
     hidden_variable_feature_names = [
         'user潜在変数1', 'user潜在変数2', 'user潜在変数3', 'user潜在変数4', 'user潜在変数5',
@@ -214,7 +214,7 @@ class Config:
     # lightGBMハイパラ
     # 以下が良く調整されるらしい...(深さはあんまり??)
     boosting_type = 'gbdt'  # 多くは'gbdt'. たまに 'dart' or 'goss'
-    n_estimators = 100  # 最後らへんに増やす。それまではいじらない。
+    n_estimators = 500  # 最後らへんに増やす。それまではいじらない。
     num_leaves = 63  # かなり多様だが、中央値だと63らしい。
     learning_rate = 0.01  # 最後らへんに減らす。それまではいじらない。
     feature_fraction = 0.8
