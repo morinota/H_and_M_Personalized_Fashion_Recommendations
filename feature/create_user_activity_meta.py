@@ -24,6 +24,8 @@ class CreateUserActivityMeta:
 
         # 2020年だけ抽出
         self.df_t = self.df_t[self.df_t['year']==2020]
+        # もう不要なのでyearカラムを落としておく
+        self.df_t.drop(columns='year', inplace=True)
 
         last_ts = self.df_t['t_dat'].max()
         print(f'last day of train_transaction is {last_ts}')
@@ -150,6 +152,9 @@ class CreateUserActivityMeta:
 
         df_month_avg_item_per_u = self.df_t.groupby(['customer_id_short', 'month'])['price'].count().unstack().reset_index()
 
+        # 以降はmonthカラムも不要なので落としておく
+        self.df_t.drop(columns='month', inplace=True)
+        
         def find_active_month(x):
             """applyメソッド用
             """
