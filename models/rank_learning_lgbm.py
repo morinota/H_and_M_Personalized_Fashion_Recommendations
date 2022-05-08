@@ -839,26 +839,43 @@ class RankLearningLgbm:
         self.preds['article_id'] = self.preds['article_id'].apply(
             lambda x: ' '.join(['0'+str(k) for k in x]))
 
-    def _prepare_submission(self):
-        # モデルでレコメンドしきれていないユーザ(cold startユーザ)用のレコメンド
-        if Config.approach_name_for_coldstart_user == 'last_purchased_items':
-
-            recommend_result = 
-        self.sample_sub_cold_start_user 
-
+        # カラム名を修正
         self.preds = self.sample_sub[['customer_id_short', 'customer_id']].merge(
             self.preds
             .reset_index()
             .rename(columns={'article_id': 'prediction'}), how='left')
-        self.preds['prediction'].fillna(
-            ' '.join(['0'+str(art) for art in self.dummy_list_2w]), inplace=True)
+
+    def _prepare_submission(self):
+        recommend_result = pd.DataFrame()
+        # モデルでレコメンドしきれていないユーザ(cold startユーザ)用のレコメンド
+        if Config.approach_name_for_coldstart_user == 'time_decaying':
+            # レコメンド結果を読み込み
+            filepath = os.path.join(DRIVE_DIR, 'submission_csv/submission_exponentialDecay.csv')
+            recommend_result = pd.read_csv(filepath)
+        
+        # customer_id_shortカラムがない場合の対処
+        if 'customer_id_short' not in recommend_result.columns:
+            recommend_result['customer_id_short'] =recommend_result["customer_id"].apply(lambda s: int(s[-16:], 16)).astype("uint64")
+
+        # レコメンド内容をcoldstart ユーザに対してマージ
+        self.sample_sub_cold_start_user = pd.merge(
+            self.sample_sub_cold_start_user,
+            recommend_result, on='customer_id_short', how='left'
+        )
+
+        # non_cold_startユーザの結果とcold_startユーザの結果をConcat
+        self.preds = pd.concat(objs=
+            [self.preds['customer_id', 'customer_id_short', 'prediction'],
+            self.sample_sub_cold_start_user['customer_id', 'customer_id_short', 'prediction']]
+            axis=0 # 縦方向の連結
+        )
 
     def create_reccomendation(self) -> pd.DataFrame:
         self._prepare_candidate()
         self._predict_using_batches()
         self._create_recommendation_by_ranking()
         self._prepare_submission()
-
+        
         return self.preds[['customer_id', 'customer_id_short', 'prediction']]
 
 

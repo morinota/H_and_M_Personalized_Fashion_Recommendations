@@ -21,7 +21,7 @@ class Config:
     # LGBMrankerの予測データでnon_coldstartユーザのみを使うか
     predict_only_non_coldstart_user = True
     # coldstartユーザに対して、どのレコメンド結果を使うか
-    approach_name_for_coldstart_user = 'last_purchased_items'
+    approach_name_for_coldstart_user = 'time_decaying'
     
 
     # LGBMRankerをセーブするか否か
