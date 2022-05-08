@@ -87,8 +87,17 @@ def run_create_sub():
         dataset.read_data()
     else:
         dataset.read_data_sampled()
+
+    # 訓練期間のトランザクションログを抽出
+    train_df = get_train_oneweek_holdout_validation(
+        dataset=dataset,
+        week_column_exist=False,
+        val_week_id=105,
+        training_days=Config.training_days_one_week_holdout_validation,
+        # how="use_same_season_in_past"
+    )
     # レコメンド結果を生成
-    model = RankLearningLgbm(transaction_train=pd.DataFrame(), dataset=dataset, val_week_id=105)
+    model = RankLearningLgbm(transaction_train=train_df, dataset=dataset, val_week_id=105)
     model.preprocessing()
     model.fit()
     df_sub = model.create_reccomendation()
