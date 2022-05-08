@@ -132,6 +132,20 @@ class RankLearningLgbm:
             # Dictに格納
             self.user_lag_features[target_column] = lag_feature
 
+        # 潜在変数特徴量
+        self.item_hidden_variable_features = pd.read_csv(os.path.join(
+                DRIVE_DIR, f'feature/item_matrix_features.csv')).reset_index()
+        self.item_hidden_variable_features['article_id'] = self.item_hidden_variable_features['article_id'].astype(int)
+        self.user_hidden_variable_features = pd.read_csv(os.path.join(
+                DRIVE_DIR, f'feature/user_matrix_features.csv')).reset_index()
+
+        # 潜在変数特徴量をマージしておく
+        self.item_features = self.item_features.merge(
+            self.item_hidden_variable_features, on='article_id', how='left'
+        )
+        self.user_features = self.user_features.merge(
+            self.user_hidden_variable_features, on='customer_id_short', how='left'
+        )
         print(f'length of user_features is {len(self.user_features)}')
 
     def _preprocessing_user_feature(self):

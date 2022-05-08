@@ -14,7 +14,7 @@ class Config:
     run_for_submittion = False  # bool
 
     # 5%サンプリングを使うか、フルサンプリングを使うか。
-    use_full_sampling = True # bool
+    use_full_sampling = False # bool
 
     # LGBMRankerをセーブするか否か
     save_trained_model = True
@@ -176,6 +176,10 @@ class Config:
     item_categorical_feature_names = []
     user_lag_feature_subcategory = [
         'customer_id_short'
+    ]
+    hidden_variable_feature_names = [
+        'user潜在変数1', 'user潜在変数2', 'user潜在変数3', 'user潜在変数4', 'user潜在変数5',
+        'item潜在変数1', 'item潜在変数2', 'item潜在変数3', 'item潜在変数4', 'item潜在変数5'
     ]
 
     # Feature Importance上位50の特徴量(val_week_id=104における)
