@@ -111,7 +111,7 @@ class MatrixFactrization:
 
         # 学習後、推定されたUser MatrixとItem Matrixを保存
         self.user_matrix = self.model.user_factors
-        self.item_matrix = self.model.item_factors.to_
+        self.item_matrix = self.model.item_factors
 
         # implicit.gpu._cuda.Matrix型からndarray型へ変換
         self.user_matrix = self.user_matrix.to_numpy()
