@@ -234,7 +234,7 @@ class Config:
     bagging_fraction = 0.8
     random_state = 0
     # その他調整されてる事が多いパラメータ
-    max_depth = 20  # lgbmのtreeの深さ
+    max_depth = 30  # lgbmのtreeの深さ
 
     # ===================================================---===================
     # validation
