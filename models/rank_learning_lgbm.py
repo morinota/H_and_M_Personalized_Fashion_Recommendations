@@ -17,6 +17,7 @@ from config import Config
 from models.negative_sampler_class.static_popularity import NegativeSamplerStaticPopularity
 import pickle
 from feature.create_user_activity_meta import CreateUserActivityMeta
+from models.Byfone_appraoch_moreSpeedy import ByfoneModel
 
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 ITEM_CATEGORICAL_COLUMNS = ['article_id',
@@ -165,6 +166,17 @@ class RankLearningLgbm:
         self.user_features = self.user_features.merge(
             self.user_hidden_variable_features, on='customer_id_short', how='left'
         )
+
+        # quotient特徴量を作る
+        byfone_class = ByfoneModel(self.df, self.dataset, val_week_id=self.val_week_id)
+        byfone_class.preprocessing()
+        byfone_class._recommend_approach_1()
+        self.quotient_features = byfone_class.target_sales.reset_index() #->df['article_id', 'quotient']
+        # quotient特徴量をマージしておく
+        self.item_features = self.item_features.merge(
+            self.quotient_features, on='article_id', how='left'
+        )
+
         print(f'length of user_features is {len(self.user_features)}')
 
     def _preprocessing_user_feature(self):
@@ -671,6 +683,7 @@ class RankLearningLgbm:
             + Config.user_numerical_feature_names
             + Config.hidden_variable_feature_names
             + lag_feature_names
+            + ['quotient']
         )
         # 特徴量とターゲットを分割
         X_train = self.train[self.feature_names]
