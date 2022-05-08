@@ -899,6 +899,9 @@ class RankLearningLgbm:
 
     def create_reccomendation(self) -> pd.DataFrame:
         self._devide_users_with_cold_start_or_non_cold_start()
+        print(f'length of non_cold_start user is {self.sample_sub_non_cold_start.shape[0]}')
+        print(f'length of cold_start user is {self.sample_sub_cold_start.shape[0]}')
+
         self._prepare_candidate()
         self._predict_using_batches()
         self._create_recommendation_by_ranking()
