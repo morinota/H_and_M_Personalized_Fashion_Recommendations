@@ -38,14 +38,14 @@ class RankLearningLgbm:
         print('unique user of self.df is {}'.format(
             len(self.df['customer_id_short'].unique())
         ))
-    
+
     def _extract_non_coldstart_user(self):
 
         # ユーザアクティビティに関するdfを読み込む
         file_path = os.path.join(DRIVE_DIR, 'input/metadata_customer_id.csv')
         self.user_activity_df = pd.read_csv(file_path)
-        self.user_activity_df['customer_id_short'] =self.user_activity_df["customer_id"].apply(lambda s: int(s[-16:], 16)).astype("uint64")
-
+        self.user_activity_df['customer_id_short'] = self.user_activity_df["customer_id"].apply(
+            lambda s: int(s[-16:], 16)).astype("uint64")
 
         # 'cold_start_status'をトランザクションログにマージする
         self.df = self.df.merge(
@@ -53,13 +53,12 @@ class RankLearningLgbm:
             on='customer_id_short', how='left'
         )
         # 'cold_start_status' == 'non_cold_start'のユーザのトランザクションログのみ残す
-        self.df = self.df.loc[self.df['cold_start_status']=='non_cold_start']
+        self.df = self.df.loc[self.df['cold_start_status'] == 'non_cold_start']
         # 'cold_start_status'カラムを落とす
         self.df.drop(columns='cold_start_status', inplace=True)
 
         print('length of unique user of non coldstart user is {} in train'
-        .format(len(self.df['customer_id_short'].unique())))
-        
+              .format(len(self.df['customer_id_short'].unique())))
 
     def _create_df_1w_to4w(self):
         """予測期間に対して、過去i week (i=1,...,4)のトランザクションログを抽出して、DataFrameとして保存。
@@ -152,10 +151,11 @@ class RankLearningLgbm:
 
         # 潜在変数特徴量
         self.item_hidden_variable_features = pd.read_csv(os.path.join(
-                DRIVE_DIR, f'feature/item_matrix_features.csv')).reset_index()
-        self.item_hidden_variable_features['article_id'] = self.item_hidden_variable_features['article_id'].astype(int)
+            DRIVE_DIR, f'feature/item_matrix_features.csv')).reset_index()
+        self.item_hidden_variable_features['article_id'] = self.item_hidden_variable_features['article_id'].astype(
+            int)
         self.user_hidden_variable_features = pd.read_csv(os.path.join(
-                DRIVE_DIR, f'feature/user_matrix_features.csv')).reset_index()
+            DRIVE_DIR, f'feature/user_matrix_features.csv')).reset_index()
 
         # 潜在変数特徴量をマージしておく
         self.item_features = self.item_features.merge(
@@ -212,7 +212,7 @@ class RankLearningLgbm:
             df_tra = pd.merge(df_tra, lag_feature_df,
                               on=[target_column, 't_dat'], how='left'
                               )
-        
+
         # ラグ特徴量(ユーザ)をマージ
         for target_column in Config.user_lag_feature_subcategory:
             # 対象サブカテゴリのラグ特徴量を取り出す
@@ -457,7 +457,6 @@ class RankLearningLgbm:
 
         self.train['label'] = 1
 
-
         self.train.sort_values(['t_dat', 'customer_id_short'], inplace=True)
         print(f'length of positve train data is {len(self.train)}')
 
@@ -671,7 +670,7 @@ class RankLearningLgbm:
             + Config.user_numerical_feature_names
             + Config.hidden_variable_feature_names
             + lag_feature_names
-            )
+        )
         # 特徴量とターゲットを分割
         X_train = self.train[self.feature_names]
         y_train = self.train['label']
@@ -702,7 +701,7 @@ class RankLearningLgbm:
         # 学習済みモデルの保存
         if Config.save_trained_model:
             filepath = os.path.join(DRIVE_DIR, 'trained_lgbm_model.pkl')
-            pickle.dump(obj=self.ranker, file=open(filepath, 'wb') )
+            pickle.dump(obj=self.ranker, file=open(filepath, 'wb'))
 
         # Saving memoryの為、学習用と検証用のデータセットを削除
         del self.train, self.valid
@@ -720,14 +719,17 @@ class RankLearningLgbm:
 
         if Config.predict_only_non_coldstart_user:
             self.sample_sub = self.sample_sub.merge(
-                self.user_activity_df[['customer_id_short', 'cold_start_status']], 
+                self.user_activity_df[[
+                    'customer_id_short', 'cold_start_status']],
                 on='customer_id_short', how='left'
             )
             # non_cold_startなユーザのみを予測対象とする。
-            self.sample_sub = self.sample_sub.loc[self.sample_sub['cold_start_status'] == 'non_cold_start']
+            self.sample_sub = self.sample_sub.loc[self.sample_sub['cold_start_status']
+                                                  == 'non_cold_start']
             # cold_startなユーザは、静的なレコメンドを実行(Chris? Time decay?)
-            self.sample_sub_cold_start_user = self.sample_sub.loc[self.sample_sub['cold_start_status'] == 'cold_start']
-            
+            self.sample_sub_cold_start_user = self.sample_sub.loc[
+                self.sample_sub['cold_start_status'] == 'cold_start']
+
         self.candidates = pd.DataFrame()
         # レコメンド候補を用意
         if Config.predict_candidate_way_name == None:
@@ -850,12 +852,14 @@ class RankLearningLgbm:
         # モデルでレコメンドしきれていないユーザ(cold startユーザ)用のレコメンド
         if Config.approach_name_for_coldstart_user == 'time_decaying':
             # レコメンド結果を読み込み
-            filepath = os.path.join(DRIVE_DIR, 'submission_csv/submission_exponentialDecay.csv')
+            filepath = os.path.join(
+                DRIVE_DIR, 'submission_csv/submission_exponentialDecay.csv')
             recommend_result = pd.read_csv(filepath)
-        
+
         # customer_id_shortカラムがない場合の対処
         if 'customer_id_short' not in recommend_result.columns:
-            recommend_result['customer_id_short'] =recommend_result["customer_id"].apply(lambda s: int(s[-16:], 16)).astype("uint64")
+            recommend_result['customer_id_short'] = recommend_result["customer_id"].apply(
+                lambda s: int(s[-16:], 16)).astype("uint64")
 
         # レコメンド内容をcoldstart ユーザに対してマージ
         self.sample_sub_cold_start_user = pd.merge(
@@ -864,10 +868,12 @@ class RankLearningLgbm:
         )
 
         # non_cold_startユーザの結果とcold_startユーザの結果をConcat
-        self.preds = pd.concat(objs=
-            [self.preds['customer_id', 'customer_id_short', 'prediction'],
-            self.sample_sub_cold_start_user['customer_id', 'customer_id_short', 'prediction']]
-            axis=0 # 縦方向の連結
+        self.preds = pd.concat(objs=[
+            self.preds[['customer_id', 'customer_id_short', 'prediction']],
+            self.sample_sub_cold_start_user[[
+                'customer_id', 'customer_id_short', 'prediction']]
+        ],
+            axis=0  # 縦方向の連結
         )
 
     def create_reccomendation(self) -> pd.DataFrame:
@@ -875,7 +881,7 @@ class RankLearningLgbm:
         self._predict_using_batches()
         self._create_recommendation_by_ranking()
         self._prepare_submission()
-        
+
         return self.preds[['customer_id', 'customer_id_short', 'prediction']]
 
 
