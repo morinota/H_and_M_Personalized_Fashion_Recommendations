@@ -23,7 +23,9 @@ class Config:
     # LGBMrankerの予測データでnon_coldstartユーザのみを使うか
     predict_only_non_coldstart_user = True
     # coldstartユーザに対して、どのレコメンド結果を使うか
-    approach_name_for_coldstart_user = 'last_purchased_items'
+    # approach_name_for_coldstart_user = 'last_purchased_items'
+    approach_name_for_coldstart_user = 'Ensembling'
+
     
 
     # LGBMRankerをセーブするか否か
@@ -192,6 +194,13 @@ class Config:
         'item潜在変数1', 'item潜在変数2', 'item潜在変数3', 'item潜在変数4', 'item潜在変数5'
     ]
 
+    user_item_numerical_feature_names = [
+        'アイテム価格中央/ユーザ価格平均', 
+        'アイテム価格中央/ユーザ価格最大',
+        'アイテム価格中央/ユーザ価格最小',
+        'channelアイテム平均/channelユーザ平均'
+    ]
+
     # Feature Importance上位50の特徴量(val_week_id=104における)
     feature_names_highest50_feature_importance = [
         'expanding_mean_salescount_article_id',
@@ -211,6 +220,7 @@ class Config:
         'mean_transaction_price', 'expanding_var_salescount_department_name', 'count_item_price',
         'lag1_salescount_index_group_name', 'median_transaction_price', 'max_transaction_price', 'rollvar_10week_salescount_product_type_name', 'min_item_price_over_point', 'rollvar_5week_salescount_article_id', 'max_transaction_price_under_point', 'expanding_mean_salescount_garment_group_name', 'expanding_var_salescount_product_type_name', 'rollmean_10week_salescount_article_id', 'mean_item_price_over_point'
     ]
+
 
     # ===========================================================================
     # lightGBMハイパラ

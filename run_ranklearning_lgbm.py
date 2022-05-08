@@ -16,7 +16,7 @@ from logs.base_log import create_logger, get_logger, stop_watch
 
 DRIVE_DIR = r'/content/drive/MyDrive/Colab Notebooks/kaggle/H_and_M_Personalized_Fashion_Recommendations'
 
-VERSION = f"rankLearning_depth{Config.max_depth}_tc{Config.num_candidate_train}_tp{Config.num_candidate_predict}_full{Config.use_full_sampling}_candidate_is_{Config.predict_candidate_way_name}"
+VERSION = f"rankLearning_depth{Config.max_depth}_tc{Config.num_candidate_train}_tp{Config.num_candidate_predict}_full{Config.use_full_sampling}_candidate_is_{Config.predict_candidate_way_name}_{Config.approach_name_for_coldstart_user}"
 
 
 @stop_watch(VERSION)

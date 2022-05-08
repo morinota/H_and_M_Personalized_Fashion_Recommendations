@@ -238,6 +238,14 @@ class RankLearningLgbm:
                               on=[target_column, 't_dat'], how='left'
                               )
 
+        # ユーザ×アイテム特徴量を足し引きで作る(numerical * numerial)
+        df_tra['アイテム価格中央/ユーザ価格平均'] = df_tra['median_item_price'] / df_tra['mean_transaction_price']
+        df_tra['アイテム価格中央/ユーザ価格最大'] = df_tra['median_item_price'] / df_tra['max_transaction_price']
+        df_tra['アイテム価格中央/ユーザ価格最小'] = df_tra['median_item_price'] / df_tra['min_transaction_price']
+
+        df_tra['channelアイテム平均/channelユーザ平均'] = df_tra['item_mean_offline_or_online'] / df_tra['mean_sales_channel_id']
+
+
         print('unique user of df_tra is {}'.format(
             len(df_tra['customer_id_short'].unique())
         ))
@@ -886,6 +894,12 @@ class RankLearningLgbm:
             # レコメンド結果を読み込み
             filepath = os.path.join(
                 DRIVE_DIR, 'submission_csv/submission_last_purchased.csv')
+            recommend_result = pd.read_csv(filepath)
+        
+        if Config.approach_name_for_coldstart_user == 'Ensembling':
+            # レコメンド結果を読み込み
+            filepath = os.path.join(
+                DRIVE_DIR, 'submission_csv/submission_ensenble.csv')
             recommend_result = pd.read_csv(filepath)
 
         # レコメンド結果にcustomer_id_shortカラムがない場合の対処
