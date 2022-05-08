@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from re import sub
 from turtle import back
 from typing import Dict, List, Tuple
+from boto import config
 import pandas as pd
 from sympy import Li
 from my_class.dataset import DataSet
@@ -706,7 +707,7 @@ class RankLearningLgbm:
         # Saving memoryの為、学習用と検証用のデータセットを削除
         del self.train, self.valid
 
-    def _prepare_candidate(self):
+    def _devide_users_with_cold_start_or_non_cold_start(self):
         """予測の準備をするメソッド。
         具体的には、
         - sample_submissionを読み込んでおく.
@@ -714,9 +715,11 @@ class RankLearningLgbm:
         - 作成されたDataFrame(レコード数= len(unique ser) * n_candidate)に対して、
         アイテム特徴量とユーザ特徴量をマージ
         """
+        # 予測対象の全ユーザのレコードを用意
         self.sample_sub = self.dataset.df_sub[[
             'customer_id_short', 'customer_id']].copy()
 
+        # LGBMrankerではnon_cold_startのユーザのみを予測する。
         if Config.predict_only_non_coldstart_user:
             self.sample_sub = self.sample_sub.merge(
                 self.user_activity_df[[
@@ -724,13 +727,15 @@ class RankLearningLgbm:
                 on='customer_id_short', how='left'
             )
             # non_cold_startなユーザのみを予測対象とする。
-            self.sample_sub = self.sample_sub.loc[self.sample_sub['cold_start_status']
+            self.sample_sub_non_cold_start = self.sample_sub.loc[self.sample_sub['cold_start_status']
                                                   == 'non_cold_start']
             # cold_startなユーザは、静的なレコメンドを実行(Chris? Time decay?)
-            self.sample_sub_cold_start_user = self.sample_sub.loc[
+            self.sample_sub_cold_start = self.sample_sub.loc[
                 self.sample_sub['cold_start_status'] == 'cold_start']
 
+    def _prepare_candidate(self):
         self.candidates = pd.DataFrame()
+
         # レコメンド候補を用意
         if Config.predict_candidate_way_name == None:
             # NoneだったらオリジナルのCandidate
@@ -744,7 +749,7 @@ class RankLearningLgbm:
                 dataset=self.dataset,
                 transaction_train=self.df,
                 val_week_id=self.val_week_id
-            ).get_prediction_candidates(unique_customer_ids=self.sample_sub['customer_id_short'].unique())
+            ).get_prediction_candidates(unique_customer_ids=self.sample_sub_non_cold_start['customer_id_short'].unique())
         else:
             self.candidates = self._load_candidate_from_other_recommendation()
 
@@ -829,7 +834,7 @@ class RankLearningLgbm:
         # 各ユニークユーザ毎で、発生確率の高いアイテム順にソート
         self.preds.sort_values(
             ['customer_id_short', 'preds'], ascending=False, inplace=True)
-        # 「行=ユニークユーザ」「列=レコメンドアイテムのリスト」のDfに変換
+        # 「行=ユニークユーザ」「列=レコメンドアイテムのリスト」のDataFrameに変換
         self.preds = (
             self.preds.groupby('customer_id_short')[
                 ['article_id']].aggregate(lambda x: x.tolist())
@@ -842,7 +847,7 @@ class RankLearningLgbm:
             lambda x: ' '.join(['0'+str(k) for k in x]))
 
         # カラム名を修正
-        self.preds = self.sample_sub[['customer_id_short', 'customer_id']].merge(
+        self.preds = self.sample_sub_non_cold_start[['customer_id_short', 'customer_id']].merge(
             self.preds
             .reset_index()
             .rename(columns={'article_id': 'prediction'}), how='left')
@@ -852,38 +857,48 @@ class RankLearningLgbm:
             'customer_id_short', 'customer_id', 'prediction']]
 
     def _prepare_submission(self):
+        """coldstartなユーザに対するレコメンド結果を用意。
+        """
         # モデルでレコメンドしきれていないユーザ(cold startユーザ)用のレコメンド
         recommend_result = pd.DataFrame()
         print('length of cold start user is {}'.format(
-            len(self.sample_sub_cold_start_user)))
+            len(self.sample_sub_cold_start)))
 
         if Config.approach_name_for_coldstart_user == 'time_decaying':
             # レコメンド結果を読み込み
             filepath = os.path.join(
                 DRIVE_DIR, 'submission_csv/submission_exponentialDecay.csv')
             recommend_result = pd.read_csv(filepath)
+        if Config.approach_name_for_coldstart_user == 'last_purchased_items':
+            # レコメンド結果を読み込み
+            filepath = os.path.join(
+                DRIVE_DIR, 'submission_csv/submission_last_purchased.csv')
+            recommend_result = pd.read_csv(filepath)
 
-        # customer_id_shortカラムがない場合の対処
+        # レコメンド結果にcustomer_id_shortカラムがない場合の対処
         if 'customer_id_short' not in recommend_result.columns:
             recommend_result['customer_id_short'] = recommend_result["customer_id"].apply(
                 lambda s: int(s[-16:], 16)).astype("uint64")
 
         # レコメンド内容をcoldstart ユーザに対してマージ
-        self.sample_sub_cold_start_user = pd.merge(
-            self.sample_sub_cold_start_user,
+        self.sample_sub_cold_start = pd.merge(
+            self.sample_sub_cold_start,
             recommend_result, on='customer_id_short', how='left'
         )
         # 3つのカラムだけ残す
-        self.sample_sub_cold_start_user = self.sample_sub_cold_start_user[[
+        self.sample_sub_cold_start = self.sample_sub_cold_start[[
             'customer_id_short', 'customer_id',  'prediction']]
 
-        print(self.sample_sub_cold_start_user.head())
+        print(self.sample_sub_cold_start.head())
+
         # non_cold_startユーザの結果とcold_startユーザの結果をConcat
-        self.preds = pd.concat(objs=[self.preds, self.sample_sub_cold_start_user],
+        self.preds = pd.concat(
+            objs=[self.preds, self.sample_sub_cold_start],
             axis=0  # 縦方向の連結
         )
 
     def create_reccomendation(self) -> pd.DataFrame:
+        self._devide_users_with_cold_start_or_non_cold_start()
         self._prepare_candidate()
         self._predict_using_batches()
         self._create_recommendation_by_ranking()
