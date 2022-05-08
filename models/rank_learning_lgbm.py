@@ -46,6 +46,7 @@ class RankLearningLgbm:
         # ユーザアクティビティに関するdfを用意する
         user_activity_meta_class = CreateUserActivityMeta(self.dataset, self.df)
         self.user_activity_df = user_activity_meta_class.get_user_activity_meta()
+        print(self.user_activity_df.columns)
 
         # 'cold_start_status'をトランザクションログにマージする
         self.df = self.df.merge(
