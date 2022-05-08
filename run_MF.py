@@ -74,8 +74,8 @@ def get_hidden_features():
         # DataSetオブジェクトの読み込み
     dataset = DataSet()
     # DataFrameとしてデータ読み込み
-    # dataset.read_data()
-    dataset.read_data_sampled()
+    dataset.read_data()
+    # dataset.read_data_sampled()
 
     print("1")
 
