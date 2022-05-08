@@ -707,8 +707,13 @@ class RankLearningLgbm:
             'customer_id_short', 'customer_id']].copy()
 
         if Config.predict_only_non_coldstart_user:
-            self.sample_sub = self.
-
+            self.sample_sub = self.sample_sub.merge(
+                self.user_activity_df[['customer_id_short', 'cold_start_status']], 
+                on='customer_id_short', how='left'
+            )
+            # non_cold_startなユーザのみを予測対象とする。
+            self.sample_sub = self.sample_sub.loc[self.sample_sub['cold_start_status'] == 'non_cold_start']
+            
         self.candidates = pd.DataFrame()
         # レコメンド候補を用意
         if Config.predict_candidate_way_name == None:
