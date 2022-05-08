@@ -818,6 +818,13 @@ class RankLearningLgbm:
                                             on=[target_column, 't_dat'], how='left'
                                             )
 
+            # ユーザ×アイテム特徴量を足し引きで作る(numerical * numerial)
+            candidates_batch['アイテム価格中央/ユーザ価格平均'] = candidates_batch['median_item_price'] / candidates_batch['mean_transaction_price']
+            candidates_batch['アイテム価格中央/ユーザ価格最大'] = candidates_batch['median_item_price'] / candidates_batch['max_transaction_price']
+            candidates_batch['アイテム価格中央/ユーザ価格最小'] = candidates_batch['median_item_price'] / candidates_batch['min_transaction_price']
+
+            df_tra['channelアイテム平均/channelユーザ平均'] = df_tra['item_mean_offline_or_online'] / df_tra['mean_sales_channel_id']
+
             return candidates_batch
 
         # 予測値のリストをInitialize
