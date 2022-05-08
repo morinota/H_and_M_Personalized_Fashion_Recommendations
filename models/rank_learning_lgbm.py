@@ -692,6 +692,7 @@ class RankLearningLgbm:
             + Config.hidden_variable_feature_names
             + lag_feature_names
             + ['quotient']
+            + Config.user_item_numerical_feature_names
         )
         # 特徴量とターゲットを分割
         X_train = self.train[self.feature_names]
@@ -714,7 +715,8 @@ class RankLearningLgbm:
             eval_group=[list(self.valid_baskets)],
             eval_metric="ndcg",
             feature_name=self.feature_names,
-            categorical_feature=self.categorical_feature_names
+            categorical_feature=self.categorical_feature_names,
+            eva
         )
 
         # Feature Importanceを取得
