@@ -846,10 +846,17 @@ class RankLearningLgbm:
             self.preds
             .reset_index()
             .rename(columns={'article_id': 'prediction'}), how='left')
+        print(self.preds.head())
+        # 3つのカラムだけ残す
+        self.preds = self.preds[[
+            'customer_id_short', 'customer_id', 'prediction']]
 
     def _prepare_submission(self):
-        recommend_result = pd.DataFrame()
         # モデルでレコメンドしきれていないユーザ(cold startユーザ)用のレコメンド
+        recommend_result = pd.DataFrame()
+        print('length of cold start user is {}'.format(
+            len(self.sample_sub_cold_start_user)))
+
         if Config.approach_name_for_coldstart_user == 'time_decaying':
             # レコメンド結果を読み込み
             filepath = os.path.join(
@@ -866,13 +873,13 @@ class RankLearningLgbm:
             self.sample_sub_cold_start_user,
             recommend_result, on='customer_id_short', how='left'
         )
+        # 3つのカラムだけ残す
+        self.sample_sub_cold_start_user = self.sample_sub_cold_start_user[[
+            'customer_id_short', 'customer_id',  'prediction']]
 
+        print(self.sample_sub_cold_start_user.head())
         # non_cold_startユーザの結果とcold_startユーザの結果をConcat
-        self.preds = pd.concat(objs=[
-            self.preds[['customer_id', 'customer_id_short', 'prediction']],
-            self.sample_sub_cold_start_user[[
-                'customer_id', 'customer_id_short', 'prediction']]
-        ],
+        self.preds = pd.concat(objs=[self.preds, self.sample_sub_cold_start_user],
             axis=0  # 縦方向の連結
         )
 
