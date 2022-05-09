@@ -11,7 +11,7 @@ class Config:
     #
 
     # 本番レコメンドか、検証用レコメンドか
-    run_for_submittion = False # bool
+    run_for_submittion = True # bool
 
     # 5%サンプリングを使うか、フルサンプリングを使うか。
     use_full_sampling = True # bool
@@ -226,9 +226,9 @@ class Config:
     # lightGBMハイパラ
     # 以下が良く調整されるらしい...(深さはあんまり??)
     boosting_type = 'gbdt'  # 多くは'gbdt'. たまに 'dart' or 'goss'
-    n_estimators = 500  # 最後らへんに増やす。それまではいじらない。
+    n_estimators = 2000  # 最後らへんに増やす。それまではいじらない。
     num_leaves = 100  # かなり多様だが、中央値だと63らしい。
-    learning_rate = 0.01  # 最後らへんに減らす。それまではいじらない。
+    learning_rate = 0.001  # 最後らへんに減らす。それまではいじらない。
     feature_fraction = 0.8
     bagging_freq = 1
     bagging_fraction = 0.8
