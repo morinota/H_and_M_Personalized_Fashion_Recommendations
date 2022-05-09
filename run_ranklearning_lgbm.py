@@ -9,7 +9,7 @@ from my_class.dataset import DataSet
 from utils.just_offline_validation import offline_validation
 from utils.partitioned_validation import partitioned_validation, user_grouping_online_and_offline
 from utils.oneweek_holdout_validation import get_train_oneweek_holdout_validation, get_valid_oneweek_holdout_validation
-
+from kaggle_submit import submit
 import os
 from logs.base_log import create_logger, get_logger, stop_watch
 # from logs.time_keeper import stop_watch
@@ -111,6 +111,19 @@ if __name__ == '__main__':
     # 実行
     if Config.run_for_submittion:
         run_create_sub()
+        # 提出準備
+        sub_result_dir = os.path.join(DRIVE_DIR, 'submission_csv')
+        filepath = os.path.join(sub_result_dir, f'sub_{VERSION}.csv')
+        df_sub = pd.read_csv(filepath, index_col=0)
+        df_sub = df_sub.reset_index()
+        df_sub[['customer_id', 'prediction']].to_csv(filepath, index=False)
+        # 提出
+        submit(csv_filepath=filepath, message=f'submission {VERSION}')
+
+
+
+
+
     elif Config.run_for_submittion==False:
         val_week_ids = [104, 103, 102]
         for val_week_id in val_week_ids:

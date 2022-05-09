@@ -40,8 +40,8 @@ class Config:
     # ==================================================================================
     # 予測用のCandidateを、オリジナルの手法(==None)を使うか、もしくはどの手法から読み込むか。
     # predict_candidate_way_name = f'last_purchased_fullTrue_{num_candidate_predict}Candidates' # Noneだったらオリジナル?
-    # predict_candidate_way_name = None
-    predict_candidate_way_name ='StaticPopularity_byfone'
+    predict_candidate_way_name = None
+    # predict_candidate_way_name ='StaticPopularity_byfone'
 
     # メモリ調整用のNegative Candidate数
     num_negative_candidate = 7
